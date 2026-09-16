@@ -1,0 +1,218 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ExerciseType {
+  REPS   // reps + weight (e.g. bench press, pull-ups)
+  HOLD   // static hold, time-based (e.g. plank, front lever)
+}
+
+enum MuscleFocus {
+  PUSH
+  PULL
+  LEGS
+  CORE
+  GRIP
+}
+
+enum ClimbingStyle {
+  BOULDER
+  ROUTE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  bodyWeightKg Float?
+  createdAt    DateTime @default(now())
+
+  workoutSessions  WorkoutSession[]
+  workoutTemplates WorkoutTemplate[]
+  climbingSends    ClimbingSend[]
+  balanceGoals     BalanceGoal[]
+  groupMemberships GroupMember[]
+  ownedGroups      Group[]           @relation("GroupOwner")
+  groupPosts       GroupPost[]
+  challenges       Challenge[]       @relation("ChallengeCreator")
+  challengeEntries ChallengeEntry[]
+}
+
+// Catalog of exercises. Seeded with defaults, users can add their own.
+model Exercise {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  type        ExerciseType
+  focus       MuscleFocus
+  isDefault   Boolean      @default(true)
+
+  sets            WorkoutSet[]
+  templateEntries WorkoutTemplateEntry[]
+}
+
+model WorkoutSession {
+  id     String   @id @default(cuid())
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date   DateTime @default(now())
+  notes  String?
+
+  // 1 (easy) - 10 (max effort)
+  perceivedExertion Int?
+  // 1 (fine) - 10 (skin destroyed) - relevant for climbers
+  skinCondition     Int?
+
+  sets WorkoutSet[]
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+model WorkoutSet {
+  id         String         @id @default(cuid())
+  sessionId  String
+  session    WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exerciseId String
+  exercise   Exercise       @relation(fields: [exerciseId], references: [id])
+  order      Int
+
+  // REPS-type exercises
+  reps      Int?
+  weightKg  Float?
+
+  // HOLD-type exercises
+  durationSec Int?
+
+  @@index([sessionId])
+  @@index([exerciseId])
+}
+
+model WorkoutTemplate {
+  id      String                  @id @default(cuid())
+  userId  String
+  user    User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name    String
+  entries WorkoutTemplateEntry[]
+
+  createdAt DateTime @default(now())
+}
+
+model WorkoutTemplateEntry {
+  id         String          @id @default(cuid())
+  templateId String
+  template   WorkoutTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  exerciseId String
+  exercise   Exercise        @relation(fields: [exerciseId], references: [id])
+  order      Int
+  targetSets Int?
+  targetReps Int?
+}
+
+// A single completed boulder/route for the climbing pyramid
+model ClimbingSend {
+  id       String        @id @default(cuid())
+  userId   String
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date     DateTime      @default(now())
+  style    ClimbingStyle
+  grade    String // e.g. "V5" or "6a+" - kept free-form to support both scales
+  attempts Int           @default(1)
+
+  @@index([userId, date])
+}
+
+// User-defined target split for the balance radar chart, e.g. PUSH: 30, PULL: 40, LEGS: 20, CORE: 10
+model BalanceGoal {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  focus         MuscleFocus
+  targetPercent Float
+
+  @@unique([userId, focus])
+}
+
+model Group {
+  id         String   @id @default(cuid())
+  name       String
+  inviteCode String   @unique @default(cuid())
+  ownerId    String
+  owner      User     @relation("GroupOwner", fields: [ownerId], references: [id])
+  createdAt  DateTime @default(now())
+
+  members    GroupMember[]
+  posts      GroupPost[]
+  challenges Challenge[]
+}
+
+enum GroupRole {
+  OWNER
+  MEMBER
+}
+
+model GroupMember {
+  id       String    @id @default(cuid())
+  groupId  String
+  group    Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     GroupRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
+
+  @@unique([groupId, userId])
+}
+
+enum PostType {
+  PHOTO
+  WORKOUT_SHARE
+  TEXT
+}
+
+// Feed items inside a group: progress photos, shared workouts, text updates
+model GroupPost {
+  id        String   @id @default(cuid())
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      PostType
+  content   String? // caption / text body
+  imageUrl  String? // for PHOTO posts
+  createdAt DateTime @default(now())
+
+  @@index([groupId, createdAt])
+}
+
+model Challenge {
+  id          String   @id @default(cuid())
+  groupId     String
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdById String
+  createdBy   User     @relation("ChallengeCreator", fields: [createdById], references: [id])
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+
+  entries ChallengeEntry[]
+
+  @@index([groupId, startDate])
+}
+
+// A user marking a challenge as completed (once per day within the challenge window)
+model ChallengeEntry {
+  id          String    @id @default(cuid())
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime  @default(now())
+
+  @@unique([challengeId, userId, date])
+}

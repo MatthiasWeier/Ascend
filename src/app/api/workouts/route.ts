@@ -1,0 +1,69 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+const setSchema = z.object({
+  exerciseId: z.string(),
+  reps: z.number().int().positive().optional(),
+  weightKg: z.number().nonnegative().optional(),
+  durationSec: z.number().int().positive().optional(),
+});
+
+const workoutSchema = z.object({
+  notes: z.string().max(1000).optional(),
+  perceivedExertion: z.number().int().min(1).max(10).optional(),
+  skinCondition: z.number().int().min(1).max(10).optional(),
+  sets: z.array(setSchema).min(1),
+});
+
+export async function GET() {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const sessions = await prisma.workoutSession.findMany({
+    where: { userId: session.user.id },
+    orderBy: { date: "desc" },
+    take: 50,
+    include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
+  });
+
+  return NextResponse.json({ sessions });
+}
+
+export async function POST(request: Request) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await request.json();
+  const parsed = workoutSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  }
+  const { notes, perceivedExertion, skinCondition, sets } = parsed.data;
+
+  const created = await prisma.workoutSession.create({
+    data: {
+      userId: session.user.id,
+      notes,
+      perceivedExertion,
+      skinCondition,
+      sets: {
+        create: sets.map((set, index) => ({
+          exerciseId: set.exerciseId,
+          reps: set.reps,
+          weightKg: set.weightKg,
+          durationSec: set.durationSec,
+          order: index,
+        })),
+      },
+    },
+    include: { sets: { include: { exercise: true } } },
+  });
+
+  return NextResponse.json({ session: created }, { status: 201 });
+}
