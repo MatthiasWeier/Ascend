@@ -32,27 +32,44 @@ model User {
   bodyWeightKg Float?
   createdAt    DateTime @default(now())
 
-  workoutSessions  WorkoutSession[]
-  workoutTemplates WorkoutTemplate[]
-  climbingSends    ClimbingSend[]
-  balanceGoals     BalanceGoal[]
-  groupMemberships GroupMember[]
-  ownedGroups      Group[]           @relation("GroupOwner")
-  groupPosts       GroupPost[]
-  challenges       Challenge[]       @relation("ChallengeCreator")
-  challengeEntries ChallengeEntry[]
+  workoutSessions   WorkoutSession[]
+  workoutTemplates  WorkoutTemplate[]
+  bodyWeightEntries BodyWeightEntry[]
+  climbingSends     ClimbingSend[]
+  balanceGoals      BalanceGoal[]
+  groupMemberships  GroupMember[]
+  ownedGroups       Group[]                 @relation("GroupOwner")
+  groupPosts        GroupPost[]
+  createdExercises  Exercise[]              @relation("ExerciseCreator")
+  activatedDailies  GroupDailyChallenge[]   @relation("DailyChallengeActivator")
+  challengeGoals    UserChallengeGoal[]
+  yammerVotes       YammerVote[]
 }
 
-// Catalog of exercises. Seeded with defaults, users can add their own.
+// Catalog of exercises. Seeded with defaults; users/groups can add their own.
 model Exercise {
   id          String       @id @default(cuid())
   name        String       @unique
+  description String?
   type        ExerciseType
   focus       MuscleFocus
-  isDefault   Boolean      @default(true)
+  // Bodyweight-based exercises (pull-ups, push-ups, dips, ...) get the
+  // user's logged bodyweight folded into load/1RM/power calculations -
+  // getting heavier makes the same reps objectively more work.
+  isBodyweight Boolean     @default(false)
+  isDefault    Boolean     @default(true)
 
-  sets            WorkoutSet[]
-  templateEntries WorkoutTemplateEntry[]
+  // null = global default. Set when a user or group creates a custom one.
+  createdById String?
+  createdBy   User?   @relation("ExerciseCreator", fields: [createdById], references: [id])
+  groupId     String?
+  group       Group?  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  sets              WorkoutSet[]
+  templateEntries   WorkoutTemplateEntry[]
+  challengeTemplate ChallengeTemplate?
+
+  @@index([groupId])
 }
 
 model WorkoutSession {
@@ -82,7 +99,8 @@ model WorkoutSet {
   exercise   Exercise       @relation(fields: [exerciseId], references: [id])
   order      Int
 
-  // REPS-type exercises
+  // REPS-type exercises. For isBodyweight exercises, weightKg is *added*
+  // weight (e.g. a dip belt) on top of bodyweight - can be 0/null.
   reps      Int?
   weightKg  Float?
 
@@ -114,15 +132,34 @@ model WorkoutTemplateEntry {
   targetReps Int?
 }
 
-// A single completed boulder/route for the climbing pyramid
+// Bodyweight over time. Kept as a history (not just User.bodyWeightKg) so
+// past workouts can be evaluated against the bodyweight at the time they
+// happened, not today's.
+model BodyWeightEntry {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // German-calendar day (Europe/Berlin) as YYYY-MM-DD, one entry per day.
+  dateKey  String
+  weightKg Float
+  createdAt DateTime @default(now())
+
+  @@unique([userId, dateKey])
+  @@index([userId, dateKey])
+}
+
+// A single completed boulder/route for the climbing pyramid. `count` lets
+// one row represent "N sends of this grade" logged together (e.g. the
+// boulder-day quick-counter: "5x 6", "3x 4").
 model ClimbingSend {
   id       String        @id @default(cuid())
   userId   String
   user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   date     DateTime      @default(now())
   style    ClimbingStyle
-  grade    String // e.g. "V5" or "6a+" - kept free-form to support both scales
+  grade    String // e.g. "V5", "6a+", or plain German/Fontainebleau scale "6"
   attempts Int           @default(1)
+  count    Int           @default(1)
 
   @@index([userId, date])
 }
@@ -146,13 +183,14 @@ model Group {
   owner      User     @relation("GroupOwner", fields: [ownerId], references: [id])
   createdAt  DateTime @default(now())
 
-  members    GroupMember[]
-  posts      GroupPost[]
-  challenges Challenge[]
+  members         GroupMember[]
+  posts           GroupPost[]
+  customExercises Exercise[]
+  dailyChallenges GroupDailyChallenge[]
 }
 
 enum GroupRole {
-  OWNER
+  LEADER
   MEMBER
 }
 
@@ -189,30 +227,92 @@ model GroupPost {
   @@index([groupId, createdAt])
 }
 
-model Challenge {
+// Catalog of daily-challenge "themes" a group leader can activate, e.g.
+// "Pullup Maxing" tied to the Pull-ups exercise. Seeded like Exercise.
+model ChallengeTemplate {
   id          String   @id @default(cuid())
-  groupId     String
-  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  createdById String
-  createdBy   User     @relation("ChallengeCreator", fields: [createdById], references: [id])
-  title       String
+  name        String   @unique
   description String?
-  startDate   DateTime
-  endDate     DateTime
+  exerciseId  String   @unique
+  exercise    Exercise @relation(fields: [exerciseId], references: [id])
+  isDefault   Boolean  @default(true)
 
-  entries ChallengeEntry[]
-
-  @@index([groupId, startDate])
+  groupChallenges GroupDailyChallenge[]
 }
 
-// A user marking a challenge as completed (once per day within the challenge window)
-model ChallengeEntry {
-  id          String    @id @default(cuid())
-  challengeId String
-  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  date        DateTime  @default(now())
+// A challenge theme the leader has switched on for the group. Max 4 active
+// per group, enforced in the API.
+model GroupDailyChallenge {
+  id                  String            @id @default(cuid())
+  groupId             String
+  group               Group             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  challengeTemplateId String
+  challengeTemplate   ChallengeTemplate @relation(fields: [challengeTemplateId], references: [id])
+  activatedById       String
+  activatedBy         User              @relation("DailyChallengeActivator", fields: [activatedById], references: [id])
+  isActive            Boolean           @default(true)
+  createdAt           DateTime          @default(now())
 
-  @@unique([challengeId, userId, date])
+  goals UserChallengeGoal[]
+
+  @@unique([groupId, challengeTemplateId])
+}
+
+// One user's personal rep target for a group's active daily challenge.
+// Evolves over time via post-challenge difficulty ratings.
+model UserChallengeGoal {
+  id                    String              @id @default(cuid())
+  groupDailyChallengeId String
+  groupDailyChallenge   GroupDailyChallenge @relation(fields: [groupDailyChallengeId], references: [id], onDelete: Cascade)
+  userId                String
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetReps            Int
+  // Set once yammer votes cross the 75% threshold - blocks starting a new
+  // attempt until the user raises their target.
+  isInvalidated         Boolean             @default(false)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  votes    YammerVote[]
+  attempts DailyChallengeAttempt[]
+
+  @@unique([groupDailyChallengeId, userId])
+}
+
+// A veto cast by another group member against a goal they think is
+// sandbagged. The goal owner cannot vote on their own goal (enforced in API).
+model YammerVote {
+  id                  String            @id @default(cuid())
+  userChallengeGoalId String
+  userChallengeGoal   UserChallengeGoal @relation(fields: [userChallengeGoalId], references: [id], onDelete: Cascade)
+  voterId             String
+  voter               User              @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  createdAt           DateTime          @default(now())
+
+  @@unique([userChallengeGoalId, voterId])
+}
+
+enum ChallengeAttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+  ENDED_EARLY
+}
+
+// One day's execution of a user's challenge goal. `dateKey` is the
+// German-calendar day so "today" always means Europe/Berlin, not UTC.
+model DailyChallengeAttempt {
+  id                  String                 @id @default(cuid())
+  userChallengeGoalId String
+  userChallengeGoal   UserChallengeGoal      @relation(fields: [userChallengeGoalId], references: [id], onDelete: Cascade)
+  dateKey             String
+  targetRepsSnapshot  Int
+  currentReps         Int                    @default(0)
+  status              ChallengeAttemptStatus @default(IN_PROGRESS)
+  startedAt           DateTime               @default(now())
+  completedAt         DateTime?
+  // 1 (sehr einfach) .. 5 (sehr schwer) - required once >=50% of target is
+  // reached or the attempt is ended early; adjusts the goal's future target.
+  difficultyRating    Int?
+
+  @@unique([userChallengeGoalId, dateKey])
 }

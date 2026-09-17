@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { motion } from "motion/react";
@@ -18,7 +18,17 @@ import {
 } from "@/components/ui/card";
 
 export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
+  );
+}
+
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,7 +59,7 @@ export default function RegisterPage() {
 
     await signIn("credentials", { email, password, redirect: false });
     setLoading(false);
-    router.push("/dashboard");
+    router.push(callbackUrl);
     router.refresh();
   }
 
@@ -121,7 +131,10 @@ export default function RegisterPage() {
         </Card>
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Schon einen Account?{" "}
-          <Link href="/login" className="font-medium text-primary hover:underline">
+          <Link
+            href={`/login${callbackUrl !== "/dashboard" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
+            className="font-medium text-primary hover:underline"
+          >
             Anmelden
           </Link>
         </p>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { motion } from "motion/react";
@@ -18,7 +18,17 @@ import {
 } from "@/components/ui/card";
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +50,7 @@ export default function LoginPage() {
       setError("E-Mail oder Passwort ist falsch.");
       return;
     }
-    router.push("/dashboard");
+    router.push(callbackUrl);
     router.refresh();
   }
 
@@ -100,7 +110,10 @@ export default function LoginPage() {
         </Card>
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Noch kein Account?{" "}
-          <Link href="/register" className="font-medium text-primary hover:underline">
+          <Link
+            href={`/register${callbackUrl !== "/dashboard" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
+            className="font-medium text-primary hover:underline"
+          >
             Registrieren
           </Link>
         </p>

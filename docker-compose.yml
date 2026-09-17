@@ -28,6 +28,9 @@ services:
       AUTH_TRUST_HOST: "true"
     ports:
       - "3000:3000"
+    volumes:
+      - uploads-data:/app/uploads
 
 volumes:
   db-data:
+  uploads-data:
