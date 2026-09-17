@@ -34,7 +34,6 @@ export function OneRmChart() {
       .then((data: { exercises: Exercise[] }) => {
         const repsExercises = data.exercises.filter((e) => e.type === "REPS");
         setExercises(repsExercises);
-        if (repsExercises.length > 0) setExerciseId(repsExercises[0].id);
       });
   }, []);
 
@@ -76,7 +75,11 @@ export function OneRmChart() {
       )}
       </div>
 
-      {points == null ? (
+      {!exerciseId ? (
+        <p className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
+          Wähl eine Übung, um ihren Verlauf zu sehen.
+        </p>
+      ) : points == null ? (
         <Skeleton className="h-64 w-full" />
       ) : points.length < 2 ? (
         <p className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">

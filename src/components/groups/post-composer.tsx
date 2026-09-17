@@ -47,7 +47,6 @@ export function PostComposer({ groupId, onPosted }: { groupId: string; onPosted:
         .then((r) => r.json())
         .then((data: { sessions: Session[] }) => {
           setSessions(data.sessions);
-          if (data.sessions.length > 0) setSessionId(data.sessions[0].id);
         });
     }
   }, [mode, sessions]);

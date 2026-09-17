@@ -41,7 +41,7 @@ type SetRow = {
 };
 
 let rowKey = 0;
-const emptyRow = (exerciseId: string): SetRow => ({
+const emptyRow = (exerciseId: string = ""): SetRow => ({
   key: rowKey++,
   exerciseId,
   reps: "",
@@ -64,9 +64,7 @@ export default function NewWorkoutPage() {
       .then((r) => r.json())
       .then((data: { exercises: Exercise[] }) => {
         setExercises(data.exercises);
-        if (data.exercises.length > 0) {
-          setRows([emptyRow(data.exercises[0].id)]);
-        }
+        setRows([emptyRow()]);
       });
   }, []);
 
@@ -85,7 +83,7 @@ export default function NewWorkoutPage() {
 
   function addRow() {
     if (exercises.length === 0) return;
-    setRows((prev) => [...prev, emptyRow(exercises[0].id)]);
+    setRows((prev) => [...prev, emptyRow()]);
   }
 
   function removeRow(key: number) {
@@ -95,6 +93,10 @@ export default function NewWorkoutPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (rows.length === 0) return;
+    if (rows.some((r) => !r.exerciseId)) {
+      toast.error("Bitte für jeden Satz eine Übung wählen.");
+      return;
+    }
     setLoading(true);
 
     const payload = {
@@ -154,7 +156,7 @@ export default function NewWorkoutPage() {
                         onValueChange={(value) => updateRow(row.key, { exerciseId: value as string })}
                       >
                         <SelectTrigger className="min-w-[140px] flex-1">
-                          <SelectValue placeholder="Übung" />
+                          <SelectValue placeholder="Wähle aus" />
                         </SelectTrigger>
                         <SelectContent>
                           {exercises.map((ex) => (
@@ -229,8 +231,8 @@ export default function NewWorkoutPage() {
                 <span className="text-sm font-medium text-primary">{perceivedExertion}/10</span>
               </div>
               <Slider
-                value={[perceivedExertion]}
-                onValueChange={(v) => setPerceivedExertion((v as number[])[0])}
+                value={perceivedExertion}
+                onValueChange={(v) => setPerceivedExertion(v as number)}
                 min={1}
                 max={10}
                 step={1}
@@ -252,8 +254,8 @@ export default function NewWorkoutPage() {
                     <span className="text-sm font-medium text-primary">{skinCondition}/10</span>
                   </div>
                   <Slider
-                    value={[skinCondition]}
-                    onValueChange={(v) => setSkinCondition((v as number[])[0])}
+                    value={skinCondition}
+                    onValueChange={(v) => setSkinCondition(v as number)}
                     min={1}
                     max={10}
                     step={1}

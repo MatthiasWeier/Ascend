@@ -180,8 +180,8 @@ export default function SettingsPage() {
                 <span className="text-sm font-medium text-primary">{goals[focus]}%</span>
               </div>
               <Slider
-                value={[goals[focus]]}
-                onValueChange={(v) => setGoals((g) => ({ ...g, [focus]: (v as number[])[0] }))}
+                value={goals[focus]}
+                onValueChange={(v) => setGoals((g) => ({ ...g, [focus]: v as number }))}
                 min={0}
                 max={100}
                 step={5}
