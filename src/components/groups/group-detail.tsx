@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Crown, UserX } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,7 +37,15 @@ function initials(name: string) {
   return name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 }
 
+const VALID_TABS = ["feed", "challenges", "goals", "members"] as const;
+
 export function GroupDetail({ groupId }: { groupId: string }) {
+  const searchParams = useSearchParams();
+  const requestedTab = searchParams.get("tab");
+  const initialTab = (VALID_TABS as readonly string[]).includes(requestedTab ?? "")
+    ? (requestedTab as (typeof VALID_TABS)[number])
+    : "feed";
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [group, setGroup] = useState<GroupInfo | null>(null);
 
   function refetch() {
@@ -80,7 +89,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
         <InviteButton inviteCode={group.inviteCode} />
       </div>
 
-      <Tabs defaultValue="feed">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as string)}>
         <TabsList>
           <TabsTrigger value="feed">Feed</TabsTrigger>
           <TabsTrigger value="challenges">Challenges</TabsTrigger>

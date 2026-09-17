@@ -5,6 +5,14 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.4.0] - 2026-09-18
+
+### Added
+- Daily-Challenge-Reminder auf der Startseite: wer noch eine offene
+  Challenge für heute hat (nicht gestartet oder nicht fertig), sieht das
+  sofort oben über "Hey, Name" - kein Pop-up, kein Wegklicken, direkter
+  Link zur jeweiligen Gruppe/Challenge
+
 ## [0.3.1] - 2026-09-18
 
 ### Changed

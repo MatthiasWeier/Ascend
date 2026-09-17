@@ -103,6 +103,9 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   3 Tage)
 - ✅ Haut-Regenerations-Timer für Kletterer (blendet Grip-Übungen aus, bis
   die Haut sich erholt hat)
+- ✅ Daily-Challenge-Reminder auf der Startseite (inline, kein Pop-up):
+  zeigt jede heute noch offene Challenge über allen Gruppen mit direktem
+  Link zur Gruppe/Challenge
 
 ### Analytics
 - ✅ 1RM-Schätzung (Epley) & Maximalkraft-Verlauf

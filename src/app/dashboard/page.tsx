@@ -4,8 +4,10 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getBrainSuggestion } from "@/lib/workout-brain";
 import { computePrSetIds } from "@/lib/personal-records";
+import { getPendingDailyChallenges } from "@/lib/pending-challenges";
 import { Button } from "@/components/ui/button";
 import { BrainCard } from "@/components/brain-card";
+import { DailyChallengeReminder } from "@/components/daily-challenge-reminder";
 import { WorkoutSessionCard } from "@/components/workout-session-card";
 import { FeedList } from "@/components/feed-list";
 
@@ -13,7 +15,7 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user.id;
 
-  const [suggestion, sessions, prSetIds] = await Promise.all([
+  const [suggestion, sessions, prSetIds, pendingChallenges] = await Promise.all([
     getBrainSuggestion(userId),
     prisma.workoutSession.findMany({
       where: { userId },
@@ -22,10 +24,13 @@ export default async function DashboardPage() {
       include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
     }),
     computePrSetIds(userId),
+    getPendingDailyChallenges(userId),
   ]);
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">
+      <DailyChallengeReminder pending={pendingChallenges} />
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Hey, {session!.user.name}</h1>
