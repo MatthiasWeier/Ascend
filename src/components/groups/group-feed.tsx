@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Dumbbell } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Dumbbell, Share2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FeedList } from "@/components/feed-list";
 import { PostComposer } from "@/components/groups/post-composer";
+import { useSession } from "next-auth/react";
 
 type Post = {
   id: string;
@@ -13,11 +16,14 @@ type Post = {
   content: string | null;
   imageUrl: string | null;
   createdAt: string;
+  workoutSessionId: string | null;
   user: { id: string; name: string };
 };
 
 export function GroupFeed({ groupId }: { groupId: string }) {
+  const { data: authSession } = useSession();
   const [posts, setPosts] = useState<Post[] | null>(null);
+  const [sharingAll, setSharingAll] = useState(false);
 
   function refetch() {
     fetch(`/api/groups/${groupId}/posts`)
@@ -27,9 +33,47 @@ export function GroupFeed({ groupId }: { groupId: string }) {
 
   useEffect(refetch, [groupId]);
 
+  const myAlreadySharedIds = useMemo(() => {
+    const myUserId = authSession?.user?.id;
+    return new Set(
+      (posts ?? [])
+        .filter((p) => p.workoutSessionId != null && p.user.id === myUserId)
+        .map((p) => p.workoutSessionId as string)
+    );
+  }, [posts, authSession]);
+
+  async function handleShareAll() {
+    setSharingAll(true);
+    const res = await fetch(`/api/groups/${groupId}/posts/share-all`, { method: "POST" });
+    setSharingAll(false);
+    if (!res.ok) {
+      toast.error("Konnte Workouts nicht teilen.");
+      return;
+    }
+    const data: { count: number } = await res.json();
+    if (data.count === 0) {
+      toast("Alle deine Workouts sind schon geteilt.");
+    } else {
+      toast.success(`${data.count} Workout${data.count === 1 ? "" : "s"} geteilt!`);
+      refetch();
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      <PostComposer groupId={groupId} onPosted={refetch} />
+      <PostComposer groupId={groupId} alreadySharedIds={myAlreadySharedIds} onPosted={refetch} />
+
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="self-end"
+        onClick={handleShareAll}
+        disabled={sharingAll}
+      >
+        <Share2 className="size-3.5" />
+        {sharingAll ? "Teile…" : "Alle Workouts teilen"}
+      </Button>
 
       {posts == null ? (
         <Skeleton className="h-32 w-full" />

@@ -5,6 +5,15 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.3.0] - 2026-09-18
+
+### Added
+- "Alle Workouts teilen"-Button in Gruppen: teilt mit einem Klick jedes
+  eigene Workout, das noch nicht in dieser Gruppe geteilt wurde, statt sie
+  einzeln über den Composer auszuwählen
+- Bereits geteilte Workouts werden im Composer nicht mehr zur Auswahl
+  angeboten und können nicht doppelt geteilt werden
+
 ## [0.2.0] - 2026-09-17
 
 ### Added

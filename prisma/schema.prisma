@@ -88,6 +88,10 @@ model WorkoutSession {
 
   sets WorkoutSet[]
 
+  // Group posts created via the "share this workout" / "share all workouts"
+  // actions, so re-sharing can be detected and skipped.
+  sharedPosts GroupPost[]
+
   createdAt DateTime @default(now())
 
   @@index([userId, date])
@@ -231,6 +235,13 @@ model GroupPost {
   imageUrl  String? // for PHOTO posts
   createdAt DateTime @default(now())
 
+  // Set for WORKOUT_SHARE posts - lets "share all workouts" skip ones
+  // already shared into this group. Survives the source workout being
+  // deleted later (the post's content already has its own static summary).
+  workoutSessionId String?
+  workoutSession   WorkoutSession? @relation(fields: [workoutSessionId], references: [id], onDelete: SetNull)
+
+  @@unique([groupId, workoutSessionId])
   @@index([groupId, createdAt])
 }
 

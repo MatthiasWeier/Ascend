@@ -20,18 +20,15 @@ type Session = {
   sets: { exercise: { name: string }; reps: number | null; weightKg: number | null; durationSec: number | null }[];
 };
 
-function summarizeSession(s: Session) {
-  const date = new Date(s.date).toLocaleDateString("de-DE", { day: "2-digit", month: "short" });
-  const lines = s.sets.map(
-    (set) =>
-      `${set.exercise.name}: ${
-        set.durationSec != null ? `${set.durationSec}s` : `${set.reps ?? "-"}×${set.weightKg ?? 0}kg`
-      }`
-  );
-  return `Workout vom ${date}\n${lines.join("\n")}`;
-}
-
-export function PostComposer({ groupId, onPosted }: { groupId: string; onPosted: () => void }) {
+export function PostComposer({
+  groupId,
+  alreadySharedIds,
+  onPosted,
+}: {
+  groupId: string;
+  alreadySharedIds: Set<string>;
+  onPosted: () => void;
+}) {
   const [mode, setMode] = useState<"TEXT" | "WORKOUT_SHARE" | "PHOTO">("TEXT");
   const [text, setText] = useState("");
   const [sessions, setSessions] = useState<Session[] | null>(null);
@@ -70,17 +67,21 @@ export function PostComposer({ groupId, onPosted }: { groupId: string; onPosted:
         setCaption("");
         if (fileInputRef.current) fileInputRef.current.value = "";
       } else if (mode === "WORKOUT_SHARE") {
-        const session = sessions?.find((s) => s.id === sessionId);
-        if (!session) {
-          toast.error("Kein Workout gefunden.");
+        if (!sessionId) {
+          toast.error("Bitte ein Workout wählen.");
           return;
         }
         const res = await fetch(`/api/groups/${groupId}/posts`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "WORKOUT_SHARE", content: summarizeSession(session) }),
+          body: JSON.stringify({ type: "WORKOUT_SHARE", workoutSessionId: sessionId }),
         });
-        if (!res.ok) throw new Error();
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          toast.error(data.error ?? "Konnte nicht posten.");
+          return;
+        }
+        setSessionId("");
       } else {
         if (!text.trim()) {
           toast.error("Text darf nicht leer sein.");
@@ -130,21 +131,28 @@ export function PostComposer({ groupId, onPosted }: { groupId: string; onPosted:
         />
       )}
 
-      {mode === "WORKOUT_SHARE" && (
-        <Select value={sessionId} onValueChange={(v) => setSessionId(v as string)}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Workout wählen" />
-          </SelectTrigger>
-          <SelectContent>
-            {(sessions ?? []).map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {new Date(s.date).toLocaleDateString("de-DE", { day: "2-digit", month: "short" })} —{" "}
-                {s.sets.length} Sätze
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
+      {mode === "WORKOUT_SHARE" && (() => {
+        const shareable = (sessions ?? []).filter((s) => !alreadySharedIds.has(s.id));
+        return sessions != null && shareable.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-border p-3 text-center text-sm text-muted-foreground">
+            Alle deine Workouts sind bereits geteilt.
+          </p>
+        ) : (
+          <Select value={sessionId} onValueChange={(v) => setSessionId(v as string)}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Workout wählen" />
+            </SelectTrigger>
+            <SelectContent>
+              {shareable.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {new Date(s.date).toLocaleDateString("de-DE", { day: "2-digit", month: "short" })} —{" "}
+                  {s.sets.length} Sätze
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+      })()}
 
       {mode === "PHOTO" && (
         <div className="flex flex-col gap-2">

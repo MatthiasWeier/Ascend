@@ -7,13 +7,14 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getGroupMembership } from "@/lib/group-auth";
 import { UPLOADS_DIR, extensionForImageType } from "@/lib/uploads";
+import { summarizeWorkoutSession } from "@/lib/workout-summary";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
-const textPostSchema = z.object({
-  type: z.enum(["TEXT", "WORKOUT_SHARE"]),
-  content: z.string().min(1).max(2000),
-});
+const postSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("TEXT"), content: z.string().min(1).max(2000) }),
+  z.object({ type: z.literal("WORKOUT_SHARE"), workoutSessionId: z.string() }),
+]);
 
 export async function GET(
   request: Request,
@@ -92,13 +93,42 @@ export async function POST(
   }
 
   const body = await request.json();
-  const parsed = textPostSchema.safeParse(body);
+  const parsed = postSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
+  if (parsed.data.type === "TEXT") {
+    const post = await prisma.groupPost.create({
+      data: { groupId, userId: session.user.id, type: "TEXT", content: parsed.data.content },
+      include: { user: { select: { id: true, name: true } } },
+    });
+    return NextResponse.json({ post }, { status: 201 });
+  }
+
+  const workoutSession = await prisma.workoutSession.findUnique({
+    where: { id: parsed.data.workoutSessionId },
+    include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
+  });
+  if (!workoutSession || workoutSession.userId !== session.user.id) {
+    return NextResponse.json({ error: "Workout nicht gefunden" }, { status: 404 });
+  }
+
+  const alreadyShared = await prisma.groupPost.findUnique({
+    where: { groupId_workoutSessionId: { groupId, workoutSessionId: workoutSession.id } },
+  });
+  if (alreadyShared) {
+    return NextResponse.json({ error: "Workout wurde bereits geteilt" }, { status: 409 });
+  }
+
   const post = await prisma.groupPost.create({
-    data: { groupId, userId: session.user.id, type: parsed.data.type, content: parsed.data.content },
+    data: {
+      groupId,
+      userId: session.user.id,
+      type: "WORKOUT_SHARE",
+      content: summarizeWorkoutSession(workoutSession),
+      workoutSessionId: workoutSession.id,
+    },
     include: { user: { select: { id: true, name: true } } },
   });
   return NextResponse.json({ post }, { status: 201 });
