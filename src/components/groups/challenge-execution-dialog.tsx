@@ -66,10 +66,11 @@ export function ChallengeExecutionDialog({
 
   useEffect(() => setAttempt(initialAttempt), [initialAttempt]);
 
-  const needsRating =
-    attempt.difficultyRating == null &&
-    (attempt.status !== "IN_PROGRESS" || attempt.currentReps >= attempt.targetRepsSnapshot * 0.5);
+  // Only prompt for a rating once the attempt is actually over (finished or
+  // given up) - reaching 50% mid-set must NOT interrupt an active attempt.
+  const needsRating = attempt.difficultyRating == null && attempt.status !== "IN_PROGRESS";
   const justFinished = attempt.status !== "IN_PROGRESS";
+  const canGiveUp = attempt.currentReps >= attempt.targetRepsSnapshot * 0.5;
 
   async function increment(amount: number) {
     setBusy(true);
@@ -175,9 +176,11 @@ export function ChallengeExecutionDialog({
                     </Button>
                   ))}
                 </div>
-                <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={endEarly}>
-                  Challenge beenden
-                </Button>
+                {canGiveUp && (
+                  <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={endEarly}>
+                    Aufgeben
+                  </Button>
+                )}
               </>
             )}
           </div>
