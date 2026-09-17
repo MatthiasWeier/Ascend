@@ -90,6 +90,10 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 - ✅ Erschöpfungs-Tracking (perceivedExertion) und Haut-Zustand (skinCondition)
 - ✅ Custom Exercises (eigene oder gruppenweit sichtbare Übungen)
 - ✅ 53 Standardübungen + 8 Daily-Challenge-Themen geseedet
+- ✅ Schnelle Übungssuche (durchsuchbare Combobox statt langer Dropdown-Liste)
+- ✅ Auto-Fill aus der letzten Session (Wdh/Gewicht/Dauer vorausgefüllt, ohne
+  bereits getippte Werte zu überschreiben)
+- ✅ Integrierter Pause-Timer (60/90/120/180s, startet per ✓-Button am Satz)
 - 🚧 Trainingsvorlagen (Schema `WorkoutTemplate` steht, kein UI zum
   Speichern/Starten)
 
@@ -105,6 +109,9 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 - ✅ **Bodyweight-adjustiert**: Klimmzüge & Co. fließen mit dem geloggten
   Körpergewicht *zum jeweiligen Trainingszeitpunkt* in Power/Workload ein -
   nicht mit dem aktuellen Gewicht (`lib/bodyweight.ts`)
+- ✅ **PR-Erkennung**: neuer persönlicher Rekord pro Übung wird chronologisch
+  berechnet (bodyweight-adjustiertes 1RM bzw. Haltedauer), im Feed mit
+  Trophäen-Badge markiert und beim Speichern als Toast gefeiert
 - ✅ Volumen-Graph (90 Tage)
 - ✅ Balance-Radar (Ist vs. Ziel pro Muskelgruppe)
 - ✅ Aktivitäts-Kalender (Jahres-Heatmap)

@@ -3,6 +3,7 @@ import { PlusCircle } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getBrainSuggestion } from "@/lib/workout-brain";
+import { computePrSetIds } from "@/lib/personal-records";
 import { Button } from "@/components/ui/button";
 import { BrainCard } from "@/components/brain-card";
 import { WorkoutSessionCard } from "@/components/workout-session-card";
@@ -12,7 +13,7 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user.id;
 
-  const [suggestion, sessions] = await Promise.all([
+  const [suggestion, sessions, prSetIds] = await Promise.all([
     getBrainSuggestion(userId),
     prisma.workoutSession.findMany({
       where: { userId },
@@ -20,6 +21,7 @@ export default async function DashboardPage() {
       take: 15,
       include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
     }),
+    computePrSetIds(userId),
   ]);
 
   return (
@@ -62,6 +64,7 @@ export default async function DashboardPage() {
                 perceivedExertion={s.perceivedExertion}
                 skinCondition={s.skinCondition}
                 sets={s.sets}
+                prSetIds={prSetIds}
               />
             ))}
           </FeedList>

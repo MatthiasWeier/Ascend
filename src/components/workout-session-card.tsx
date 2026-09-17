@@ -1,3 +1,4 @@
+import { Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FOCUS_LABEL } from "@/lib/muscle-focus";
@@ -18,6 +19,7 @@ export function WorkoutSessionCard({
   skinCondition,
   sets,
   authorName,
+  prSetIds,
 }: {
   date: Date | string;
   notes?: string | null;
@@ -25,6 +27,7 @@ export function WorkoutSessionCard({
   skinCondition?: number | null;
   sets: SetWithExercise[];
   authorName?: string;
+  prSetIds?: Set<string>;
 }) {
   const focuses = Array.from(new Set(sets.map((s) => s.exercise.focus)));
 
@@ -48,16 +51,30 @@ export function WorkoutSessionCard({
         </div>
 
         <ul className="flex flex-col gap-1 text-sm">
-          {sets.map((set) => (
-            <li key={set.id} className="flex justify-between text-foreground/90">
-              <span>{set.exercise.name}</span>
-              <span className="font-mono text-muted-foreground">
-                {set.durationSec != null
-                  ? `${set.durationSec}s`
-                  : `${set.reps ?? "-"} × ${set.weightKg ?? 0}kg`}
-              </span>
-            </li>
-          ))}
+          {sets.map((set) => {
+            const isPr = prSetIds?.has(set.id) ?? false;
+            return (
+              <li key={set.id} className="flex justify-between text-foreground/90">
+                <span className="flex items-center gap-1.5">
+                  {set.exercise.name}
+                  {isPr && (
+                    <span
+                      title="Neuer persönlicher Rekord"
+                      className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-500"
+                    >
+                      <Trophy className="size-3" />
+                      PR
+                    </span>
+                  )}
+                </span>
+                <span className="font-mono text-muted-foreground">
+                  {set.durationSec != null
+                    ? `${set.durationSec}s`
+                    : `${set.reps ?? "-"} × ${set.weightKg ?? 0}kg`}
+                </span>
+              </li>
+            );
+          })}
         </ul>
 
         {(perceivedExertion != null || skinCondition != null) && (

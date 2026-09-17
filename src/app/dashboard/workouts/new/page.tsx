@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Check, Timer, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,14 +17,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ExerciseCombobox } from "@/components/exercise-combobox";
 import { CreateExerciseDialog } from "@/components/create-exercise-dialog";
+import { cn } from "@/lib/utils";
 
 type Exercise = {
   id: string;
@@ -32,12 +27,18 @@ type Exercise = {
   type: "REPS" | "HOLD";
 };
 
+type LastValues = Record<
+  string,
+  { reps: number | null; weightKg: number | null; durationSec: number | null }
+>;
+
 type SetRow = {
   key: number;
   exerciseId: string;
   reps: string;
   weightKg: string;
   durationSec: string;
+  done: boolean;
 };
 
 let rowKey = 0;
@@ -47,11 +48,21 @@ const emptyRow = (exerciseId: string = ""): SetRow => ({
   reps: "",
   weightKg: "",
   durationSec: "",
+  done: false,
 });
+
+const REST_PRESETS = [60, 90, 120, 180];
+
+function formatMmSs(totalSeconds: number) {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
 
 export default function NewWorkoutPage() {
   const router = useRouter();
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [lastValues, setLastValues] = useState<LastValues>({});
   const [rows, setRows] = useState<SetRow[]>([]);
   const [perceivedExertion, setPerceivedExertion] = useState(5);
   const [skinCondition, setSkinCondition] = useState(1);
@@ -60,14 +71,30 @@ export default function NewWorkoutPage() {
   const [loading, setLoading] = useState(false);
   const submittingRef = useRef(false);
 
+  const [restSecondsLeft, setRestSecondsLeft] = useState<number | null>(null);
+  const [restPreset, setRestPreset] = useState(90);
+
   useEffect(() => {
-    fetch("/api/exercises")
-      .then((r) => r.json())
-      .then((data: { exercises: Exercise[] }) => {
-        setExercises(data.exercises);
-        setRows([emptyRow()]);
-      });
+    Promise.all([
+      fetch("/api/exercises").then((r) => r.json()) as Promise<{ exercises: Exercise[] }>,
+      fetch("/api/exercises/last-values").then((r) => r.json()) as Promise<{ lastValues: LastValues }>,
+    ]).then(([exercisesRes, lastValuesRes]) => {
+      setExercises(exercisesRes.exercises);
+      setLastValues(lastValuesRes.lastValues);
+      setRows([emptyRow()]);
+    });
   }, []);
+
+  useEffect(() => {
+    if (restSecondsLeft === null) return;
+    if (restSecondsLeft <= 0) {
+      toast.success("Pause vorbei - weiter geht's!");
+      setRestSecondsLeft(null);
+      return;
+    }
+    const t = setTimeout(() => setRestSecondsLeft((s) => (s !== null ? s - 1 : null)), 1000);
+    return () => clearTimeout(t);
+  }, [restSecondsLeft]);
 
   function handleExerciseCreated(newExercise: Exercise) {
     setExercises((prev) => [...prev, newExercise].sort((a, b) => a.name.localeCompare(b.name)));
@@ -82,6 +109,25 @@ export default function NewWorkoutPage() {
     setRows((prev) => prev.map((r) => (r.key === key ? { ...r, ...patch } : r)));
   }
 
+  function handleExerciseChange(key: number, exerciseId: string) {
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r.key !== key) return r;
+        const last = lastValues[exerciseId];
+        const patch: Partial<SetRow> = { exerciseId };
+        // Auto-fill from the last time this exercise was logged - only into
+        // fields the user hasn't already touched, so it never clobbers a
+        // value someone's already typed.
+        if (last) {
+          if (r.reps === "" && last.reps != null) patch.reps = String(last.reps);
+          if (r.weightKg === "" && last.weightKg != null) patch.weightKg = String(last.weightKg);
+          if (r.durationSec === "" && last.durationSec != null) patch.durationSec = String(last.durationSec);
+        }
+        return { ...r, ...patch };
+      })
+    );
+  }
+
   function addRow() {
     if (exercises.length === 0) return;
     setRows((prev) => [...prev, emptyRow()]);
@@ -89,6 +135,14 @@ export default function NewWorkoutPage() {
 
   function removeRow(key: number) {
     setRows((prev) => prev.filter((r) => r.key !== key));
+  }
+
+  function markDone(key: number) {
+    setRows((prev) => prev.map((r) => (r.key === key ? { ...r, done: !r.done } : r)));
+    const row = rows.find((r) => r.key === key);
+    if (!row?.done) {
+      setRestSecondsLeft(restPreset);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -131,7 +185,13 @@ export default function NewWorkoutPage() {
       toast.error("Konnte Workout nicht speichern.");
       return;
     }
+
+    const data: { newPrExerciseNames?: string[] } = await res.json();
     toast.success("Workout gespeichert!");
+    for (const name of data.newPrExerciseNames ?? []) {
+      toast(`🏆 Neuer PR: ${name}!`, { duration: 5000 });
+    }
+
     router.push("/dashboard");
     router.refresh();
   }
@@ -139,37 +199,78 @@ export default function NewWorkoutPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
       <h1 className="mb-6 text-2xl font-bold tracking-tight">Workout eintragen</h1>
+
+      {restSecondsLeft !== null && (
+        <div className="sticky top-2 z-30 mb-4 flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2 shadow-sm animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <Timer className="size-4 text-primary" />
+            Pause: <span className="font-mono tabular-nums">{formatMmSs(restSecondsLeft)}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setRestSecondsLeft((s) => (s ?? 0) + 15)}
+            >
+              +15s
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              onClick={() => setRestSecondsLeft(null)}
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Sätze</CardTitle>
-            <CardDescription>Übung wählen, Werte eintragen.</CardDescription>
+            <CardDescription>Übung wählen, Werte eintragen. ✓ startet die Pause.</CardDescription>
             <CardAction>
               <CreateExerciseDialog onCreated={handleExerciseCreated} />
             </CardAction>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span>Pause:</span>
+              {REST_PRESETS.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setRestPreset(p)}
+                  className={cn(
+                    "rounded-full px-2 py-0.5",
+                    restPreset === p
+                      ? "bg-primary/15 font-medium text-primary"
+                      : "hover:bg-secondary"
+                  )}
+                >
+                  {p}s
+                </button>
+              ))}
+            </div>
             <>
               {rows.map((row) => {
                 const ex = exerciseFor(row.exerciseId);
                 return (
                   <div key={row.key} className="animate-in fade-in slide-in-from-top-2 overflow-hidden duration-200">
-                    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-secondary/40 p-3">
-                      <Select
+                    <div
+                      className={cn(
+                        "flex flex-wrap items-center gap-2 rounded-lg border p-3 transition-colors",
+                        row.done ? "border-success/40 bg-success/5" : "border-border bg-secondary/40"
+                      )}
+                    >
+                      <ExerciseCombobox
+                        exercises={exercises}
                         value={row.exerciseId}
-                        onValueChange={(value) => updateRow(row.key, { exerciseId: value as string })}
-                      >
-                        <SelectTrigger className="min-w-[140px] flex-1">
-                          <SelectValue placeholder="Wähle aus" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {exercises.map((ex) => (
-                            <SelectItem key={ex.id} value={ex.id}>
-                              {ex.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        onChange={(id) => handleExerciseChange(row.key, id)}
+                      />
 
                       {ex?.type === "HOLD" ? (
                         <Input
@@ -205,9 +306,19 @@ export default function NewWorkoutPage() {
                       )}
                       <Button
                         type="button"
+                        variant={row.done ? "default" : "outline"}
+                        size="icon"
+                        className={cn("ml-auto", row.done && "bg-success text-success-foreground hover:bg-success/90")}
+                        onClick={() => markDone(row.key)}
+                        title="Satz fertig - startet die Pause"
+                      >
+                        <Check className="size-4" />
+                      </Button>
+                      <Button
+                        type="button"
                         variant="ghost"
                         size="icon"
-                        className="ml-auto text-muted-foreground hover:text-destructive"
+                        className="text-muted-foreground hover:text-destructive"
                         onClick={() => removeRow(row.key)}
                       >
                         <Trash2 className="size-4" />

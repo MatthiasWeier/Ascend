@@ -5,6 +5,19 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [Unreleased]
+
+### Added
+- Schnelle Übungssuche: durchsuchbare Combobox (shadcn Command/Popover)
+  ersetzt die lange Dropdown-Liste beim Workout-Eintragen
+- Auto-Fill aus der letzten Session: Wdh/Gewicht/Dauer werden pro Übung aus
+  dem letzten Log vorausgefüllt, ohne bereits getippte Werte zu überschreiben
+- Integrierter Pause-Timer mit 60/90/120/180s-Presets, startbar per
+  ✓-Button direkt am Satz
+- PR-Erkennung: chronologische Bestwert-Berechnung pro Übung
+  (bodyweight-adjustiertes 1RM bzw. Haltedauer), Trophäen-Badge im Feed und
+  "Neuer PR!"-Toast beim Speichern
+
 ## [0.1.0] - 2026-09-17
 
 Initial public release.

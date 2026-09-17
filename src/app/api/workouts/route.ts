@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { computePrSetIds } from "@/lib/personal-records";
 
 const setSchema = z.object({
   exerciseId: z.string(),
@@ -65,5 +66,15 @@ export async function POST(request: Request) {
     include: { sets: { include: { exercise: true } } },
   });
 
-  return NextResponse.json({ session: created }, { status: 201 });
+  // Recompute PRs across full history now that this session is in the DB,
+  // then report which of *this* session's sets came out as a new PR - lets
+  // the client show a "New PR!" toast per exercise right after saving.
+  const prSetIds = await computePrSetIds(session.user.id);
+  const newPrExerciseNames = Array.from(
+    new Set(
+      created.sets.filter((s) => prSetIds.has(s.id)).map((s) => s.exercise.name)
+    )
+  );
+
+  return NextResponse.json({ session: created, newPrExerciseNames }, { status: 201 });
 }
