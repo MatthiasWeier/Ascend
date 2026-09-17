@@ -2,18 +2,43 @@
 
 Train together. Push each other.
 
-A self-hostable workout tracker with a built-in "Workout Brain" that suggests
-what to train next, protects you from overtraining, tracks climbing-specific
-skin recovery, and runs group Daily Challenges with a peer-review system
-("Yammer") that stops people from sandbagging their goals.
+A self-hostable, open-source workout tracker with a built-in "Workout Brain"
+that suggests what to train next, protects you from overtraining, tracks
+climbing-specific skin recovery, and runs group Daily Challenges with a
+peer-review system ("Yammer") that stops people from sandbagging their goals.
+
+Licensed under the [MIT License](./LICENSE) - use it, fork it, run your own
+instance for you and your crew.
 
 ## Stack
 
 - Next.js 16 (App Router) + TypeScript + Tailwind CSS 4
-- shadcn/ui (Base UI primitives) + Motion, dark-first theme
+- shadcn/ui (Base UI primitives), dark-first theme, CSS-only animations
 - PostgreSQL + Prisma ORM (driver adapter, no Rust query engine)
-- Auth.js (NextAuth v5) with credentials (email + password) login
+- Auth.js (NextAuth v5) with username + password login (no email required -
+  nothing is ever emailed)
 - Docker / Docker Compose for deployment
+
+## Running your own instance (Docker)
+
+```bash
+cp .env.example .env
+echo "AUTH_SECRET=$(openssl rand -base64 33)" >> .env
+# Optional but recommended before letting real people sign up - see "Legal
+# pages" below.
+docker compose up -d --build
+docker compose exec app pnpm prisma migrate deploy
+docker compose exec app pnpm prisma db seed
+```
+
+The app is then on `http://localhost:3000` (or your server's address). Data
+lives in two named Docker volumes (`db-data`, `uploads-data`) that survive
+rebuilds/restarts.
+
+> On a small VM (2 vCPU / 2GB RAM or less), don't run `pnpm dev` and
+> `docker compose build` at the same time - both are memory-hungry and can
+> thrash the box into unresponsiveness. Stop the dev server first, or add
+> swap.
 
 ## Local development
 
@@ -26,30 +51,33 @@ pnpm prisma db seed       # seed default exercises + challenge templates
 pnpm dev
 ```
 
-## Running fully in Docker
+## Legal pages (`/impressum`, `/datenschutz`)
 
-```bash
-cp .env.example .env
-echo "AUTH_SECRET=$(openssl rand -base64 33)" >> .env
-docker compose up -d --build
-docker compose exec app pnpm prisma migrate deploy
-docker compose exec app pnpm prisma db seed
-```
+Ascend is self-hosted: whoever runs an instance is the one legally
+responsible for it, not this project. The Impressum and Datenschutzerklärung
+pages read their operator details (name, address, contact) from environment
+variables and clearly say "not configured" instead of showing placeholder
+fake data until you set them - see `.env.example` for `OPERATOR_NAME`,
+`OPERATOR_ADDRESS`, `OPERATOR_EMAIL`, `OPERATOR_PHONE`.
 
-> On a small VM (2 vCPU / 2GB RAM or less), don't run `pnpm dev` and
-> `docker compose build` at the same time - both are memory-hungry and can
-> thrash the box into unresponsiveness. Stop the dev server first, or add
-> swap.
+The Datenschutzerklärung's description of *what data the app processes* is
+accurate for the software itself regardless of who's hosting it; only the
+"who is the controller / how to contact them" part needs filling in. This is
+a reasonable-effort template, not legal advice - if you're operating this
+commercially or at any real scale, have an actual lawyer check it for your
+jurisdiction.
 
 ## Feature status
 
 Legend: ✅ implemented · 🚧 partial · ⏳ not started
 
 ### Nutzer & Profile
-- ✅ Eigener Login (Email + Passwort)
+- ✅ Login per Benutzername + Passwort (keine E-Mail nötig)
 - ✅ Private, strikt getrennte Trainingsdaten pro Nutzer
 - ✅ Körpergewicht als **Verlauf** (`BodyWeightEntry`, ein Eintrag pro Tag),
   nicht nur ein einzelner Wert
+- ✅ Account-Löschung (Danger Zone in den Einstellungen, Passwort-Bestätigung,
+  kaskadiert korrekt inkl. eigener Gruppen)
 
 ### Training eintragen
 - ✅ Zwei Übungsarten: Reps+Gewicht (`REPS`) und Zeit-Halten (`HOLD`)
@@ -95,8 +123,19 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 
 ### Bedienung & Design
 - ✅ Dark-first Theme mit Light-Mode-Toggle (next-themes)
-- ✅ shadcn/ui + Motion-Animationen
+- ✅ shadcn/ui, CSS-only Enter-Animationen (bewusst kein JS-Animation-Lauf,
+  siehe Design-Entscheidungen unten)
 - 🚧 PWA-Grundgerüst (manifest.json vorhanden, Icons + Service Worker fehlen)
+
+### Security & Ops
+- ✅ Rate Limiting (Registrierung, Login-Brute-Force-Lockout, Daily-Challenge-
+  Aktionen) - in-memory, passend für die Single-Container-Deployment
+- ✅ Strukturiertes JSON-Logging (`lib/logger.ts`, sichtbar via
+  `docker compose logs app`) + eigene Error-Boundaries
+- ⏳ Externes Monitoring/Alerting (Sentry o.ä.) - braucht einen eigenen
+  Account, nicht Teil des Projekts
+- ❓ Mobile/Cross-Browser-UI ist nicht in einem echten Browser getestet -
+  wenn du etwas Kaputtes findest, bitte melden
 
 ## Datenmodell
 
@@ -109,3 +148,6 @@ Siehe `prisma/schema.prisma`. Wichtige Design-Entscheidungen:
   Zeitzonen-Bugs an der Tagesgrenze zu vermeiden (`lib/german-time.ts`).
 - **Yammer-Stimmrecht**: die Berechtigung "75% der übrigen Mitglieder" wird
   serverseitig bei jedem Vote neu berechnet, nicht als Snapshot gespeichert.
+- **Account-Löschung kaskadiert**: löscht du deinen Account und bist Owner
+  einer Gruppe, wird die Gruppe komplett mitgelöscht (keine
+  Ownership-Übertragung vorhanden) - die UI warnt vorher explizit.

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Mountain, Flame, Users, TrendingUp } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { LegalFooter } from "@/components/legal-footer";
 
 export default async function Home() {
   const session = await auth();
@@ -60,6 +61,8 @@ export default async function Home() {
           </p>
         </div>
       </div>
+
+      <LegalFooter className="mt-4" />
     </main>
   );
 }

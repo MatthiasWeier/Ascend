@@ -26,6 +26,12 @@ services:
       DATABASE_URL: postgresql://ascend:${POSTGRES_PASSWORD:-ascend}@db:5432/ascend
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_TRUST_HOST: "true"
+      # Impressum/Datenschutz content - see .env.example. Unset is fine, the
+      # legal pages just say so instead of showing fake data.
+      OPERATOR_NAME: ${OPERATOR_NAME:-}
+      OPERATOR_ADDRESS: ${OPERATOR_ADDRESS:-}
+      OPERATOR_EMAIL: ${OPERATOR_EMAIL:-}
+      OPERATOR_PHONE: ${OPERATOR_PHONE:-}
     ports:
       - "3000:3000"
     volumes:

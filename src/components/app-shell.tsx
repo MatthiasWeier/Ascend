@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LegalFooter } from "@/components/legal-footer";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -92,6 +93,7 @@ export function AppShell({
           <Settings className="size-4" />
           Einstellungen
         </Link>
+        <LegalFooter className="mt-4 px-3" />
       </aside>
 
       <div className="flex min-h-screen flex-1 flex-col">

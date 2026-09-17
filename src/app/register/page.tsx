@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { LegalFooter } from "@/components/legal-footer";
 
 export default function RegisterPage() {
   return (
@@ -131,6 +132,8 @@ function RegisterForm() {
           </Link>
         </p>
       </div>
+
+      <LegalFooter className="mt-2" />
     </main>
   );
 }

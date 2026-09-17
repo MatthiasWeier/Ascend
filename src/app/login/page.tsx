@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { LegalFooter } from "@/components/legal-footer";
 
 export default function LoginPage() {
   return (
@@ -106,6 +107,8 @@ function LoginForm() {
           </Link>
         </p>
       </div>
+
+      <LegalFooter className="mt-2" />
     </main>
   );
 }
