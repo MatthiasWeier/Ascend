@@ -1,15 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import type { MuscleFocus } from "@prisma/client";
+import { FOCUS_LABEL, ALL_FOCUSES } from "@/lib/muscle-focus";
 
-export const FOCUS_LABEL: Record<MuscleFocus, string> = {
-  PUSH: "Push",
-  PULL: "Pull",
-  LEGS: "Beine",
-  CORE: "Core",
-  GRIP: "Grip",
-};
-
-const ALL_FOCUSES: MuscleFocus[] = ["PUSH", "PULL", "LEGS", "CORE", "GRIP"];
+export { FOCUS_LABEL };
 
 // Grip-heavy focuses that skin recovery should gate.
 const GRIP_DEPENDENT_FOCUSES: MuscleFocus[] = ["PULL", "GRIP"];

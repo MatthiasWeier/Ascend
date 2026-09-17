@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { FOCUS_LABEL } from "@/lib/workout-brain";
+import { FOCUS_LABEL } from "@/lib/muscle-focus";
 import type { MuscleFocus } from "@prisma/client";
 
 const ALL_FOCUSES: MuscleFocus[] = ["PUSH", "PULL", "LEGS", "CORE", "GRIP"];

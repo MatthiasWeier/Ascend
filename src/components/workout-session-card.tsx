@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FOCUS_LABEL } from "@/lib/workout-brain";
+import { FOCUS_LABEL } from "@/lib/muscle-focus";
 import type { MuscleFocus } from "@prisma/client";
 
 type SetWithExercise = {
