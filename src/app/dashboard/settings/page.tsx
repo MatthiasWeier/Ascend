@@ -18,6 +18,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } f
 import { FOCUS_LABEL, ALL_FOCUSES } from "@/lib/muscle-focus";
 import type { MuscleFocus } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DeleteAccountDialog } from "@/components/delete-account-dialog";
 
 type SettingsData = {
   user: { name: string; username: string; bodyWeightKg: number | null };
@@ -194,6 +195,16 @@ export default function SettingsPage() {
           <Button onClick={handleSaveGoals} disabled={savingGoals} size="lg">
             {savingGoals ? "Speichern…" : "Ziele speichern"}
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive/30">
+        <CardHeader>
+          <CardTitle className="text-base text-destructive">Danger Zone</CardTitle>
+          <CardDescription>Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DeleteAccountDialog />
         </CardContent>
       </Card>
     </div>

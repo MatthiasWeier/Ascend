@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -58,6 +58,7 @@ export default function NewWorkoutPage() {
   const [trackSkin, setTrackSkin] = useState(false);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     fetch("/api/exercises")
@@ -97,6 +98,8 @@ export default function NewWorkoutPage() {
       toast.error("Bitte für jeden Satz eine Übung wählen.");
       return;
     }
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setLoading(true);
 
     const payload = {
@@ -123,6 +126,7 @@ export default function NewWorkoutPage() {
     });
 
     setLoading(false);
+    submittingRef.current = false;
     if (!res.ok) {
       toast.error("Konnte Workout nicht speichern.");
       return;

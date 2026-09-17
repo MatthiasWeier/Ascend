@@ -61,7 +61,7 @@ model Exercise {
 
   // null = global default. Set when a user or group creates a custom one.
   createdById String?
-  createdBy   User?   @relation("ExerciseCreator", fields: [createdById], references: [id])
+  createdBy   User?   @relation("ExerciseCreator", fields: [createdById], references: [id], onDelete: SetNull)
   groupId     String?
   group       Group?  @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
@@ -180,7 +180,10 @@ model Group {
   name       String
   inviteCode String   @unique @default(cuid())
   ownerId    String
-  owner      User     @relation("GroupOwner", fields: [ownerId], references: [id])
+  // Deleting the owner's account deletes the group entirely (removing
+  // everyone else too) - there's no ownership-transfer feature, so this is
+  // the only well-defined behavior. Account-deletion UI warns about this.
+  owner      User     @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
 
   members         GroupMember[]
@@ -204,6 +207,7 @@ model GroupMember {
   joinedAt DateTime  @default(now())
 
   @@unique([groupId, userId])
+  @@index([userId])
 }
 
 enum PostType {
@@ -249,7 +253,7 @@ model GroupDailyChallenge {
   challengeTemplateId String
   challengeTemplate   ChallengeTemplate @relation(fields: [challengeTemplateId], references: [id])
   activatedById       String
-  activatedBy         User              @relation("DailyChallengeActivator", fields: [activatedById], references: [id])
+  activatedBy         User              @relation("DailyChallengeActivator", fields: [activatedById], references: [id], onDelete: Cascade)
   isActive            Boolean           @default(true)
   createdAt           DateTime          @default(now())
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ export function BoulderDayDialog({
 }) {
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState(false);
+  const submittingRef = useRef(false);
 
   function bump(grade: string, delta: number) {
     setCounts((prev) => ({ ...prev, [grade]: Math.max(0, (prev[grade] ?? 0) + delta) }));
@@ -38,6 +39,8 @@ export function BoulderDayDialog({
   async function handleSave() {
     const entries = GRADES.filter((g) => (counts[g] ?? 0) > 0).map((g) => ({ grade: g, count: counts[g] }));
     if (entries.length === 0) return;
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setSaving(true);
     const res = await fetch("/api/climbing-sends/batch", {
       method: "POST",
@@ -45,6 +48,7 @@ export function BoulderDayDialog({
       body: JSON.stringify({ date, style: "BOULDER", entries }),
     });
     setSaving(false);
+    submittingRef.current = false;
     if (!res.ok) {
       toast.error("Konnte nicht speichern.");
       return;

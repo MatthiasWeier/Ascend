@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Plus, Users } from "lucide-react";
@@ -27,6 +27,7 @@ export default function GroupsPage() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
+  const submittingRef = useRef(false);
 
   function refetch() {
     fetch("/api/groups")
@@ -39,6 +40,8 @@ export default function GroupsPage() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setCreating(true);
     const res = await fetch("/api/groups", {
       method: "POST",
@@ -46,6 +49,7 @@ export default function GroupsPage() {
       body: JSON.stringify({ name: name.trim() }),
     });
     setCreating(false);
+    submittingRef.current = false;
     if (!res.ok) {
       toast.error("Konnte Gruppe nicht erstellen.");
       return;

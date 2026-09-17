@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rate-limit";
 
 const incrementSchema = z.object({ amount: z.number().int().refine((n) => [1, 2, 5, 10].includes(n)) });
 
@@ -13,6 +14,12 @@ export async function POST(
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const { allowed } = rateLimit(`increment:${session.user.id}`, 60, 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json({ error: "Zu viele Anfragen, kurz warten." }, { status: 429 });
+  }
+
   const { attemptId } = await params;
 
   const attempt = await prisma.dailyChallengeAttempt.findUnique({
