@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Plus, Check, Timer, X } from "lucide-react";
+import { Trash2, Plus, Check, Timer, X, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -135,6 +135,20 @@ export default function NewWorkoutPage() {
 
   function removeRow(key: number) {
     setRows((prev) => prev.filter((r) => r.key !== key));
+  }
+
+  function duplicateRow(key: number) {
+    setRows((prev) => {
+      const idx = prev.findIndex((r) => r.key === key);
+      if (idx === -1) return prev;
+      // Same exercise + values, fresh key, not marked done - covers the
+      // common case of logging several sets of the same exercise back to
+      // back without retyping everything each time.
+      const copy: SetRow = { ...prev[idx], key: rowKey++, done: false };
+      const next = [...prev];
+      next.splice(idx + 1, 0, copy);
+      return next;
+    });
   }
 
   function markDone(key: number) {
@@ -313,6 +327,17 @@ export default function NewWorkoutPage() {
                         title="Satz fertig - startet die Pause"
                       >
                         <Check className="size-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-foreground"
+                        onClick={() => duplicateRow(row.key)}
+                        disabled={!row.exerciseId}
+                        title="Satz duplizieren"
+                      >
+                        <Copy className="size-4" />
                       </Button>
                       <Button
                         type="button"
