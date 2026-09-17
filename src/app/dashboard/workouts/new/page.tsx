@@ -12,6 +12,7 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -135,12 +136,12 @@ export default function NewWorkoutPage() {
       <h1 className="mb-6 text-2xl font-bold tracking-tight">Workout eintragen</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <Card>
-          <CardHeader className="flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-base">Sätze</CardTitle>
-              <CardDescription>Übung wählen, Werte eintragen.</CardDescription>
-            </div>
-            <CreateExerciseDialog onCreated={handleExerciseCreated} />
+          <CardHeader>
+            <CardTitle className="text-base">Sätze</CardTitle>
+            <CardDescription>Übung wählen, Werte eintragen.</CardDescription>
+            <CardAction>
+              <CreateExerciseDialog onCreated={handleExerciseCreated} />
+            </CardAction>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             <AnimatePresence initial={false}>
