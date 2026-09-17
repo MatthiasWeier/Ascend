@@ -1,67 +1,72 @@
 import Link from "next/link";
-import { auth, signOut } from "@/lib/auth";
+import { PlusCircle } from "lucide-react";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getBrainSuggestion } from "@/lib/workout-brain";
+import { Button } from "@/components/ui/button";
+import { BrainCard } from "@/components/brain-card";
+import { WorkoutSessionCard } from "@/components/workout-session-card";
+import { FeedList } from "@/components/feed-list";
 
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user.id;
 
-  const sessions = await prisma.workoutSession.findMany({
-    where: { userId },
-    orderBy: { date: "desc" },
-    take: 10,
-    include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
-  });
+  const [suggestion, sessions] = await Promise.all([
+    getBrainSuggestion(userId),
+    prisma.workoutSession.findMany({
+      where: { userId },
+      orderBy: { date: "desc" },
+      take: 15,
+      include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
+    }),
+  ]);
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Hey, {session!.user.name}</h1>
-        <form
-          action={async () => {
-            "use server";
-            await signOut({ redirectTo: "/" });
-          }}
-        >
-          <button className="text-sm text-gray-500 underline">Abmelden</button>
-        </form>
+    <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Hey, {session!.user.name}</h1>
+          <p className="text-sm text-muted-foreground">Schön, dass du da bist.</p>
+        </div>
+        <Button render={<Link href="/dashboard/workouts/new" />} className="hidden sm:inline-flex">
+          <PlusCircle className="size-4" />
+          Workout
+        </Button>
       </div>
 
-      <Link
-        href="/dashboard/workouts/new"
-        className="mb-8 block w-full rounded bg-black px-4 py-3 text-center font-medium text-white dark:bg-white dark:text-black"
-      >
-        + Workout eintragen
-      </Link>
+      <BrainCard suggestion={suggestion} />
 
-      <h2 className="mb-4 text-lg font-semibold">Letzte Workouts</h2>
-      {sessions.length === 0 && (
-        <p className="text-gray-500">Noch keine Workouts eingetragen.</p>
-      )}
-      <ul className="flex flex-col gap-4">
-        {sessions.map((s) => (
-          <li key={s.id} className="rounded border border-gray-200 p-4 dark:border-gray-800">
-            <div className="mb-2 flex items-center justify-between text-sm text-gray-500">
-              <span>{new Date(s.date).toLocaleDateString("de-DE")}</span>
-              <span className="flex gap-3">
-                {s.perceivedExertion != null && <span>Anstrengung: {s.perceivedExertion}/10</span>}
-                {s.skinCondition != null && <span>Haut: {s.skinCondition}/10</span>}
-              </span>
-            </div>
-            <ul className="flex flex-col gap-1">
-              {s.sets.map((set) => (
-                <li key={set.id} className="text-sm">
-                  {set.exercise.name}:{" "}
-                  {set.durationSec != null
-                    ? `${set.durationSec}s`
-                    : `${set.reps ?? "-"} Wdh × ${set.weightKg ?? 0}kg`}
-                </li>
-              ))}
-            </ul>
-            {s.notes && <p className="mt-2 text-sm italic text-gray-500">{s.notes}</p>}
-          </li>
-        ))}
-      </ul>
-    </main>
+      <Button
+        render={<Link href="/dashboard/workouts/new" />}
+        size="lg"
+        className="w-full sm:hidden"
+      >
+        <PlusCircle className="size-4" />
+        Workout eintragen
+      </Button>
+
+      <div className="flex flex-col gap-3">
+        <h2 className="text-sm font-semibold text-muted-foreground">Letzte Workouts</h2>
+        {sessions.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+            Noch keine Workouts eingetragen. Leg direkt los!
+          </p>
+        ) : (
+          <FeedList>
+            {sessions.map((s) => (
+              <WorkoutSessionCard
+                key={s.id}
+                date={s.date}
+                notes={s.notes}
+                perceivedExertion={s.perceivedExertion}
+                skinCondition={s.skinCondition}
+                sets={s.sets}
+              />
+            ))}
+          </FeedList>
+        )}
+      </div>
+    </div>
   );
 }
