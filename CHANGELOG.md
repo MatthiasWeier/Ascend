@@ -5,7 +5,7 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
-## [Unreleased]
+## [0.2.0] - 2026-09-17
 
 ### Added
 - Schnelle Übungssuche: durchsuchbare Combobox (shadcn Command/Popover)
@@ -14,12 +14,18 @@ nothing is guaranteed stable yet.
   dem letzten Log vorausgefüllt, ohne bereits getippte Werte zu überschreiben
 - Integrierter Pause-Timer mit 60/90/120/180s-Presets, startbar per
   ✓-Button direkt am Satz
+- Satz duplizieren: ein Klick kopiert Übung + Werte eines Satzes in eine
+  neue Zeile darunter, für mehrere Sätze derselben Übung hintereinander
 - PR-Erkennung: chronologische Bestwert-Berechnung pro Übung
   (bodyweight-adjustiertes 1RM bzw. Haltedauer), Trophäen-Badge im Feed und
   "Neuer PR!"-Toast beim Speichern
 - Wetteinsatz: optionaler Freitext beim Aktivieren einer Daily Challenge
 - Kollaborative Gruppenziele: gemeinsames Ziel mit Ziel-Wert/Einheit/Frist,
   jedes Mitglied trägt Beiträge bei, Fortschrittsbalken + Beitrag pro Person
+
+### Fixed
+- Absturz beim Öffnen des User-Menüs (Base-UI-Fehler durch fehlenden
+  `Menu.Group`-Wrapper um das Nutzernamen-Label)
 
 ## [0.1.0] - 2026-09-17
 
