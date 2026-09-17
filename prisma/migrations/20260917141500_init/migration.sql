@@ -258,6 +258,9 @@ CREATE UNIQUE INDEX "BalanceGoal_userId_focus_key" ON "BalanceGoal"("userId", "f
 CREATE UNIQUE INDEX "Group_inviteCode_key" ON "Group"("inviteCode");
 
 -- CreateIndex
+CREATE INDEX "GroupMember_userId_idx" ON "GroupMember"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "GroupMember_groupId_userId_key" ON "GroupMember"("groupId", "userId");
 
 -- CreateIndex
@@ -315,7 +318,7 @@ ALTER TABLE "ClimbingSend" ADD CONSTRAINT "ClimbingSend_userId_fkey" FOREIGN KEY
 ALTER TABLE "BalanceGoal" ADD CONSTRAINT "BalanceGoal_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Group" ADD CONSTRAINT "Group_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Group" ADD CONSTRAINT "Group_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "GroupMember" ADD CONSTRAINT "GroupMember_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "Group"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -339,7 +342,7 @@ ALTER TABLE "GroupDailyChallenge" ADD CONSTRAINT "GroupDailyChallenge_groupId_fk
 ALTER TABLE "GroupDailyChallenge" ADD CONSTRAINT "GroupDailyChallenge_challengeTemplateId_fkey" FOREIGN KEY ("challengeTemplateId") REFERENCES "ChallengeTemplate"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "GroupDailyChallenge" ADD CONSTRAINT "GroupDailyChallenge_activatedById_fkey" FOREIGN KEY ("activatedById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "GroupDailyChallenge" ADD CONSTRAINT "GroupDailyChallenge_activatedById_fkey" FOREIGN KEY ("activatedById") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserChallengeGoal" ADD CONSTRAINT "UserChallengeGoal_groupDailyChallengeId_fkey" FOREIGN KEY ("groupDailyChallengeId") REFERENCES "GroupDailyChallenge"("id") ON DELETE CASCADE ON UPDATE CASCADE;
