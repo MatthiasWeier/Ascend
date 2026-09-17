@@ -20,7 +20,7 @@ import type { MuscleFocus } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type SettingsData = {
-  user: { name: string; email: string; bodyWeightKg: number | null };
+  user: { name: string; username: string; bodyWeightKg: number | null };
   balanceGoals: { focus: MuscleFocus; targetPercent: number }[];
   bodyWeightHistory: { dateKey: string; weightKg: number }[];
 };
@@ -111,7 +111,7 @@ export default function SettingsPage() {
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Einstellungen</h1>
-        <p className="text-sm text-muted-foreground">{data.user.name} · {data.user.email}</p>
+        <p className="text-sm text-muted-foreground">{data.user.name} · @{data.user.username}</p>
       </div>
 
       <Card>

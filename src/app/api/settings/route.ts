@@ -19,7 +19,7 @@ export async function GET() {
   }
 
   const [user, goals, bodyWeightHistory] = await Promise.all([
-    prisma.user.findUniqueOrThrow({ where: { id: session.user.id }, select: { bodyWeightKg: true, name: true, email: true } }),
+    prisma.user.findUniqueOrThrow({ where: { id: session.user.id }, select: { bodyWeightKg: true, name: true, username: true } }),
     prisma.balanceGoal.findMany({ where: { userId: session.user.id } }),
     prisma.bodyWeightEntry.findMany({
       where: { userId: session.user.id },

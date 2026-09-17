@@ -28,7 +28,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -39,14 +39,14 @@ function LoginForm() {
     setLoading(true);
 
     const result = await signIn("credentials", {
-      email,
+      username,
       password,
       redirect: false,
     });
 
     setLoading(false);
     if (result?.error) {
-      setError("E-Mail oder Passwort ist falsch.");
+      setError("Benutzername oder Passwort ist falsch.");
       return;
     }
     router.push(callbackUrl);
@@ -69,14 +69,13 @@ function LoginForm() {
           <CardContent>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="email">E-Mail</Label>
+                <Label htmlFor="username">Benutzername</Label>
                 <Input
-                  id="email"
-                  type="email"
+                  id="username"
                   required
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
               <div className="flex flex-col gap-1.5">

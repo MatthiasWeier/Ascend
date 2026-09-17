@@ -29,7 +29,7 @@ function RegisterForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -42,21 +42,21 @@ function RegisterForm() {
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, username, password }),
     });
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       setError(
-        data.error === "Email already registered"
-          ? "E-Mail bereits registriert."
+        data.error === "Username already registered"
+          ? "Benutzername bereits vergeben."
           : "Registrierung fehlgeschlagen."
       );
       setLoading(false);
       return;
     }
 
-    await signIn("credentials", { email, password, redirect: false });
+    await signIn("credentials", { username, password, redirect: false });
     setLoading(false);
     router.push(callbackUrl);
     router.refresh();
@@ -88,15 +88,18 @@ function RegisterForm() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="email">E-Mail</Label>
+                <Label htmlFor="username">Benutzername</Label>
                 <Input
-                  id="email"
-                  type="email"
+                  id="username"
                   required
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  minLength={3}
+                  maxLength={24}
+                  pattern="[a-zA-Z0-9_.\-]+"
+                  autoComplete="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
+                <p className="text-xs text-muted-foreground">Nur Buchstaben, Zahlen, _ . -</p>
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="password">Passwort</Label>

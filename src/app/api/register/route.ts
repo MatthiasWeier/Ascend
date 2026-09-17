@@ -5,7 +5,11 @@ import { prisma } from "@/lib/prisma";
 
 const registerSchema = z.object({
   name: z.string().min(1).max(100),
-  email: z.string().email(),
+  username: z
+    .string()
+    .min(3)
+    .max(24)
+    .regex(/^[a-zA-Z0-9_.-]+$/, "Nur Buchstaben, Zahlen, _ . -"),
   password: z.string().min(8).max(200),
 });
 
@@ -15,17 +19,17 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
-  const { name, email, password } = parsed.data;
+  const { name, username, password } = parsed.data;
 
-  const existing = await prisma.user.findUnique({ where: { email } });
+  const existing = await prisma.user.findUnique({ where: { username } });
   if (existing) {
-    return NextResponse.json({ error: "Email already registered" }, { status: 409 });
+    return NextResponse.json({ error: "Username already registered" }, { status: 409 });
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
   const user = await prisma.user.create({
-    data: { name, email, passwordHash },
-    select: { id: true, email: true, name: true },
+    data: { name, username, passwordHash },
+    select: { id: true, username: true, name: true },
   });
 
   return NextResponse.json({ user }, { status: 201 });
