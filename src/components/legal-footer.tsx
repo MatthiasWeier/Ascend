@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { APP_VERSION } from "@/lib/version";
 
 export function LegalFooter({ className }: { className?: string }) {
   return (
@@ -11,6 +12,7 @@ export function LegalFooter({ className }: { className?: string }) {
           Datenschutz
         </Link>
       </nav>
+      <p className="mt-1 text-center text-[10px] text-muted-foreground/60">Ascend v{APP_VERSION}</p>
     </footer>
   );
 }

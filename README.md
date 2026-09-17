@@ -10,6 +10,12 @@ peer-review system ("Yammer") that stops people from sandbagging their goals.
 Licensed under the [MIT License](./LICENSE) - use it, fork it, run your own
 instance for you and your crew.
 
+**Version:** see [`package.json`](./package.json) (`version` field - the one
+source of truth, also shown in the app footer and in Settings) ·
+[CHANGELOG.md](./CHANGELOG.md) for release history · follows
+[SemVer](https://semver.org/); `0.x` means still moving, no stability
+guarantees yet.
+
 ## Stack
 
 - Next.js 16 (App Router) + TypeScript + Tailwind CSS 4

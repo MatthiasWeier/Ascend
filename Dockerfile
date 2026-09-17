@@ -20,6 +20,20 @@ RUN pnpm build
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+
+# Keep in sync with the "version" field in package.json - that file is the
+# single source of truth the app itself reads at runtime; this just mirrors
+# it onto the image so `docker inspect` / registries show it too. Override
+# at build time once you have CI tagging releases, e.g.:
+#   docker build --build-arg VERSION=$(node -p "require('./package.json').version") .
+ARG VERSION=0.1.0
+LABEL org.opencontainers.image.title="Ascend" \
+      org.opencontainers.image.description="Train together. Push each other. Self-hostable workout tracker." \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.licenses="MIT"
+# Once this is on GitHub, also add:
+#   org.opencontainers.image.source="https://github.com/<you>/<repo>"
+
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public

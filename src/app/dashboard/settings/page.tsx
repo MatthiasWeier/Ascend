@@ -19,6 +19,7 @@ import { FOCUS_LABEL, ALL_FOCUSES } from "@/lib/muscle-focus";
 import type { MuscleFocus } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteAccountDialog } from "@/components/delete-account-dialog";
+import { APP_VERSION } from "@/lib/version";
 
 type SettingsData = {
   user: { name: string; username: string; bodyWeightKg: number | null };
@@ -113,6 +114,7 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Einstellungen</h1>
         <p className="text-sm text-muted-foreground">{data.user.name} · @{data.user.username}</p>
+        <p className="mt-1 text-xs text-muted-foreground/60">Ascend v{APP_VERSION}</p>
       </div>
 
       <Card>
