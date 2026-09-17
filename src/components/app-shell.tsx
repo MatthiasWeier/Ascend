@@ -54,10 +54,10 @@ export function AppShell({
     <div className="flex min-h-screen w-full">
       {/* Desktop sidebar */}
       <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-sidebar px-4 py-6 md:flex">
-        <div className="mb-8 flex items-center gap-2 px-2">
+        <Link href="/" className="mb-8 flex items-center gap-2 px-2">
           <Mountain className="size-6 text-primary" />
           <span className="text-lg font-bold tracking-tight">Ascend</span>
-        </div>
+        </Link>
         <nav className="flex flex-1 flex-col gap-1">
           {navItems.map((item) => {
             const active =
@@ -99,10 +99,10 @@ export function AppShell({
       <div className="flex min-h-screen flex-1 flex-col">
         {/* Top bar */}
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-md md:justify-end">
-          <div className="flex items-center gap-2 md:hidden">
+          <Link href="/" className="flex items-center gap-2 md:hidden">
             <Mountain className="size-5 text-primary" />
             <span className="font-bold">Ascend</span>
-          </div>
+          </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <DropdownMenu>
