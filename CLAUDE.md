@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # CLAUDE.md - agent context for Ascend
 
 **Keep this file updated.** Whenever you ship a feature, fix a real bug, or
