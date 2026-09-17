@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { makeBodyWeightResolver, effectiveLoadKg } from "@/lib/bodyweight";
 
 export async function GET(request: Request) {
   const session = await auth();
@@ -18,13 +19,23 @@ export async function GET(request: Request) {
       reps: { not: null },
       weightKg: { not: null },
     },
-    select: { reps: true, weightKg: true, session: { select: { date: true } } },
+    select: {
+      reps: true,
+      weightKg: true,
+      session: { select: { date: true } },
+      exercise: { select: { isBodyweight: true } },
+    },
   });
+
+  const needsBodyWeight = sets.some((s) => s.exercise.isBodyweight);
+  const resolveBodyWeight = needsBodyWeight ? await makeBodyWeightResolver(session.user.id) : null;
 
   const byDay = new Map<string, number>();
   for (const set of sets) {
+    const bodyWeight = resolveBodyWeight?.(set.session.date) ?? null;
+    const load = effectiveLoadKg(set.exercise.isBodyweight, bodyWeight, set.weightKg);
     const day = set.session.date.toISOString().slice(0, 10);
-    const volume = set.reps! * set.weightKg!;
+    const volume = set.reps! * load;
     byDay.set(day, (byDay.get(day) ?? 0) + volume);
   }
 

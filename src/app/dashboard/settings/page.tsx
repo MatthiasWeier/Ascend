@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Line, LineChart, XAxis, YAxis } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { FOCUS_LABEL, ALL_FOCUSES } from "@/lib/muscle-focus";
 import type { MuscleFocus } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,11 +22,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 type SettingsData = {
   user: { name: string; email: string; bodyWeightKg: number | null };
   balanceGoals: { focus: MuscleFocus; targetPercent: number }[];
+  bodyWeightHistory: { dateKey: string; weightKg: number }[];
 };
+
+const weightChartConfig = {
+  weightKg: { label: "Gewicht", color: "var(--chart-1)" },
+} satisfies ChartConfig;
 
 export default function SettingsPage() {
   const [data, setData] = useState<SettingsData | null>(null);
   const [bodyWeight, setBodyWeight] = useState("");
+  const [savingWeight, setSavingWeight] = useState(false);
   const [goals, setGoals] = useState<Record<MuscleFocus, number>>({
     PUSH: 20,
     PULL: 20,
@@ -32,38 +40,58 @@ export default function SettingsPage() {
     CORE: 20,
     GRIP: 20,
   });
-  const [saving, setSaving] = useState(false);
+  const [savingGoals, setSavingGoals] = useState(false);
 
-  useEffect(() => {
+  function refetch() {
     fetch("/api/settings")
       .then((r) => r.json())
       .then((res: SettingsData) => {
         setData(res);
         setBodyWeight(res.user.bodyWeightKg?.toString() ?? "");
         if (res.balanceGoals.length > 0) {
-          const g = { ...goals };
-          for (const goal of res.balanceGoals) g[goal.focus] = goal.targetPercent;
-          setGoals(g);
+          setGoals((g) => {
+            const next = { ...g };
+            for (const goal of res.balanceGoals) next[goal.focus] = goal.targetPercent;
+            return next;
+          });
         }
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }
+
+  useEffect(refetch, []);
 
   const goalSum = ALL_FOCUSES.reduce((sum, f) => sum + goals[f], 0);
 
-  async function handleSave() {
-    setSaving(true);
+  async function handleSaveWeight() {
+    const n = Number(bodyWeight);
+    if (!n || n <= 0) return;
+    setSavingWeight(true);
+    const res = await fetch("/api/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bodyWeightKg: n }),
+    });
+    setSavingWeight(false);
+    if (!res.ok) {
+      toast.error("Konnte Gewicht nicht speichern.");
+      return;
+    }
+    toast.success("Gewicht eingetragen!");
+    refetch();
+  }
+
+  async function handleSaveGoals() {
+    setSavingGoals(true);
     const res = await fetch("/api/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        bodyWeightKg: bodyWeight === "" ? null : Number(bodyWeight),
         balanceGoals: ALL_FOCUSES.map((focus) => ({ focus, targetPercent: goals[focus] })),
       }),
     });
-    setSaving(false);
+    setSavingGoals(false);
     if (!res.ok) {
-      toast.error("Konnte Einstellungen nicht speichern.");
+      toast.error("Konnte Ziele nicht speichern.");
       return;
     }
     toast.success("Gespeichert!");
@@ -90,20 +118,50 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="text-base">Körpergewicht</CardTitle>
           <CardDescription>
-            Für eine faire Berechnung relativer Kraft (z.B. bei Klimmzügen).
+            Jeder Eintrag wird mit Datum gespeichert - Bodyweight-Übungen (Klimmzüge etc.) werden in
+            Analytics immer gegen dein Gewicht *zum jeweiligen Zeitpunkt* bewertet, nicht dein aktuelles.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex items-center gap-2">
-          <Input
-            type="number"
-            min={20}
-            max={300}
-            step={0.1}
-            value={bodyWeight}
-            onChange={(e) => setBodyWeight(e.target.value)}
-            className="w-32"
-          />
-          <span className="text-sm text-muted-foreground">kg</span>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              min={20}
+              max={300}
+              step={0.1}
+              value={bodyWeight}
+              onChange={(e) => setBodyWeight(e.target.value)}
+              className="w-32"
+            />
+            <span className="text-sm text-muted-foreground">kg</span>
+            <Button onClick={handleSaveWeight} disabled={savingWeight} size="sm" className="ml-auto">
+              {savingWeight ? "Speichern…" : "Heute eintragen"}
+            </Button>
+          </div>
+
+          {data.bodyWeightHistory.length >= 2 && (
+            <ChartContainer config={weightChartConfig} className="aspect-auto h-32 w-full">
+              <LineChart data={data.bodyWeightHistory} margin={{ left: 8, right: 8 }}>
+                <XAxis dataKey="dateKey" hide />
+                <YAxis domain={["dataMin - 1", "dataMax + 1"]} hide />
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      labelFormatter={(v) => new Date(v).toLocaleDateString("de-DE")}
+                      formatter={(value) => [`${value} kg`, "Gewicht"]}
+                    />
+                  }
+                />
+                <Line
+                  type="monotone"
+                  dataKey="weightKg"
+                  stroke="var(--color-weightKg)"
+                  strokeWidth={2}
+                  dot={{ r: 2, fill: "var(--color-weightKg)" }}
+                />
+              </LineChart>
+            </ChartContainer>
+          )}
         </CardContent>
       </Card>
 
@@ -133,12 +191,11 @@ export default function SettingsPage() {
           <p className={`text-xs ${goalSum === 100 ? "text-success" : "text-muted-foreground"}`}>
             Summe: {goalSum}%{goalSum === 100 ? " — perfekt" : ""}
           </p>
+          <Button onClick={handleSaveGoals} disabled={savingGoals} size="lg">
+            {savingGoals ? "Speichern…" : "Ziele speichern"}
+          </Button>
         </CardContent>
       </Card>
-
-      <Button onClick={handleSave} disabled={saving} size="lg">
-        {saving ? "Speichern…" : "Speichern"}
-      </Button>
     </div>
   );
 }

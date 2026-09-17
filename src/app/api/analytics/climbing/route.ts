@@ -14,13 +14,13 @@ export async function GET(request: Request) {
 
   const sends = await prisma.climbingSend.findMany({
     where: { userId: session.user.id, style },
-    select: { grade: true },
+    select: { grade: true, count: true },
   });
 
   const counts = new Map<string, number>();
   for (const send of sends) {
     const key = send.grade.trim();
-    counts.set(key, (counts.get(key) ?? 0) + 1);
+    counts.set(key, (counts.get(key) ?? 0) + send.count);
   }
 
   const grades = Array.from(counts.entries())

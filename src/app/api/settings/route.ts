@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { todayGermanDateKey } from "@/lib/german-time";
 import type { MuscleFocus } from "@prisma/client";
 
 const settingsSchema = z.object({
@@ -17,12 +18,18 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [user, goals] = await Promise.all([
+  const [user, goals, bodyWeightHistory] = await Promise.all([
     prisma.user.findUniqueOrThrow({ where: { id: session.user.id }, select: { bodyWeightKg: true, name: true, email: true } }),
     prisma.balanceGoal.findMany({ where: { userId: session.user.id } }),
+    prisma.bodyWeightEntry.findMany({
+      where: { userId: session.user.id },
+      orderBy: { dateKey: "desc" },
+      take: 30,
+      select: { dateKey: true, weightKg: true },
+    }),
   ]);
 
-  return NextResponse.json({ user, balanceGoals: goals });
+  return NextResponse.json({ user, balanceGoals: goals, bodyWeightHistory: bodyWeightHistory.reverse() });
 }
 
 export async function PATCH(request: Request) {
@@ -40,8 +47,18 @@ export async function PATCH(request: Request) {
   const { bodyWeightKg, balanceGoals } = parsed.data;
   const userId = session.user.id;
 
-  if (bodyWeightKg !== undefined) {
-    await prisma.user.update({ where: { id: userId }, data: { bodyWeightKg } });
+  if (bodyWeightKg != null) {
+    const dateKey = todayGermanDateKey();
+    await prisma.$transaction([
+      prisma.user.update({ where: { id: userId }, data: { bodyWeightKg } }),
+      prisma.bodyWeightEntry.upsert({
+        where: { userId_dateKey: { userId, dateKey } },
+        create: { userId, dateKey, weightKg: bodyWeightKg },
+        update: { weightKg: bodyWeightKg },
+      }),
+    ]);
+  } else if (bodyWeightKg === null) {
+    await prisma.user.update({ where: { id: userId }, data: { bodyWeightKg: null } });
   }
 
   if (balanceGoals) {

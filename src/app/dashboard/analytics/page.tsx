@@ -13,6 +13,7 @@ import { VolumeChart } from "@/components/analytics/volume-chart";
 import { BalanceRadar } from "@/components/analytics/balance-radar";
 import { ActivityCalendar } from "@/components/analytics/activity-calendar";
 import { ClimbingPyramid } from "@/components/analytics/climbing-pyramid";
+import { BoulderCalendar } from "@/components/analytics/boulder-calendar";
 
 export default function AnalyticsPage() {
   return (
@@ -79,7 +80,16 @@ export default function AnalyticsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="climbing">
+        <TabsContent value="climbing" className="flex flex-col gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Boulder-Kalender</CardTitle>
+              <CardDescription>Tag antippen, Anzahl pro Schwierigkeit eintragen.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BoulderCalendar />
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Kletter-Pyramide</CardTitle>

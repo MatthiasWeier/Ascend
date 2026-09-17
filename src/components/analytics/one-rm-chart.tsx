@@ -12,9 +12,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Scale } from "lucide-react";
 import { VIZ_DELTA_GOOD, VIZ_DELTA_BAD } from "@/lib/viz-colors";
 
-type Exercise = { id: string; name: string; type: "REPS" | "HOLD" };
+type Exercise = { id: string; name: string; type: "REPS" | "HOLD"; isBodyweight: boolean };
 type Point = { date: string; oneRepMax: number };
 
 const chartConfig = {
@@ -49,8 +51,11 @@ export function OneRmChart() {
     return points[points.length - 1].oneRepMax - points[0].oneRepMax;
   }, [points]);
 
+  const selectedExercise = exercises.find((e) => e.id === exerciseId);
+
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-2">
       <Select value={exerciseId} onValueChange={(v) => setExerciseId(v as string)}>
         <SelectTrigger className="w-full sm:w-64">
           <SelectValue placeholder="Übung wählen" />
@@ -63,6 +68,13 @@ export function OneRmChart() {
           ))}
         </SelectContent>
       </Select>
+      {selectedExercise?.isBodyweight && (
+        <Badge variant="secondary" className="gap-1">
+          <Scale className="size-3" />
+          Bodyweight-adjustiert
+        </Badge>
+      )}
+      </div>
 
       {points == null ? (
         <Skeleton className="h-64 w-full" />

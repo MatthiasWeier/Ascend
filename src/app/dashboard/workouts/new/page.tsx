@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CreateExerciseDialog } from "@/components/create-exercise-dialog";
 
 type Exercise = {
   id: string;
@@ -68,6 +69,11 @@ export default function NewWorkoutPage() {
         }
       });
   }, []);
+
+  function handleExerciseCreated(newExercise: Exercise) {
+    setExercises((prev) => [...prev, newExercise].sort((a, b) => a.name.localeCompare(b.name)));
+    setRows((prev) => [...prev, emptyRow(newExercise.id)]);
+  }
 
   function exerciseFor(id: string) {
     return exercises.find((e) => e.id === id);
@@ -129,9 +135,12 @@ export default function NewWorkoutPage() {
       <h1 className="mb-6 text-2xl font-bold tracking-tight">Workout eintragen</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Sätze</CardTitle>
-            <CardDescription>Übung wählen, Werte eintragen.</CardDescription>
+          <CardHeader className="flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-base">Sätze</CardTitle>
+              <CardDescription>Übung wählen, Werte eintragen.</CardDescription>
+            </div>
+            <CreateExerciseDialog onCreated={handleExerciseCreated} />
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             <AnimatePresence initial={false}>
