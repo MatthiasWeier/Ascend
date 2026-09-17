@@ -21,6 +21,7 @@ import {
 import { InviteButton } from "@/components/groups/invite-button";
 import { GroupFeed } from "@/components/groups/group-feed";
 import { GroupChallenges } from "@/components/groups/group-challenges";
+import { GroupGoals } from "@/components/groups/group-goals";
 
 type GroupInfo = {
   id: string;
@@ -82,6 +83,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
         <TabsList>
           <TabsTrigger value="feed">Feed</TabsTrigger>
           <TabsTrigger value="challenges">Challenges</TabsTrigger>
+          <TabsTrigger value="goals">Ziele</TabsTrigger>
           <TabsTrigger value="members">Mitglieder</TabsTrigger>
         </TabsList>
 
@@ -91,6 +93,10 @@ export function GroupDetail({ groupId }: { groupId: string }) {
 
         <TabsContent value="challenges">
           <GroupChallenges groupId={groupId} isLeader={isLeader} />
+        </TabsContent>
+
+        <TabsContent value="goals">
+          <GroupGoals groupId={groupId} isLeader={isLeader} />
         </TabsContent>
 
         <TabsContent value="members">

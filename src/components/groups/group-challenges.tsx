@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Check, MessageCircleWarning, Play, Plus, X } from "lucide-react";
+import { Check, MessageCircleWarning, Play, Plus, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +46,7 @@ type DailyChallenge = {
   templateName: string;
   templateDescription: string | null;
   exerciseName: string;
+  stakes: string | null;
   goals: GoalView[];
 };
 
@@ -56,6 +57,7 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
   const [canActivateMore, setCanActivateMore] = useState(false);
   const [templates, setTemplates] = useState<Template[] | null>(null);
   const [activateOpen, setActivateOpen] = useState(false);
+  const [stakesInput, setStakesInput] = useState("");
   const [executionTarget, setExecutionTarget] = useState<{
     title: string;
     attempt: NonNullable<GoalView["todayAttempt"]>;
@@ -77,7 +79,10 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
     const res = await fetch(`/api/groups/${groupId}/daily-challenges`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ challengeTemplateId: templateId }),
+      body: JSON.stringify({
+        challengeTemplateId: templateId,
+        stakes: stakesInput.trim() || undefined,
+      }),
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
@@ -86,6 +91,7 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
     }
     toast.success("Challenge aktiviert!");
     setActivateOpen(false);
+    setStakesInput("");
     refetch();
   }
 
@@ -122,6 +128,7 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
 
   function openActivateDialog() {
     setActivateOpen(true);
+    setStakesInput("");
     if (templates == null) {
       fetch("/api/challenge-templates")
         .then((r) => r.json())
@@ -146,6 +153,12 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
               <DialogTitle>Challenge-Thema wählen</DialogTitle>
               <DialogDescription>Jeder setzt danach sein eigenes Reps-Ziel.</DialogDescription>
             </DialogHeader>
+            <Input
+              value={stakesInput}
+              onChange={(e) => setStakesInput(e.target.value)}
+              placeholder="Einsatz (optional), z.B. „Verlierer macht 20 Liegestütze“"
+              maxLength={200}
+            />
             {templates == null ? (
               <Skeleton className="h-32 w-full" />
             ) : (
@@ -186,6 +199,12 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
                   <div>
                     <p className="font-medium">{dc.templateName}</p>
                     <p className="text-xs text-muted-foreground">{dc.templateDescription}</p>
+                    {dc.stakes && (
+                      <p className="mt-1 flex items-center gap-1 text-xs font-medium text-amber-500">
+                        <Zap className="size-3" />
+                        Einsatz: {dc.stakes}
+                      </p>
+                    )}
                   </div>
                   {isLeader && (
                     <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive" onClick={() => deactivate(dc.id)}>

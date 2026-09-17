@@ -44,6 +44,8 @@ model User {
   activatedDailies  GroupDailyChallenge[]   @relation("DailyChallengeActivator")
   challengeGoals    UserChallengeGoal[]
   yammerVotes       YammerVote[]
+  createdGroupGoals GroupGoal[]             @relation("GroupGoalCreator")
+  goalContributions GroupGoalContribution[]
 }
 
 // Catalog of exercises. Seeded with defaults; users/groups can add their own.
@@ -190,6 +192,7 @@ model Group {
   posts           GroupPost[]
   customExercises Exercise[]
   dailyChallenges GroupDailyChallenge[]
+  goals           GroupGoal[]
 }
 
 enum GroupRole {
@@ -256,6 +259,9 @@ model GroupDailyChallenge {
   activatedBy         User              @relation("DailyChallengeActivator", fields: [activatedById], references: [id], onDelete: Cascade)
   isActive            Boolean           @default(true)
   createdAt           DateTime          @default(now())
+  // Optional fun stakes for the day, e.g. "Verlierer macht 20 Liegestütze" -
+  // free text set by the leader on activation, shown to everyone.
+  stakes              String?
 
   goals UserChallengeGoal[]
 
@@ -319,4 +325,40 @@ model DailyChallengeAttempt {
   difficultyRating    Int?
 
   @@unique([userChallengeGoalId, dateKey])
+}
+
+// A shared group target everyone contributes to, e.g. "10.000 Liegestütze
+// im September" - progress is the sum of every member's logged
+// contributions, not tied to any single exercise or workout.
+model GroupGoal {
+  id          String    @id @default(cuid())
+  groupId     String
+  group       Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  title       String
+  unit        String
+  targetValue Float
+  deadline    DateTime?
+  createdById String
+  createdBy   User      @relation("GroupGoalCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  contributions GroupGoalContribution[]
+
+  @@index([groupId])
+}
+
+// One member's logged contribution toward a GroupGoal. Manually entered
+// (not derived from workouts) - keeps this simple and lets a goal track
+// anything (reps, km, minutes), not just what's in the exercise database.
+model GroupGoalContribution {
+  id        String    @id @default(cuid())
+  goalId    String
+  goal      GroupGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Float
+  createdAt DateTime  @default(now())
+
+  @@index([goalId])
+  @@index([userId])
 }

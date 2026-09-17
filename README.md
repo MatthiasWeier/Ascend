@@ -133,6 +133,12 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   (Europe/Berlin, nicht UTC)
 - ✅ Post-Challenge-Bewertung (5 Smileys) passt das Ziel fürs *nächste* Mal
   an (±10%/±5%/0%)
+- ✅ **Wetteinsatz**: optionaler Freitext beim Aktivieren einer Daily
+  Challenge (z.B. "Verlierer macht 20 Liegestütze"), für alle sichtbar
+- ✅ **Kollaborative Gruppenziele**: Leader legt ein gemeinsames Ziel mit
+  Ziel-Wert/Einheit/optionaler Frist an, jedes Mitglied trägt Beiträge bei -
+  Fortschrittsbalken zeigt die Summe der ganzen Gruppe plus Beitrag pro
+  Person
 
 ### Bedienung & Design
 - ✅ Dark-first Theme mit Light-Mode-Toggle (next-themes)

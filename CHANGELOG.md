@@ -17,6 +17,9 @@ nothing is guaranteed stable yet.
 - PR-Erkennung: chronologische Bestwert-Berechnung pro Übung
   (bodyweight-adjustiertes 1RM bzw. Haltedauer), Trophäen-Badge im Feed und
   "Neuer PR!"-Toast beim Speichern
+- Wetteinsatz: optionaler Freitext beim Aktivieren einer Daily Challenge
+- Kollaborative Gruppenziele: gemeinsames Ziel mit Ziel-Wert/Einheit/Frist,
+  jedes Mitglied trägt Beiträge bei, Fortschrittsbalken + Beitrag pro Person
 
 ## [0.1.0] - 2026-09-17
 

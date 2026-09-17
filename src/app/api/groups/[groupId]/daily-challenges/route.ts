@@ -5,7 +5,10 @@ import { prisma } from "@/lib/prisma";
 import { getGroupMembership } from "@/lib/group-auth";
 import { buildDailyChallengesView, MAX_ACTIVE_DAILY_CHALLENGES } from "@/lib/daily-challenges";
 
-const activateSchema = z.object({ challengeTemplateId: z.string() });
+const activateSchema = z.object({
+  challengeTemplateId: z.string(),
+  stakes: z.string().max(200).optional(),
+});
 
 export async function GET(
   request: Request,
@@ -53,6 +56,8 @@ export async function POST(
     );
   }
 
+  const stakes = parsed.data.stakes?.trim() || null;
+
   const existing = await prisma.groupDailyChallenge.findUnique({
     where: { groupId_challengeTemplateId: { groupId, challengeTemplateId: parsed.data.challengeTemplateId } },
   });
@@ -60,13 +65,17 @@ export async function POST(
     if (existing.isActive) {
       return NextResponse.json({ error: "Challenge ist bereits aktiv" }, { status: 400 });
     }
-    await prisma.groupDailyChallenge.update({ where: { id: existing.id }, data: { isActive: true } });
+    await prisma.groupDailyChallenge.update({
+      where: { id: existing.id },
+      data: { isActive: true, stakes },
+    });
   } else {
     await prisma.groupDailyChallenge.create({
       data: {
         groupId,
         challengeTemplateId: parsed.data.challengeTemplateId,
         activatedById: session.user.id,
+        stakes,
       },
     });
   }

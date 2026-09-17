@@ -33,6 +33,7 @@ export async function buildDailyChallengesView(groupId: string, viewerId: string
     templateName: dc.challengeTemplate.name,
     templateDescription: dc.challengeTemplate.description,
     exerciseName: dc.challengeTemplate.exercise.name,
+    stakes: dc.stakes,
     goals: dc.goals.map((g) => ({
       id: g.id,
       userId: g.user.id,
