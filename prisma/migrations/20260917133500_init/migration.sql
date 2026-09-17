@@ -22,7 +22,7 @@ CREATE TYPE "ChallengeAttemptStatus" AS ENUM ('IN_PROGRESS', 'COMPLETED', 'ENDED
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
+    "username" TEXT NOT NULL,
     "passwordHash" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "bodyWeightKg" DOUBLE PRECISION,
@@ -225,7 +225,7 @@ CREATE TABLE "DailyChallengeAttempt" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Exercise_name_key" ON "Exercise"("name");
