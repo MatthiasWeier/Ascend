@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "motion/react";
 import { Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -144,18 +143,11 @@ export default function NewWorkoutPage() {
             </CardAction>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
-            <AnimatePresence initial={false}>
+            <>
               {rows.map((row) => {
                 const ex = exerciseFor(row.exerciseId);
                 return (
-                  <motion.div
-                    key={row.key}
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
+                  <div key={row.key} className="animate-in fade-in slide-in-from-top-2 overflow-hidden duration-200">
                     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-secondary/40 p-3">
                       <Select
                         value={row.exerciseId}
@@ -215,10 +207,10 @@ export default function NewWorkoutPage() {
                         <Trash2 className="size-4" />
                       </Button>
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
-            </AnimatePresence>
+            </>
             <Button type="button" variant="outline" onClick={addRow} disabled={exercises.length === 0}>
               <Plus className="size-4" />
               Satz hinzufügen

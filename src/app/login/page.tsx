@@ -4,7 +4,6 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { motion } from "motion/react";
 import { Mountain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,22 +55,12 @@ function LoginForm() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="flex items-center gap-2"
-      >
+      <div className="flex animate-in items-center gap-2 fade-in duration-500">
         <Mountain className="size-7 text-primary" />
         <span className="text-xl font-bold tracking-tight">Ascend</span>
-      </motion.div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
-        className="w-full max-w-sm"
-      >
+      <div className="w-full max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Card>
           <CardHeader>
             <CardTitle className="text-xl">Willkommen zurück</CardTitle>
@@ -117,7 +106,7 @@ function LoginForm() {
             Registrieren
           </Link>
         </p>
-      </motion.div>
+      </div>
     </main>
   );
 }

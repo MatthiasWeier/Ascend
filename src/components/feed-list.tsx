@@ -1,33 +1,21 @@
-"use client";
-
-import { motion } from "motion/react";
-
-const container = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.06 },
-  },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 10 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" as const } },
-};
-
+// Pure-CSS fade/slide-in with a per-item stagger delay - deliberately not
+// JS-driven (no framer-motion/motion). A JS animation library can end up
+// stuck at its `initial` (invisible) state if its mount effect never runs
+// for any reason; a CSS animation always plays on insertion regardless of
+// what JS does afterwards.
 export function FeedList({ children }: { children: React.ReactNode }) {
   const childArray = Array.isArray(children) ? children : [children];
   return (
-    <motion.div
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="flex flex-col gap-3"
-    >
+    <div className="flex flex-col gap-3">
       {childArray.map((child, i) => (
-        <motion.div key={i} variants={item}>
+        <div
+          key={i}
+          className="animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-backwards"
+          style={{ animationDelay: `${Math.min(i, 10) * 60}ms` }}
+        >
           {child}
-        </motion.div>
+        </div>
       ))}
-    </motion.div>
+    </div>
   );
 }
