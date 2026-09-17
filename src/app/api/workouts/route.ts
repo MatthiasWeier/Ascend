@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { computePrSetIds } from "@/lib/personal-records";
+import { autoShareToGroups } from "@/lib/workout-sharing";
 
 const setSchema = z.object({
   exerciseId: z.string(),
@@ -76,5 +77,10 @@ export async function POST(request: Request) {
     )
   );
 
-  return NextResponse.json({ session: created, newPrExerciseNames }, { status: 201 });
+  const autoSharedGroupNames = await autoShareToGroups(session.user.id, created);
+
+  return NextResponse.json(
+    { session: created, newPrExerciseNames, autoSharedGroupNames },
+    { status: 201 }
+  );
 }

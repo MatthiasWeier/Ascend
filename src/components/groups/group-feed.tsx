@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Dumbbell, Share2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Dumbbell } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FeedList } from "@/components/feed-list";
@@ -20,10 +20,17 @@ type Post = {
   user: { id: string; name: string };
 };
 
-export function GroupFeed({ groupId }: { groupId: string }) {
+export function GroupFeed({
+  groupId,
+  initialAutoShare,
+}: {
+  groupId: string;
+  initialAutoShare: boolean;
+}) {
   const { data: authSession } = useSession();
   const [posts, setPosts] = useState<Post[] | null>(null);
-  const [sharingAll, setSharingAll] = useState(false);
+  const [autoShare, setAutoShare] = useState(initialAutoShare);
+  const [togglingAutoShare, setTogglingAutoShare] = useState(false);
 
   function refetch() {
     fetch(`/api/groups/${groupId}/posts`)
@@ -42,38 +49,45 @@ export function GroupFeed({ groupId }: { groupId: string }) {
     );
   }, [posts, authSession]);
 
-  async function handleShareAll() {
-    setSharingAll(true);
-    const res = await fetch(`/api/groups/${groupId}/posts/share-all`, { method: "POST" });
-    setSharingAll(false);
+  async function handleToggleAutoShare(next: boolean) {
+    setTogglingAutoShare(true);
+    const res = await fetch(`/api/groups/${groupId}/auto-share`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ enabled: next }),
+    });
+    setTogglingAutoShare(false);
     if (!res.ok) {
-      toast.error("Konnte Workouts nicht teilen.");
+      toast.error("Konnte Einstellung nicht ändern.");
       return;
     }
-    const data: { count: number } = await res.json();
-    if (data.count === 0) {
-      toast("Alle deine Workouts sind schon geteilt.");
-    } else {
-      toast.success(`${data.count} Workout${data.count === 1 ? "" : "s"} geteilt!`);
-      refetch();
+    const data: { enabled: boolean; sharedCount: number } = await res.json();
+    setAutoShare(data.enabled);
+    if (!data.enabled) {
+      toast("Automatisches Teilen aus.");
+      return;
     }
+    toast.success(
+      data.sharedCount > 0
+        ? `Automatisches Teilen an - ${data.sharedCount} Workout${data.sharedCount === 1 ? "" : "s"} nachgetragen.`
+        : "Automatisches Teilen an."
+    );
+    refetch();
   }
 
   return (
     <div className="flex flex-col gap-4">
       <PostComposer groupId={groupId} alreadySharedIds={myAlreadySharedIds} onPosted={refetch} />
 
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="self-end"
-        onClick={handleShareAll}
-        disabled={sharingAll}
-      >
-        <Share2 className="size-3.5" />
-        {sharingAll ? "Teile…" : "Alle Workouts teilen"}
-      </Button>
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4">
+        <div>
+          <p className="text-sm font-medium">Workouts automatisch teilen</p>
+          <p className="text-xs text-muted-foreground">
+            Jedes neue Workout landet automatisch hier im Feed - inklusive aller bisherigen.
+          </p>
+        </div>
+        <Switch checked={autoShare} onCheckedChange={handleToggleAutoShare} disabled={togglingAutoShare} />
+      </div>
 
       {posts == null ? (
         <Skeleton className="h-32 w-full" />

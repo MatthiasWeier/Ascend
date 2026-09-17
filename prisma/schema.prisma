@@ -212,6 +212,10 @@ model GroupMember {
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   role     GroupRole @default(MEMBER)
   joinedAt DateTime  @default(now())
+  // When on, every new workout this member logs is auto-shared into this
+  // group's feed - and turning it on backfills every past workout not
+  // already shared here.
+  autoShareWorkouts Boolean @default(false)
 
   @@unique([groupId, userId])
   @@index([userId])

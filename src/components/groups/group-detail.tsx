@@ -28,6 +28,7 @@ type GroupInfo = {
   name: string;
   inviteCode: string;
   myRole: "LEADER" | "MEMBER";
+  autoShareWorkouts: boolean;
   members: { id: string; name: string; role: "LEADER" | "MEMBER" }[];
 };
 
@@ -88,7 +89,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
         </TabsList>
 
         <TabsContent value="feed">
-          <GroupFeed groupId={groupId} />
+          <GroupFeed groupId={groupId} initialAutoShare={group.autoShareWorkouts} />
         </TabsContent>
 
         <TabsContent value="challenges">

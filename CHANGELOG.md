@@ -5,6 +5,21 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.3.1] - 2026-09-18
+
+### Changed
+- Replaced the "Alle Workouts teilen"-Button mit einem dauerhaften
+  Toggle ("Workouts automatisch teilen") pro Gruppe: einmal aktiviert,
+  wird jedes neue Workout automatisch geteilt, nicht nur der bestehende
+  Rückstand. Deaktivieren stoppt nur zukünftige Shares, bereits geteilte
+  Posts bleiben im Feed.
+
+### Fixed
+- Bulk-Share konnte bei mehrfachem/schnellem Klicken (oder einer erneuten
+  Anfrage) dieselben Workouts doppelt in den Feed einfügen - die
+  Datenbank blockt das jetzt selbst ab (`skipDuplicates`), unabhängig
+  davon wie oft die Aktion ausgelöst wird.
+
 ## [0.3.0] - 2026-09-18
 
 ### Added

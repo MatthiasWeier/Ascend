@@ -35,6 +35,7 @@ export async function GET(
       name: group.name,
       inviteCode: group.inviteCode,
       myRole: membership.role,
+      autoShareWorkouts: membership.autoShareWorkouts,
       members: group.members.map((m) => ({ id: m.user.id, name: m.user.name, role: m.role })),
     },
   });

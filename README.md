@@ -123,8 +123,9 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 - ✅ Rollen: **Leader** (Ersteller) / **Member** - jeder darf einladen, nur
   der Leader darf kicken
 - ✅ Feed: Text-Posts, Fotos (lokales Docker-Volume), geteilte Workouts
-  einzeln oder per "Alle Workouts teilen"-Button auf einmal (bereits
-  geteilte werden dabei übersprungen, kein Duplikat möglich)
+  einzeln über den Composer oder per Toggle **"Workouts automatisch
+  teilen"** dauerhaft (rückwirkend + alle zukünftigen); bereits geteilte
+  Workouts werden nie doppelt gepostet
 - ✅ **Daily Challenges**: Leader aktiviert bis zu 4 Themen aus einem
   Katalog (`ChallengeTemplate`), jeder setzt sein eigenes Reps-Ziel
 - ✅ **Yammer-System** (Anti-Sandbagging): andere Mitglieder können ein zu

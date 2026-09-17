@@ -200,10 +200,13 @@ export default function NewWorkoutPage() {
       return;
     }
 
-    const data: { newPrExerciseNames?: string[] } = await res.json();
+    const data: { newPrExerciseNames?: string[]; autoSharedGroupNames?: string[] } = await res.json();
     toast.success("Workout gespeichert!");
     for (const name of data.newPrExerciseNames ?? []) {
       toast(`🏆 Neuer PR: ${name}!`, { duration: 5000 });
+    }
+    if (data.autoSharedGroupNames?.length) {
+      toast(`Automatisch geteilt in: ${data.autoSharedGroupNames.join(", ")}`);
     }
 
     router.push("/dashboard");
