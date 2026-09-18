@@ -5,6 +5,14 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.28.0] - 2026-09-19
+
+### Added
+- **REST-API mit API-Keys**: `/api/v1/exercises` und `/api/v1/workouts`
+  (GET/POST), authentifiziert über `Authorization: Bearer ascend_...`.
+  Keys werden in Settings erstellt/widerrufen, der Rohschlüssel wird nur
+  einmal angezeigt. Siehe README für Details.
+
 ## [0.27.0] - 2026-09-19
 
 ### Added

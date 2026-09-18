@@ -211,6 +211,25 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 - ❓ Mobile/Cross-Browser-UI ist nicht in einem echten Browser getestet -
   wenn du etwas Kaputtes findest, bitte melden
 
+## API (für eigene Scripts)
+
+API-Keys werden in Settings erstellt (`ascend_...`, nur einmal sichtbar).
+Damit gegen `/api/v1/*` authentifizieren:
+
+```bash
+curl -H "Authorization: Bearer ascend_..." https://your-instance/api/v1/exercises
+```
+
+| Endpoint | Methode | Beschreibung |
+|---|---|---|
+| `/api/v1/exercises` | GET | Sichtbare Übungen (eigene + Default + Gruppen) |
+| `/api/v1/workouts` | GET | Eigene Workouts (`?limit=`, max. 200, Default 50) |
+| `/api/v1/workouts` | POST | Workout anlegen (`{date?, notes?, sets: [{exerciseId, reps?, weightKg?, durationSec?, setType?, notes?}]}`) |
+
+Bewusst schlank gehalten - kein Ersatz für die interne API, sondern eine
+stabile Fläche für eigene Automationen. Löst keine PR-/Gruppenziel-
+Nebeneffekte aus.
+
 ## Datenmodell
 
 Siehe `prisma/schema.prisma`. Wichtige Design-Entscheidungen:

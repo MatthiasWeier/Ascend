@@ -23,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteAccountDialog } from "@/components/delete-account-dialog";
 import { PushNotificationToggle } from "@/components/push-notification-toggle";
 import { DataExport, DataImport, CalendarFeed } from "@/components/data-portability";
+import { ApiKeyManager } from "@/components/api-key-manager";
 import { APP_VERSION } from "@/lib/version";
 
 type SettingsData = {
@@ -279,6 +280,16 @@ export default function SettingsPage() {
           <DataExport />
           <DataImport />
           <CalendarFeed />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">API-Keys</CardTitle>
+          <CardDescription>Für eigene Scripts/Automationen - siehe README für die Endpunkte.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ApiKeyManager />
         </CardContent>
       </Card>
 

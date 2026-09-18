@@ -66,6 +66,7 @@ model User {
   goalContributions GroupGoalContribution[]
   pushSubscriptions PushSubscription[]
   postReactions     PostReaction[]
+  apiKeys           ApiKey[]
 }
 
 // Catalog of exercises. Seeded with defaults; users/groups can add their own.
@@ -488,6 +489,25 @@ model PushSubscription {
   p256dh    String
   auth      String
   createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// A personal access token for the /api/v1/* REST API - own scripts/
+// automations, not third-party OAuth apps. Only the SHA-256 hash is
+// stored (a straight hash is fine here, unlike passwords: the key itself
+// is already a high-entropy random secret, not something to defend
+// against low-entropy guessing); the raw key is shown exactly once, at
+// creation time.
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  keyHash    String    @unique
+  keyPrefix  String
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
 
   @@index([userId])
 }
