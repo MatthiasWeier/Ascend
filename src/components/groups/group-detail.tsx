@@ -30,6 +30,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { undoableAction } from "@/lib/undo-toast";
 import { InviteButton } from "@/components/groups/invite-button";
 import { GroupFeed } from "@/components/groups/group-feed";
 import { GroupChallenges } from "@/components/groups/group-challenges";
@@ -76,14 +77,28 @@ export function GroupDetail({ groupId }: { groupId: string }) {
 
   useEffect(refetch, [groupId]);
 
-  async function handleKick(userId: string) {
-    const res = await fetch(`/api/groups/${groupId}/members/${userId}`, { method: "DELETE" });
-    if (!res.ok) {
-      toast.error("Konnte Mitglied nicht entfernen.");
-      return;
-    }
-    toast.success("Mitglied entfernt.");
-    refetch();
+  function handleKick(userId: string, userName: string) {
+    if (!group) return;
+    const index = group.members.findIndex((m) => m.id === userId);
+    if (index === -1) return;
+    const member = group.members[index];
+
+    setGroup({ ...group, members: group.members.filter((m) => m.id !== userId) });
+
+    undoableAction({
+      message: `${userName} aus der Gruppe entfernt.`,
+      onCommit: () => {
+        fetch(`/api/groups/${groupId}/members/${userId}`, { method: "DELETE" }).catch(() => {});
+      },
+      onUndo: () => {
+        setGroup((g) => {
+          if (!g) return g;
+          const next = [...g.members];
+          next.splice(index, 0, member);
+          return { ...g, members: next };
+        });
+      },
+    });
   }
 
   async function handleLeave() {
@@ -316,23 +331,16 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
-                    <AlertDialog>
-                      <AlertDialogTrigger render={<Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive" />}>
-                        <UserX className="size-4" />
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>{m.name} aus der Gruppe entfernen?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Diese Person verliert den Zugriff auf Feed und Challenges der Gruppe. Sie kann per neuem Invite-Link wieder beitreten.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleKick(m.id)}>Entfernen</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-muted-foreground hover:text-destructive"
+                      title="Entfernen"
+                      onClick={() => handleKick(m.id, m.name)}
+                    >
+                      <UserX className="size-4" />
+                    </Button>
                   </>
                 )}
                 </div>

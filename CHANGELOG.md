@@ -5,6 +5,13 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.19.0] - 2026-09-18
+
+### Added
+- **Undo-Fenster** statt Bestätigungs-Dialog: Vorlage löschen (neue
+  "Vorlagen verwalten"-Ansicht) und Mitglied aus einer Gruppe entfernen
+  passieren sofort, mit 5 Sekunden Zeit zum Rückgängigmachen im Toast
+
 ## [0.18.0] - 2026-09-18
 
 ### Added

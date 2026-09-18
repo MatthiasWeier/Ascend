@@ -36,6 +36,7 @@ import {
 import { ExerciseCombobox } from "@/components/exercise-combobox";
 import { CreateExerciseDialog } from "@/components/create-exercise-dialog";
 import { cn } from "@/lib/utils";
+import { undoableAction } from "@/lib/undo-toast";
 
 type Exercise = {
   id: string;
@@ -96,6 +97,7 @@ export default function NewWorkoutPage() {
 
   const [templates, setTemplates] = useState<Template[]>([]);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [manageTemplatesOpen, setManageTemplatesOpen] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [mostUsedExerciseIds, setMostUsedExerciseIds] = useState<string[]>([]);
@@ -268,6 +270,26 @@ export default function NewWorkoutPage() {
     setTemplateName("");
   }
 
+  function deleteTemplate(templateId: string) {
+    const index = templates.findIndex((t) => t.id === templateId);
+    if (index === -1) return;
+    const template = templates[index];
+    setTemplates((prev) => prev.filter((t) => t.id !== templateId));
+    undoableAction({
+      message: `Vorlage "${template.name}" gelöscht.`,
+      onCommit: () => {
+        fetch(`/api/workout-templates/${templateId}`, { method: "DELETE" }).catch(() => {});
+      },
+      onUndo: () => {
+        setTemplates((prev) => {
+          const next = [...prev];
+          next.splice(index, 0, template);
+          return next;
+        });
+      },
+    });
+  }
+
   function markDone(key: number) {
     setRows((prev) => prev.map((r) => (r.key === key ? { ...r, done: !r.done } : r)));
     const row = rows.find((r) => r.key === key);
@@ -390,6 +412,38 @@ export default function NewWorkoutPage() {
                     ))}
                   </SelectContent>
                 </Select>
+              )}
+              {(templates.length > 0 || manageTemplatesOpen) && (
+                <Dialog open={manageTemplatesOpen} onOpenChange={setManageTemplatesOpen}>
+                  <DialogTrigger render={<Button type="button" variant="ghost" size="icon-sm" title="Vorlagen verwalten" />}>
+                    <Trash2 className="size-3.5" />
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Vorlagen verwalten</DialogTitle>
+                      <DialogDescription>Löschen lässt sich kurz danach rückgängig machen.</DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-1 py-2">
+                      {templates.map((t) => (
+                        <div key={t.id} className="flex items-center justify-between rounded-lg px-2 py-1.5 hover:bg-secondary/50">
+                          <span className="text-sm">{t.name}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            className="text-muted-foreground hover:text-destructive"
+                            onClick={() => deleteTemplate(t.id)}
+                          >
+                            <X className="size-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      {templates.length === 0 && (
+                        <p className="py-4 text-center text-sm text-muted-foreground">Keine Vorlagen mehr.</p>
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
               )}
               <Dialog open={saveTemplateOpen} onOpenChange={setSaveTemplateOpen}>
                 <DialogTrigger
