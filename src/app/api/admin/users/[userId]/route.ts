@@ -4,7 +4,13 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdmin } from "@/lib/admin-auth";
 
-const patchSchema = z.object({ isAdmin: z.boolean() });
+const patchSchema = z.object({
+  isAdmin: z.boolean().optional(),
+  // Recovery path for a locked-out user - there's no email-based account
+  // recovery in this app at all, so this is the only way back in if
+  // someone loses both their authenticator and their backup codes.
+  disableTotp: z.literal(true).optional(),
+});
 
 export async function PATCH(
   request: Request,
@@ -22,6 +28,18 @@ export async function PATCH(
   const body = await request.json();
   const parsed = patchSchema.safeParse(body);
   if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+  }
+
+  if (parsed.data.disableTotp) {
+    await prisma.$transaction([
+      prisma.user.update({ where: { id: userId }, data: { totpEnabled: false, totpSecret: null } }),
+      prisma.totpBackupCode.deleteMany({ where: { userId } }),
+    ]);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (parsed.data.isAdmin === undefined) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 

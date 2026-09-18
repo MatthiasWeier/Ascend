@@ -3,6 +3,8 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, envInt } from "@/lib/rate-limit";
+import { verifyTotpToken } from "@/lib/totp";
+import { consumeBackupCode } from "@/lib/totp-backup-codes";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
@@ -12,10 +14,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       credentials: {
         username: {},
         password: {},
+        totpToken: {},
       },
       authorize: async (credentials) => {
         const username = credentials?.username as string | undefined;
         const password = credentials?.password as string | undefined;
+        const totpToken = credentials?.totpToken as string | undefined;
         if (!username || !password) return null;
 
         // Lock out after repeated failures against a given username -
@@ -34,6 +38,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;
+
+        if (user.totpEnabled) {
+          if (!totpToken) return null;
+          const validTotp = user.totpSecret ? verifyTotpToken(user.totpSecret, totpToken) : false;
+          const validBackup = validTotp ? false : await consumeBackupCode(user.id, totpToken);
+          if (!validTotp && !validBackup) return null;
+        }
 
         return { id: user.id, name: user.name, username: user.username, isAdmin: user.isAdmin };
       },

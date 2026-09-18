@@ -31,23 +31,49 @@ function LoginForm() {
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [totpToken, setTotpToken] = useState("");
+  const [needsTotp, setNeedsTotp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setLoading(true);
 
+    // First submit with just username+password: check whether this
+    // account has 2FA on before attempting sign-in, so we can show the
+    // code field instead of failing once, generically, then asking again.
+    if (!needsTotp) {
+      setLoading(true);
+      const check = await fetch("/api/auth/totp-required", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      })
+        .then((r) => r.json())
+        .catch(() => ({ required: false }));
+      setLoading(false);
+      if (check.required) {
+        setNeedsTotp(true);
+        return;
+      }
+    }
+
+    setLoading(true);
     const result = await signIn("credentials", {
       username,
       password,
+      totpToken: needsTotp ? totpToken : undefined,
       redirect: false,
     });
 
     setLoading(false);
     if (result?.error) {
-      setError("Benutzername oder Passwort ist falsch.");
+      setError(
+        needsTotp
+          ? "Benutzername, Passwort oder Code ist falsch."
+          : "Benutzername oder Passwort ist falsch."
+      );
       return;
     }
     router.push(callbackUrl);
@@ -75,6 +101,7 @@ function LoginForm() {
                   id="username"
                   required
                   autoComplete="username"
+                  disabled={needsTotp}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
@@ -86,14 +113,43 @@ function LoginForm() {
                   type="password"
                   required
                   autoComplete="current-password"
+                  disabled={needsTotp}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+              {needsTotp && (
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="totp">2FA-Code</Label>
+                  <Input
+                    id="totp"
+                    required
+                    autoFocus
+                    inputMode="numeric"
+                    placeholder="123456 oder Backup-Code"
+                    autoComplete="one-time-code"
+                    value={totpToken}
+                    onChange={(e) => setTotpToken(e.target.value)}
+                  />
+                </div>
+              )}
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" disabled={loading} className="mt-2">
-                {loading ? "Einen Moment…" : "Anmelden"}
+                {loading ? "Einen Moment…" : needsTotp ? "Bestätigen" : "Anmelden"}
               </Button>
+              {needsTotp && (
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground hover:underline"
+                  onClick={() => {
+                    setNeedsTotp(false);
+                    setTotpToken("");
+                    setError(null);
+                  }}
+                >
+                  Zurück
+                </button>
+              )}
             </form>
           </CardContent>
         </Card>

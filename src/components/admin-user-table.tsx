@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { Trash2, ShieldOff } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,6 +23,7 @@ type AdminUser = {
   username: string;
   name: string;
   isAdmin: boolean;
+  totpEnabled: boolean;
   createdAt: string;
   lastActiveAt: string | null;
   _count: { workoutSessions: number; groupMemberships: number };
@@ -54,6 +55,23 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
       return;
     }
     toast.success(next ? "Zum Admin gemacht." : "Admin-Rechte entfernt.");
+    refetch();
+  }
+
+  async function disableTotp(userId: string) {
+    setBusyId(userId);
+    const res = await fetch(`/api/admin/users/${userId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ disableTotp: true }),
+    });
+    setBusyId(null);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      toast.error(data.error ?? "Konnte 2FA nicht zurücksetzen.");
+      return;
+    }
+    toast.success("2FA für diesen Nutzer zurückgesetzt.");
     refetch();
   }
 
@@ -99,6 +117,41 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
                 title={isSelf ? "Du kannst deinen eigenen Admin-Status nicht ändern" : undefined}
               />
             </div>
+            {u.totpEnabled && (
+              <AlertDialog>
+                <AlertDialogTrigger
+                  render={
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-muted-foreground hover:text-foreground"
+                      disabled={busyId === u.id}
+                      title="2FA für diesen Nutzer zurücksetzen"
+                    />
+                  }
+                >
+                  <ShieldOff className="size-4" />
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>2FA für {u.name} zurücksetzen?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Deaktiviert die Zwei-Faktor-Authentifizierung für dieses Konto und
+                      löscht alle Backup-Codes - für den Fall, dass die Person ihre
+                      Authenticator-App und Backup-Codes verloren hat. Sie kann 2FA danach
+                      in den Einstellungen neu einrichten.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => disableTotp(u.id)}>
+                      Zurücksetzen
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             <AlertDialog>
               <AlertDialogTrigger
                 render={

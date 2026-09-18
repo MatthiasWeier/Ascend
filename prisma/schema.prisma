@@ -47,6 +47,15 @@ model User {
   // group posts); this only controls what unit the UI shows/accepts.
   weightUnit   WeightUnit @default(KG)
   avatarUrl    String?
+  // TOTP (RFC 6238) two-factor auth. totpSecret is set as soon as setup
+  // starts but totpEnabled only flips to true once the user proves they
+  // can generate a valid code with it - an unconfirmed secret has zero
+  // effect on login. There's no email-based account recovery in this app
+  // at all, so losing both the authenticator and backup codes means an
+  // admin has to reset this from /dashboard/admin (see admin-auth route).
+  totpSecret      String?
+  totpEnabled     Boolean          @default(false)
+  totpBackupCodes TotpBackupCode[]
   // Instance-wide admin (not a per-group role): can manage all users from
   // /dashboard/admin. Not derived from anything - explicitly set.
   isAdmin      Boolean  @default(false)
@@ -498,6 +507,20 @@ model PushSubscription {
   p256dh    String
   auth      String
   createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// One single-use TOTP recovery code, issued 10-at-a-time when 2FA is
+// enabled (and again on regeneration). Hashed like ApiKey.keyHash - the
+// plaintext is shown exactly once, at generation time.
+model TotpBackupCode {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
 
   @@index([userId])
 }

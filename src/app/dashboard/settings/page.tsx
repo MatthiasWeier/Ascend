@@ -35,9 +35,16 @@ import { APP_VERSION } from "@/lib/version";
 import { useWeightUnit } from "@/components/weight-unit-context";
 import { roundForDisplay } from "@/lib/weight-units";
 import type { WeightUnit } from "@/lib/weight-units";
+import { TwoFactorSetup } from "@/components/two-factor-setup";
 
 type SettingsData = {
-  user: { name: string; username: string; bodyWeightKg: number | null; avatarUrl: string | null };
+  user: {
+    name: string;
+    username: string;
+    bodyWeightKg: number | null;
+    avatarUrl: string | null;
+    totpEnabled: boolean;
+  };
   balanceGoals: { focus: MuscleFocus; targetPercent: number }[];
   bodyWeightHistory: { dateKey: string; weightKg: number }[];
 };
@@ -340,6 +347,15 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <ApiKeyManager />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Zwei-Faktor-Authentifizierung</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TwoFactorSetup enabled={data.user.totpEnabled} onChanged={refetch} />
         </CardContent>
       </Card>
 

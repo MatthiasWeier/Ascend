@@ -19,6 +19,7 @@ export async function GET() {
       username: true,
       name: true,
       isAdmin: true,
+      totpEnabled: true,
       createdAt: true,
       lastActiveAt: true,
       _count: { select: { workoutSessions: true, groupMemberships: true } },

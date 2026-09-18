@@ -5,6 +5,19 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.31.0] - 2026-09-19
+
+### Added
+- **Zwei-Faktor-Authentifizierung (TOTP)**: optional, pro Konto in den
+  Einstellungen aktivierbar - RFC-6238-TOTP (kompatibel mit Google/Microsoft
+  Authenticator, Aegis, 1Password, ...) selbst implementiert, kein
+  Cloud-Dienst nötig. QR-Code zum Scannen, 10 Backup-Codes (je einmal
+  gültig) beim Aktivieren. Login fragt den Code nur ab, wenn 2FA für den
+  jeweiligen Account an ist - für alle bestehenden Konten ändert sich ohne
+  eigenes Zutun nichts. Da es keine E-Mail-basierte Konto-Wiederherstellung
+  gibt, können Admins 2FA für ein Konto in `/dashboard/admin` zurücksetzen,
+  falls Authenticator und Backup-Codes beide verloren gehen.
+
 ## [0.30.0] - 2026-09-19
 
 ### Added

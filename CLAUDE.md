@@ -78,6 +78,20 @@ rather than trusting a summary here to stay in sync with every detail.
   `session.user.id`/`.username` need the module augmentation in
   `src/lib/next-auth.d.ts` plus the `session()` callback in `src/lib/auth.ts`
   to actually be populated - both already exist, don't re-add them.
+- **Credentials provider errors are NOT distinguishable on the client with
+  `redirect: false`.** `@auth/core`'s `isClientError` only whitelists the
+  literal string `"CredentialsSignin"` - subclassing `CredentialsSignin`
+  with your own `static type`/`code` (the documented pattern for the
+  redirect-based flow) gets silently discarded and collapses back to
+  `"Configuration"`, and even the `code` query param that DOES survive is
+  never exposed by `next-auth/react`'s `signIn()` return value when
+  `redirect: false` (this app's login form uses `redirect: false`
+  throughout - see `src/app/login/page.tsx`). 2FA works around this with a
+  separate pre-flight endpoint (`POST /api/auth/totp-required`) the login
+  form calls before attempting `signIn()`, rather than trying to signal
+  "wrong password" vs. "needs a code" from `authorize()` itself. Follow
+  this pattern for any future multi-step credentials flow instead of
+  fighting the error-type plumbing.
 - **Tailwind v4**, dark-first, CSS-only animations (`tw-animate-css`) -
   deliberately no JS animation library (Framer Motion caused an
   unreproducible stuck-invisible bug early on and was ripped out).
