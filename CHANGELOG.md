@@ -5,6 +5,13 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.23.1] - 2026-09-18
+
+### Fixed
+- Editing a workout that was already shared into a group now updates that
+  group post's content too, instead of leaving it showing the old
+  numbers - without sending a new push notification.
+
 ## [0.23.0] - 2026-09-18
 
 ### Added

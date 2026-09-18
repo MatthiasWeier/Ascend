@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { contributeWorkoutSetToGoals } from "@/lib/goal-contributions";
 import { focusFatigueSchema, deriveOverallExertion } from "@/lib/focus-fatigue";
+import { summarizeWorkoutSession } from "@/lib/workout-summary";
 
 const setSchema = z.object({
   exerciseId: z.string(),
@@ -112,6 +113,16 @@ export async function PATCH(
     where: { id: sessionId },
     include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
   });
+
+  // Keep any group post(s) this workout was shared into in sync with the
+  // edit - silently, as a content update, never a fresh push notification
+  // (nobody needs to be re-notified just because a rep count was fixed).
+  if (updated) {
+    await prisma.groupPost.updateMany({
+      where: { workoutSessionId: sessionId, type: "WORKOUT_SHARE" },
+      data: { content: summarizeWorkoutSession(updated) },
+    });
+  }
 
   // Re-run auto-fill for any exercise linked to a Group Goal, using the
   // edited values.
