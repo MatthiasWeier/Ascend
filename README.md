@@ -8,7 +8,8 @@ climbing-specific skin recovery, and runs group Daily Challenges with a
 peer-review system ("Yammer") that stops people from sandbagging their goals.
 
 Licensed under the [MIT License](./LICENSE) - use it, fork it, run your own
-instance for you and your crew.
+instance for you and your crew. Contributions welcome - see
+[CONTRIBUTING.md](./CONTRIBUTING.md).
 
 **Version:** see [`package.json`](./package.json) (`version` field - the one
 source of truth, also shown in the app footer and in Settings) ·
@@ -113,6 +114,9 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   hinzufügen
 - ✅ **Workout bearbeiten & löschen** - inkl. korrekter Nachführung
   verknüpfter Gruppenziel-Beiträge
+- ✅ **kg/lbs umschaltbar** (Settings): reine Anzeige-Einstellung, intern
+  wird immer in kg gespeichert; Hantelscheiben-/Aufwärm-Rechner rechnen
+  mit dem passenden Scheiben-Satz für die gewählte Einheit
 
 ### Workout Brain
 - ✅ Muskel-Fokus-Vorschlag (längste Pause seit dem letzten Training)

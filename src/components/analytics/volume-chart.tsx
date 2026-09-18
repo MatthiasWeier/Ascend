@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useWeightUnit } from "@/components/weight-unit-context";
 
 type Point = { date: string; volumeKg: number };
 
@@ -12,23 +13,26 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function VolumeChart() {
-  const [points, setPoints] = useState<Point[] | null>(null);
+  const [rawPoints, setRawPoints] = useState<Point[] | null>(null);
+  const { toDisplay, unitLabel } = useWeightUnit();
 
   useEffect(() => {
     fetch("/api/analytics/volume?days=90")
       .then((r) => r.json())
-      .then((data: { points: Point[] }) => setPoints(data.points));
+      .then((data: { points: Point[] }) => setRawPoints(data.points));
   }, []);
 
-  if (points == null) return <Skeleton className="h-64 w-full" />;
+  if (rawPoints == null) return <Skeleton className="h-64 w-full" />;
 
-  if (points.length === 0) {
+  if (rawPoints.length === 0) {
     return (
       <p className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
         Noch keine Reps-Workouts in den letzten 90 Tagen.
       </p>
     );
   }
+
+  const points = rawPoints.map((p) => ({ ...p, volumeKg: Math.round(toDisplay(p.volumeKg)) }));
 
   return (
     <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
@@ -47,7 +51,7 @@ export function VolumeChart() {
           content={
             <ChartTooltipContent
               labelFormatter={(v) => new Date(v).toLocaleDateString("de-DE")}
-              formatter={(value) => [`${value} kg`, "Volumen"]}
+              formatter={(value) => [`${value} ${unitLabel}`, "Volumen"]}
             />
           }
         />

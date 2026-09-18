@@ -5,6 +5,7 @@ import { Trophy } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { FOCUS_LABEL } from "@/lib/muscle-focus";
+import { useWeightUnit } from "@/components/weight-unit-context";
 import type { MuscleFocus } from "@prisma/client";
 
 type Record = {
@@ -18,6 +19,7 @@ type Record = {
 
 export function PersonalRecords() {
   const [records, setRecords] = useState<Record[] | null>(null);
+  const { toDisplay, unitLabel } = useWeightUnit();
 
   useEffect(() => {
     fetch("/api/analytics/records")
@@ -53,7 +55,7 @@ export function PersonalRecords() {
             {FOCUS_LABEL[r.focus]}
           </Badge>
           <span className="shrink-0 font-mono text-sm tabular-nums">
-            {r.type === "HOLD" ? `${r.bestValue}s` : `${Math.round(r.bestValue)} kg·1RM`}
+            {r.type === "HOLD" ? `${r.bestValue}s` : `${Math.round(toDisplay(r.bestValue))} ${unitLabel}·1RM`}
           </span>
         </div>
       ))}

@@ -41,6 +41,8 @@ import { FOCUS_LABEL, ALL_FOCUSES } from "@/lib/muscle-focus";
 import type { MuscleFocus, SetType } from "@prisma/client";
 import { PlateCalculatorPopover } from "@/components/plate-calculator-popover";
 import { WarmupCalculatorDialog } from "@/components/warmup-calculator-dialog";
+import { useWeightUnit } from "@/components/weight-unit-context";
+import { roundForDisplay } from "@/lib/weight-units";
 
 type Exercise = {
   id: string;
@@ -67,6 +69,12 @@ type SetRow = {
   key: number;
   exerciseId: string;
   reps: string;
+  // Despite the name (kept for minimal diff against the API's weightKg
+  // field), this holds the raw typed value in whatever unit is currently
+  // selected (kg or lbs) - converted to/from kg only at the kg-canonical
+  // boundaries (API submit, and prefill from API responses which are
+  // always kg). Never reformatted on every keystroke, so mid-typing
+  // decimals (e.g. "82.") never get clobbered.
   weightKg: string;
   durationSec: string;
   setType: SetType;
@@ -96,17 +104,22 @@ function formatMmSs(totalSeconds: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-function formatLastValue(last: { reps: number | null; weightKg: number | null; durationSec: number | null }) {
+function formatLastValue(
+  last: { reps: number | null; weightKg: number | null; durationSec: number | null },
+  format: (kg: number | null | undefined) => string,
+  unitLabel: string
+) {
   if (last.durationSec != null) {
-    return last.weightKg ? `${last.durationSec}s @ ${last.weightKg}kg` : `${last.durationSec}s`;
+    return last.weightKg ? `${last.durationSec}s @ ${format(last.weightKg)}${unitLabel}` : `${last.durationSec}s`;
   }
-  return `${last.weightKg ?? 0}kg × ${last.reps ?? "-"}`;
+  return `${format(last.weightKg ?? 0)}${unitLabel} × ${last.reps ?? "-"}`;
 }
 
 export default function NewWorkoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editSessionId = searchParams.get("edit");
+  const weightUnit = useWeightUnit();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [lastValues, setLastValues] = useState<LastValues>({});
   const [rows, setRows] = useState<SetRow[]>([]);
@@ -183,7 +196,10 @@ export default function NewWorkoutPage() {
             key: rowKey++,
             exerciseId: set.exerciseId,
             reps: set.reps != null ? String(set.reps) : "",
-            weightKg: set.weightKg != null ? String(set.weightKg) : "",
+            weightKg:
+              set.weightKg != null
+                ? String(roundForDisplay(weightUnit.toDisplay(set.weightKg), weightUnit.unit))
+                : "",
             durationSec: set.durationSec != null ? String(set.durationSec) : "",
             setType: set.setType ?? "NORMAL",
             notes: set.notes ?? "",
@@ -250,7 +266,8 @@ export default function NewWorkoutPage() {
         // value someone's already typed.
         if (last) {
           if (r.reps === "" && last.reps != null) patch.reps = String(last.reps);
-          if (r.weightKg === "" && last.weightKg != null) patch.weightKg = String(last.weightKg);
+          if (r.weightKg === "" && last.weightKg != null)
+            patch.weightKg = String(roundForDisplay(weightUnit.toDisplay(last.weightKg), weightUnit.unit));
           if (r.durationSec === "" && last.durationSec != null) patch.durationSec = String(last.durationSec);
         }
         return { ...r, ...patch };
@@ -266,7 +283,8 @@ export default function NewWorkoutPage() {
     const last = lastValues[exerciseId];
     if (last) {
       if (last.reps != null) row.reps = String(last.reps);
-      if (last.weightKg != null) row.weightKg = String(last.weightKg);
+      if (last.weightKg != null)
+        row.weightKg = String(roundForDisplay(weightUnit.toDisplay(last.weightKg), weightUnit.unit));
       if (last.durationSec != null) row.durationSec = String(last.durationSec);
     }
     setRows((prev) => [...prev, row]);
@@ -287,7 +305,7 @@ export default function NewWorkoutPage() {
       if (idx === -1) return prev;
       const warmupRows = sets.map((s) => ({
         ...emptyRow(exerciseId),
-        weightKg: String(s.weightKg),
+        weightKg: String(roundForDisplay(weightUnit.toDisplay(s.weightKg), weightUnit.unit)),
         reps: String(s.reps),
         setType: "WARMUP" as SetType,
       }));
@@ -320,7 +338,8 @@ export default function NewWorkoutPage() {
         const last = lastValues[e.exerciseId];
         if (last) {
           if (last.reps != null) row.reps = String(last.reps);
-          if (last.weightKg != null) row.weightKg = String(last.weightKg);
+          if (last.weightKg != null)
+            row.weightKg = String(roundForDisplay(weightUnit.toDisplay(last.weightKg), weightUnit.unit));
           if (last.durationSec != null) row.durationSec = String(last.durationSec);
         }
         return row;
@@ -404,14 +423,14 @@ export default function NewWorkoutPage() {
           return {
             exerciseId: r.exerciseId,
             durationSec: Number(r.durationSec),
-            weightKg: r.weightKg === "" ? undefined : Number(r.weightKg),
+            weightKg: r.weightKg === "" ? undefined : weightUnit.toKg(Number(r.weightKg)),
             ...common,
           };
         }
         return {
           exerciseId: r.exerciseId,
           reps: Number(r.reps),
-          weightKg: r.weightKg === "" ? 0 : Number(r.weightKg),
+          weightKg: r.weightKg === "" ? 0 : weightUnit.toKg(Number(r.weightKg)),
           ...common,
         };
       }),
@@ -622,7 +641,7 @@ export default function NewWorkoutPage() {
                     >
                       {last && (
                         <p className="text-xs text-muted-foreground">
-                          Letztes Mal: {formatLastValue(last)}
+                          Letztes Mal: {formatLastValue(last, weightUnit.format, weightUnit.unitLabel)}
                         </p>
                       )}
                       <div className="flex flex-wrap items-center gap-2">
@@ -647,7 +666,7 @@ export default function NewWorkoutPage() {
                               type="number"
                               min={0}
                               step={0.5}
-                              placeholder="+kg"
+                              placeholder={`+${weightUnit.unitLabel}`}
                               title="Zusatzgewicht (optional)"
                               value={row.weightKg}
                               onChange={(e) => updateRow(row.key, { weightKg: e.target.value })}
@@ -669,14 +688,14 @@ export default function NewWorkoutPage() {
                               type="number"
                               min={0}
                               step={0.5}
-                              placeholder="kg"
+                              placeholder={weightUnit.unitLabel}
                               value={row.weightKg}
                               onChange={(e) => updateRow(row.key, { weightKg: e.target.value })}
                               className="w-16"
                             />
-                            <PlateCalculatorPopover targetWeightKg={Number(row.weightKg) || 0} />
+                            <PlateCalculatorPopover targetWeightKg={weightUnit.toKg(Number(row.weightKg) || 0)} />
                             <WarmupCalculatorDialog
-                              targetWeightKg={Number(row.weightKg) || 0}
+                              targetWeightKg={weightUnit.toKg(Number(row.weightKg) || 0)}
                               targetReps={Number(row.reps) || 8}
                               onInsert={(sets) => insertWarmupSets(row.key, row.exerciseId, sets)}
                             />

@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { FOCUS_LABEL } from "@/lib/muscle-focus";
 import { cn } from "@/lib/utils";
+import { useWeightUnit } from "@/components/weight-unit-context";
 import type { MuscleFocus, SetType } from "@prisma/client";
 
 type SetWithExercise = {
@@ -73,6 +74,7 @@ export function WorkoutSessionCard({
   onDeleted?: () => void;
 }) {
   const router = useRouter();
+  const { format, unitLabel } = useWeightUnit();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const focuses = Array.from(new Set(sets.map((s) => s.exercise.focus)));
@@ -165,9 +167,9 @@ export function WorkoutSessionCard({
                   <span className="font-mono text-muted-foreground">
                     {set.durationSec != null
                       ? set.weightKg
-                        ? `${set.durationSec}s @ ${set.weightKg}kg`
+                        ? `${set.durationSec}s @ ${format(set.weightKg)}${unitLabel}`
                         : `${set.durationSec}s`
-                      : `${set.reps ?? "-"} × ${set.weightKg ?? 0}kg`}
+                      : `${set.reps ?? "-"} × ${format(set.weightKg ?? 0)}${unitLabel}`}
                   </span>
                 </div>
                 {set.notes && <p className="text-xs italic text-muted-foreground">{set.notes}</p>}

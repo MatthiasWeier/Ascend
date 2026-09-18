@@ -183,6 +183,18 @@ new thing a user would notice as separate" - the former is patch.
   retried or genuinely concurrent request - reuse this shape (not a
   client-side disable-button guard alone) for any future auto-derived
   aggregate.
+- **Display-unit preference, kg-canonical storage.** `User.weightUnit`
+  (`lib/weight-units.ts`, `components/weight-unit-context.tsx`) is a pure
+  display setting - every weight is stored in kg everywhere (DB, API,
+  CSV export/import, group post text) and converted only at the
+  client-rendering boundary via `useWeightUnit()`. In
+  `dashboard/workouts/new/page.tsx` specifically, `SetRow.weightKg` holds
+  the raw typed string in whatever unit is currently active (not always
+  kg, despite the name) so the input is never reformatted on every
+  keystroke - conversion only happens where it crosses into/out of kg
+  (API submit, and prefill from API responses). If you add another
+  weight-bearing surface, follow the same "convert only where kg crosses
+  the client boundary" rule rather than converting eagerly.
 
 ## Testing conventions
 

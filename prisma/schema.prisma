@@ -31,12 +31,21 @@ enum SetType {
   FAILURE
 }
 
+enum WeightUnit {
+  KG
+  LBS
+}
+
 model User {
   id           String   @id @default(cuid())
   username     String   @unique
   passwordHash String
   name         String
   bodyWeightKg Float?
+  // Display-only preference - every weight is still stored in kg
+  // everywhere (workout sets, bodyweight history, CSV export/import,
+  // group posts); this only controls what unit the UI shows/accepts.
+  weightUnit   WeightUnit @default(KG)
   avatarUrl    String?
   // Instance-wide admin (not a per-group role): can manage all users from
   // /dashboard/admin. Not derived from anything - explicitly set.

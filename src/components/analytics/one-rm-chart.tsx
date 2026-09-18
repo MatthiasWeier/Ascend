@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Scale } from "lucide-react";
 import { VIZ_DELTA_GOOD, VIZ_DELTA_BAD } from "@/lib/viz-colors";
+import { useWeightUnit } from "@/components/weight-unit-context";
 
 type Exercise = { id: string; name: string; type: "REPS" | "HOLD"; isBodyweight: boolean };
 type Point = { date: string; oneRepMax: number };
@@ -26,7 +27,8 @@ const chartConfig = {
 export function OneRmChart() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [exerciseId, setExerciseId] = useState<string>("");
-  const [points, setPoints] = useState<Point[] | null>(null);
+  const [rawPoints, setRawPoints] = useState<Point[] | null>(null);
+  const { toDisplay, unitLabel } = useWeightUnit();
 
   useEffect(() => {
     fetch("/api/exercises")
@@ -39,11 +41,16 @@ export function OneRmChart() {
 
   useEffect(() => {
     if (!exerciseId) return;
-    setPoints(null);
+    setRawPoints(null);
     fetch(`/api/analytics/1rm?exerciseId=${exerciseId}`)
       .then((r) => r.json())
-      .then((data: { points: Point[] }) => setPoints(data.points));
+      .then((data: { points: Point[] }) => setRawPoints(data.points));
   }, [exerciseId]);
+
+  const points = useMemo(
+    () => rawPoints?.map((p) => ({ ...p, oneRepMax: Math.round(toDisplay(p.oneRepMax) * 10) / 10 })) ?? null,
+    [rawPoints, toDisplay]
+  );
 
   const delta = useMemo(() => {
     if (!points || points.length < 2) return null;
@@ -94,7 +101,7 @@ export function OneRmChart() {
             >
               {delta >= 0 ? <TrendingUp className="size-4" /> : <TrendingDown className="size-4" />}
               {delta >= 0 ? "+" : ""}
-              {delta.toFixed(1)} kg geschätztes 1RM seit erstem Eintrag
+              {delta.toFixed(1)} {unitLabel} geschätztes 1RM seit erstem Eintrag
             </div>
           )}
           <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
@@ -112,7 +119,7 @@ export function OneRmChart() {
                 content={
                   <ChartTooltipContent
                     labelFormatter={(v) => new Date(v).toLocaleDateString("de-DE")}
-                    formatter={(value) => [`${value} kg`, "1RM"]}
+                    formatter={(value) => [`${value} ${unitLabel}`, "1RM"]}
                   />
                 }
               />

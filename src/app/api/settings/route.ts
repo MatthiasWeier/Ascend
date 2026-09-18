@@ -10,6 +10,7 @@ const settingsSchema = z.object({
   balanceGoals: z
     .array(z.object({ focus: z.enum(["PUSH", "PULL", "LEGS", "CORE", "GRIP"]), targetPercent: z.number().min(0).max(100) }))
     .optional(),
+  weightUnit: z.enum(["KG", "LBS"]).optional(),
 });
 
 export async function GET() {
@@ -21,7 +22,7 @@ export async function GET() {
   const [user, goals, bodyWeightHistory] = await Promise.all([
     prisma.user.findUniqueOrThrow({
       where: { id: session.user.id },
-      select: { bodyWeightKg: true, name: true, username: true, avatarUrl: true },
+      select: { bodyWeightKg: true, name: true, username: true, avatarUrl: true, weightUnit: true },
     }),
     prisma.balanceGoal.findMany({ where: { userId: session.user.id } }),
     prisma.bodyWeightEntry.findMany({
@@ -47,8 +48,12 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { bodyWeightKg, balanceGoals } = parsed.data;
+  const { bodyWeightKg, balanceGoals, weightUnit } = parsed.data;
   const userId = session.user.id;
+
+  if (weightUnit) {
+    await prisma.user.update({ where: { id: userId }, data: { weightUnit } });
+  }
 
   if (bodyWeightKg != null) {
     const dateKey = todayGermanDateKey();

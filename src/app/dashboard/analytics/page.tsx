@@ -72,7 +72,7 @@ export default function AnalyticsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Gesamtarbeit</CardTitle>
-              <CardDescription>Bewegtes Gewicht (Wdh × kg) der letzten 90 Tage.</CardDescription>
+              <CardDescription>Bewegtes Gewicht (Wdh × Gewicht) der letzten 90 Tage.</CardDescription>
             </CardHeader>
             <CardContent>
               <VolumeChart />

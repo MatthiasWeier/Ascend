@@ -16,6 +16,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { FOCUS_LABEL, ALL_FOCUSES } from "@/lib/muscle-focus";
 import type { MuscleFocus } from "@prisma/client";
@@ -25,6 +32,9 @@ import { PushNotificationToggle } from "@/components/push-notification-toggle";
 import { DataExport, DataImport, CalendarFeed } from "@/components/data-portability";
 import { ApiKeyManager } from "@/components/api-key-manager";
 import { APP_VERSION } from "@/lib/version";
+import { useWeightUnit } from "@/components/weight-unit-context";
+import { roundForDisplay } from "@/lib/weight-units";
+import type { WeightUnit } from "@/lib/weight-units";
 
 type SettingsData = {
   user: { name: string; username: string; bodyWeightKg: number | null; avatarUrl: string | null };
@@ -46,6 +56,7 @@ const weightChartConfig = {
 } satisfies ChartConfig;
 
 export default function SettingsPage() {
+  const weightUnit = useWeightUnit();
   const [data, setData] = useState<SettingsData | null>(null);
   const [bodyWeight, setBodyWeight] = useState("");
   const [savingWeight, setSavingWeight] = useState(false);
@@ -65,7 +76,6 @@ export default function SettingsPage() {
       .then((r) => r.json())
       .then((res: SettingsData) => {
         setData(res);
-        setBodyWeight(res.user.bodyWeightKg?.toString() ?? "");
         if (res.balanceGoals.length > 0) {
           setGoals((g) => {
             const next = { ...g };
@@ -78,6 +88,17 @@ export default function SettingsPage() {
 
   useEffect(refetch, []);
 
+  // Re-derive the displayed bodyweight (in the current unit) whenever the
+  // fetched kg value or the unit preference changes.
+  useEffect(() => {
+    if (data == null) return;
+    setBodyWeight(
+      data.user.bodyWeightKg != null
+        ? String(roundForDisplay(weightUnit.toDisplay(data.user.bodyWeightKg), weightUnit.unit))
+        : ""
+    );
+  }, [data, weightUnit]);
+
   const goalSum = ALL_FOCUSES.reduce((sum, f) => sum + goals[f], 0);
 
   async function handleSaveWeight() {
@@ -87,7 +108,7 @@ export default function SettingsPage() {
     const res = await fetch("/api/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ bodyWeightKg: n }),
+      body: JSON.stringify({ bodyWeightKg: weightUnit.toKg(n) }),
     });
     setSavingWeight(false);
     if (!res.ok) {
@@ -198,7 +219,7 @@ export default function SettingsPage() {
               onChange={(e) => setBodyWeight(e.target.value)}
               className="w-32"
             />
-            <span className="text-sm text-muted-foreground">kg</span>
+            <span className="text-sm text-muted-foreground">{weightUnit.unitLabel}</span>
             <Button onClick={handleSaveWeight} disabled={savingWeight} size="sm" className="ml-auto">
               {savingWeight ? "Speichern…" : "Heute eintragen"}
             </Button>
@@ -206,14 +227,20 @@ export default function SettingsPage() {
 
           {data.bodyWeightHistory.length >= 2 && (
             <ChartContainer config={weightChartConfig} className="aspect-auto h-32 w-full">
-              <LineChart data={data.bodyWeightHistory} margin={{ left: 8, right: 8 }}>
+              <LineChart
+                data={data.bodyWeightHistory.map((p) => ({
+                  ...p,
+                  weightKg: roundForDisplay(weightUnit.toDisplay(p.weightKg), weightUnit.unit),
+                }))}
+                margin={{ left: 8, right: 8 }}
+              >
                 <XAxis dataKey="dateKey" hide />
                 <YAxis domain={["dataMin - 1", "dataMax + 1"]} hide />
                 <ChartTooltip
                   content={
                     <ChartTooltipContent
                       labelFormatter={(v) => new Date(v).toLocaleDateString("de-DE")}
-                      formatter={(value) => [`${value} kg`, "Gewicht"]}
+                      formatter={(value) => [`${value} ${weightUnit.unitLabel}`, "Gewicht"]}
                     />
                   }
                 />
@@ -280,6 +307,29 @@ export default function SettingsPage() {
           <DataExport />
           <DataImport />
           <CalendarFeed />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Einheiten</CardTitle>
+          <CardDescription>
+            Betrifft nur die Anzeige - gespeichert wird intern immer in kg.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Select
+            value={weightUnit.unit}
+            onValueChange={(v) => weightUnit.setUnit(v as WeightUnit)}
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="KG">Kilogramm (kg)</SelectItem>
+              <SelectItem value="LBS">Pfund (lbs)</SelectItem>
+            </SelectContent>
+          </Select>
         </CardContent>
       </Card>
 

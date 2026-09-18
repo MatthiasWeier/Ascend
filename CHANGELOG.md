@@ -5,6 +5,20 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.30.0] - 2026-09-19
+
+### Added
+- **kg/lbs umschaltbar** (Settings → Einheiten): steuert nur die Anzeige -
+  Workout-Sätze, Körpergewicht, PRs und Charts zeigen/akzeptieren Werte in
+  der gewählten Einheit; gespeichert wird intern immer in kg (kein Bruch
+  bei Export/Import/API, die bleiben kg-only). Hantelscheiben- und
+  Aufwärm-Rechner rechnen mit dem passenden Scheiben-/Stangen-Satz für die
+  gewählte Einheit (kg: 20kg-Stange, 25/20/15/10/5/2.5/1.25kg-Scheiben;
+  lbs: 45lbs-Stange, 45/35/25/10/5/2.5lbs-Scheiben).
+- **CONTRIBUTING.md**: Setup, Vorraussetzungen für PRs (Build/Lint/
+  manuelles Testen, Migration statt `db push`, Versionierung) und
+  Konventionen (deutsche UI, keine neuen Pflicht-Cloud-Abhängigkeiten).
+
 ## [0.29.0] - 2026-09-19
 
 ### Added
