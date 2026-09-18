@@ -5,6 +5,12 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.10.0] - 2026-09-18
+
+### Added
+- Aktivitäts-Kalender: ein Tag anklicken zeigt das exakte Workout (Übungen,
+  Gewicht, Wiederholungen) dieses Tages in einem Dialog
+
 ## [0.9.0] - 2026-09-18
 
 ### Added

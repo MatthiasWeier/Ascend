@@ -119,7 +119,8 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   Trophäen-Badge markiert und beim Speichern als Toast gefeiert
 - ✅ Volumen-Graph (90 Tage)
 - ✅ Balance-Radar (Ist vs. Ziel pro Muskelgruppe)
-- ✅ Aktivitäts-Kalender (Jahres-Heatmap)
+- ✅ Aktivitäts-Kalender (Jahres-Heatmap), Tag anklicken zeigt das exakte
+  Workout (Übungen, Gewicht, Wdh) dieses Tages
 - ✅ Kletter-Pyramide + Boulder-Tages-Kalender (Zähler pro Schwierigkeit,
   "5x 6er, 3x 4er")
 

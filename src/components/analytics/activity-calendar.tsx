@@ -2,9 +2,31 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { WorkoutSessionCard } from "@/components/workout-session-card";
 import { VIZ_SEQUENTIAL } from "@/lib/viz-colors";
 
 type Day = { date: string; intensity: number };
+
+type DaySession = {
+  id: string;
+  date: string;
+  notes: string | null;
+  perceivedExertion: number | null;
+  skinCondition: number | null;
+  sets: {
+    id: string;
+    reps: number | null;
+    weightKg: number | null;
+    durationSec: number | null;
+    exercise: { name: string; focus: "PUSH" | "PULL" | "LEGS" | "CORE" | "GRIP" };
+  }[];
+};
 
 const LEVEL_COLORS = [
   "var(--muted)",
@@ -24,12 +46,22 @@ function toIsoDate(d: Date) {
 export function ActivityCalendar() {
   const [year] = useState(new Date().getFullYear());
   const [days, setDays] = useState<Day[] | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [daySessions, setDaySessions] = useState<DaySession[] | null>(null);
 
   useEffect(() => {
     fetch(`/api/analytics/calendar?year=${year}`)
       .then((r) => r.json())
       .then((data: { days: Day[] }) => setDays(data.days));
   }, [year]);
+
+  function openDay(date: string) {
+    setSelectedDate(date);
+    setDaySessions(null);
+    fetch(`/api/workouts/by-date?date=${date}`)
+      .then((r) => r.json())
+      .then((data: { sessions: DaySession[] }) => setDaySessions(data.sessions));
+  }
 
   const { weeks, maxIntensity, monthMarkers } = useMemo(() => {
     const intensityByDay = new Map((days ?? []).map((d) => [d.date, d.intensity]));
@@ -101,10 +133,13 @@ export function ActivityCalendar() {
             {weeks.map((week, wi) => (
               <div key={wi} className="flex flex-col gap-[3px]">
                 {week.map((day, di) => (
-                  <div
+                  <button
                     key={di}
+                    type="button"
+                    disabled={!day.inYear || day.intensity <= 0}
                     title={`${day.date}: ${day.inYear ? `Intensität ${day.intensity}` : ""}`}
-                    className="size-[10px] rounded-[2px]"
+                    onClick={() => openDay(day.date)}
+                    className="size-[10px] rounded-[2px] disabled:cursor-default enabled:cursor-pointer enabled:ring-offset-1 enabled:hover:ring-1 enabled:hover:ring-foreground/40"
                     style={{
                       backgroundColor: day.inYear ? LEVEL_COLORS[levelFor(day.intensity)] : "transparent",
                     }}
@@ -122,6 +157,41 @@ export function ActivityCalendar() {
         ))}
         Mehr
       </div>
+
+      <Dialog open={selectedDate != null} onOpenChange={(open) => !open && setSelectedDate(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {selectedDate &&
+                new Date(`${selectedDate}T00:00:00.000Z`).toLocaleDateString("de-DE", {
+                  weekday: "long",
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                  timeZone: "UTC",
+                })}
+            </DialogTitle>
+          </DialogHeader>
+          {daySessions == null ? (
+            <Skeleton className="h-32 w-full" />
+          ) : daySessions.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Kein Workout an diesem Tag.</p>
+          ) : (
+            <div className="flex max-h-96 flex-col gap-3 overflow-y-auto">
+              {daySessions.map((s) => (
+                <WorkoutSessionCard
+                  key={s.id}
+                  date={s.date}
+                  notes={s.notes}
+                  perceivedExertion={s.perceivedExertion}
+                  skinCondition={s.skinCondition}
+                  sets={s.sets}
+                />
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
