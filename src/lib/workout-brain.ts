@@ -1,11 +1,17 @@
 import { prisma } from "@/lib/prisma";
 import type { MuscleFocus } from "@prisma/client";
-import { FOCUS_LABEL, ALL_FOCUSES } from "@/lib/muscle-focus";
+import { FOCUS_LABEL, ALL_FOCUSES, computeLoadPercents } from "@/lib/muscle-focus";
 
 export { FOCUS_LABEL };
 
 // Grip-heavy focuses that skin recovery should gate.
 const GRIP_DEPENDENT_FOCUSES: MuscleFocus[] = ["PULL", "GRIP"];
+
+// A focus counts as "meaningfully behind" its Balance-Ziel once its actual
+// share of training load trails the target by more than this many
+// percentage points - small gaps are noise, this is a deliberate signal
+// that the user set a goal and isn't hitting it.
+const BALANCE_DEFICIT_THRESHOLD = 5;
 
 function daysBetween(from: Date, to: Date) {
   return Math.floor((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
@@ -26,11 +32,20 @@ export type BrainSuggestion = {
 export async function getBrainSuggestion(userId: string): Promise<BrainSuggestion> {
   const now = new Date();
 
-  const sets = await prisma.workoutSet.findMany({
-    where: { session: { userId } },
-    select: { session: { select: { date: true } }, exercise: { select: { focus: true } } },
-    orderBy: { session: { date: "desc" } },
-  });
+  const [sets, balanceGoals] = await Promise.all([
+    prisma.workoutSet.findMany({
+      where: { session: { userId } },
+      select: {
+        reps: true,
+        weightKg: true,
+        durationSec: true,
+        session: { select: { date: true } },
+        exercise: { select: { focus: true } },
+      },
+      orderBy: { session: { date: "desc" } },
+    }),
+    prisma.balanceGoal.findMany({ where: { userId } }),
+  ]);
 
   const lastTrainedByFocus = new Map<MuscleFocus, Date>();
   for (const set of sets) {
@@ -40,17 +55,76 @@ export async function getBrainSuggestion(userId: string): Promise<BrainSuggestio
     }
   }
 
-  let suggestedFocus: MuscleFocus = ALL_FOCUSES[0];
-  let focusDaysSince: number | null = null;
-  let maxGap = -1;
-  for (const focus of ALL_FOCUSES) {
+  const targetByFocus = new Map(balanceGoals.map((g) => [g.focus, g.targetPercent]));
+  const actualByFocus = computeLoadPercents(sets.map((s) => ({ ...s, focus: s.exercise.focus })));
+
+  // Balance-Ziele are a hard constraint, not just a preference: a focus the
+  // user explicitly set to 0% (injury, "no legs ever", whatever) must never
+  // be suggested, no matter how overdue it looks by recency alone.
+  const excludedFocuses = new Set(ALL_FOCUSES.filter((f) => targetByFocus.get(f) === 0));
+  let eligibleFocuses = ALL_FOCUSES.filter((f) => !excludedFocuses.has(f));
+  if (eligibleFocuses.length === 0) eligibleFocuses = ALL_FOCUSES; // every focus zeroed out - nonsensical, ignore rather than suggest nothing
+
+  function gapDays(focus: MuscleFocus): number {
     const lastDate = lastTrainedByFocus.get(focus);
-    const gap = lastDate ? daysBetween(lastDate, now) : Number.MAX_SAFE_INTEGER;
-    if (gap > maxGap) {
-      maxGap = gap;
-      suggestedFocus = focus;
-      focusDaysSince = lastDate ? gap : null;
+    return lastDate ? daysBetween(lastDate, now) : Number.MAX_SAFE_INTEGER;
+  }
+
+  function deficit(focus: MuscleFocus): number | null {
+    const target = targetByFocus.get(focus);
+    return target == null ? null : target - actualByFocus[focus];
+  }
+
+  // A focus meaningfully behind its own Balance-Ziel wins outright - that's
+  // the whole point of setting one. Among focuses without that signal (or
+  // when none qualify), the longest-overdue one wins, same as before
+  // Balance-Ziele existed.
+  function pickBestFocus(candidates: MuscleFocus[]): MuscleFocus {
+    let bestDeficitFocus: MuscleFocus | null = null;
+    let bestDeficit = BALANCE_DEFICIT_THRESHOLD;
+    for (const focus of candidates) {
+      const d = deficit(focus);
+      if (d != null && d > bestDeficit) {
+        bestDeficit = d;
+        bestDeficitFocus = focus;
+      }
     }
+    if (bestDeficitFocus) return bestDeficitFocus;
+
+    let best = candidates[0];
+    let bestGap = -1;
+    for (const focus of candidates) {
+      const gap = gapDays(focus);
+      if (gap > bestGap) {
+        bestGap = gap;
+        best = focus;
+      }
+    }
+    return best;
+  }
+
+  const suggestedFocus = pickBestFocus(eligibleFocuses);
+  const rawGap = gapDays(suggestedFocus);
+  const focusDaysSince = rawGap === Number.MAX_SAFE_INTEGER ? null : rawGap;
+  const suggestedDeficit = deficit(suggestedFocus);
+  const isBalanceDriven = suggestedDeficit != null && suggestedDeficit > BALANCE_DEFICIT_THRESHOLD;
+
+  function describeSuggested() {
+    if (isBalanceDriven) {
+      return {
+        headline: FOCUS_LABEL[suggestedFocus],
+        detail: `Bei ${FOCUS_LABEL[suggestedFocus]} liegst du bei ${actualByFocus[suggestedFocus]}% deines Trainingsvolumens - Ziel sind ${targetByFocus.get(
+          suggestedFocus
+        )}%. Zeit, das auszugleichen.`,
+      };
+    }
+    return {
+      headline: FOCUS_LABEL[suggestedFocus],
+      detail:
+        focusDaysSince == null
+          ? "Du hast diesen Fokus noch nie trainiert. Perfekter Einstieg."
+          : `Zuletzt vor ${focusDaysSince} Tag${focusDaysSince === 1 ? "" : "en"} trainiert — am längsten her von allen Bereichen.`,
+    };
   }
 
   // Overload protection: 2+ sessions in the last 3 days with high average
@@ -95,18 +169,21 @@ export async function getBrainSuggestion(userId: string): Promise<BrainSuggestio
       1
     )}/10 sehr intensiv. Gib deinem Nervensystem heute eine Pause.`;
   } else if (!skinRecovered && GRIP_DEPENDENT_FOCUSES.includes(suggestedFocus)) {
-    effectiveFocus = "LEGS";
-    const remaining = skinRecoveryDaysNeeded - (skinDaysSince ?? 0);
-    headline = `${FOCUS_LABEL.LEGS} statt ${FOCUS_LABEL[suggestedFocus]}`;
-    detail = `Deine Haut braucht noch ${remaining} Tag${
-      remaining === 1 ? "" : "e"
-    } zur Regeneration. Heute lieber Beine trainieren.`;
+    const safeCandidates = eligibleFocuses.filter((f) => !GRIP_DEPENDENT_FOCUSES.includes(f));
+    if (safeCandidates.length > 0) {
+      effectiveFocus = pickBestFocus(safeCandidates);
+      const remaining = skinRecoveryDaysNeeded - (skinDaysSince ?? 0);
+      headline = `${FOCUS_LABEL[effectiveFocus]} statt ${FOCUS_LABEL[suggestedFocus]}`;
+      detail = `Deine Haut braucht noch ${remaining} Tag${
+        remaining === 1 ? "" : "e"
+      } zur Regeneration. Heute lieber ${FOCUS_LABEL[effectiveFocus]} trainieren.`;
+    } else {
+      // No safe non-grip focus left to swap in (e.g. everything else is
+      // excluded via Balance-Ziele) - fall back to the normal suggestion.
+      ({ headline, detail } = describeSuggested());
+    }
   } else {
-    headline = FOCUS_LABEL[suggestedFocus];
-    detail =
-      focusDaysSince == null
-        ? "Du hast diesen Fokus noch nie trainiert. Perfekter Einstieg."
-        : `Zuletzt vor ${focusDaysSince} Tag${focusDaysSince === 1 ? "" : "en"} trainiert — am längsten her von allen Bereichen.`;
+    ({ headline, detail } = describeSuggested());
   }
 
   return {

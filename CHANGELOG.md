@@ -5,6 +5,14 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.21.0] - 2026-09-18
+
+### Changed
+- **Workout Brain berücksichtigt jetzt Balance-Ziele**: ein Fokus mit 0%
+  Ziel wird nie mehr vorgeschlagen, und ein Fokus, der spürbar unter
+  seinem Ziel-Anteil liegt, wird bevorzugt vorgeschlagen statt nur nach
+  "zuletzt trainiert" zu gehen
+
 ## [0.20.0] - 2026-09-18
 
 ### Added
