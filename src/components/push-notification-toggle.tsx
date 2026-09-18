@@ -13,25 +13,41 @@ function urlBase64ToUint8Array(base64: string): Uint8Array {
 }
 
 export function PushNotificationToggle() {
-  // null = still checking / not supported / not configured (renders nothing)
   const [available, setAvailable] = useState(false);
+  const [checked, setChecked] = useState(false);
+  const [unavailableReason, setUnavailableReason] = useState<string | null>(null);
   const [publicKey, setPublicKey] = useState<string | null>(null);
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      setUnavailableReason("Push wird von diesem Browser nicht unterstützt.");
+      setChecked(true);
+      return;
+    }
 
     fetch("/api/push/config")
       .then((r) => r.json())
-      .then(async (data: { configured: boolean; publicKey: string | null }) => {
-        if (!data.configured || !data.publicKey) return;
+      .then(async (data: { configured?: boolean; publicKey?: string | null; error?: string }) => {
+        if (data.error) {
+          setUnavailableReason(`Push-Konfiguration konnte nicht geladen werden (${data.error}).`);
+          return;
+        }
+        if (!data.configured || !data.publicKey) {
+          setUnavailableReason("Push ist auf dem Server nicht eingerichtet.");
+          return;
+        }
         setPublicKey(data.publicKey);
         setAvailable(true);
         const registration = await navigator.serviceWorker.getRegistration();
         const subscription = await registration?.pushManager.getSubscription();
         setEnabled(!!subscription);
-      });
+      })
+      .catch((err) => {
+        setUnavailableReason(`Push-Konfiguration konnte nicht geladen werden (${err?.message ?? err}).`);
+      })
+      .finally(() => setChecked(true));
   }, []);
 
   async function handleToggle(next: boolean) {
@@ -58,7 +74,10 @@ export function PushNotificationToggle() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(subscription.toJSON()),
         });
-        if (!res.ok) throw new Error();
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error ?? `HTTP ${res.status}`);
+        }
         setEnabled(true);
         toast.success("Push-Benachrichtigungen an.");
       } else {
@@ -75,14 +94,19 @@ export function PushNotificationToggle() {
         setEnabled(false);
         toast("Push-Benachrichtigungen aus.");
       }
-    } catch {
-      toast.error("Konnte Push-Einstellung nicht ändern.");
+    } catch (err) {
+      console.error("Push toggle failed", err);
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(`Konnte Push-Einstellung nicht ändern (${message}).`);
     } finally {
       setBusy(false);
     }
   }
 
-  if (!available) return null;
+  if (!available) {
+    if (!checked) return null;
+    return <p className="text-xs text-muted-foreground">{unavailableReason}</p>;
+  }
 
   return (
     <div className="flex items-center justify-between gap-3">
