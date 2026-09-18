@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "./providers";
 import { Toaster } from "@/components/ui/sonner";
@@ -18,6 +18,17 @@ export const metadata: Metadata = {
   title: "Ascend",
   description: "Train together. Push each other.",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0c0b08",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
