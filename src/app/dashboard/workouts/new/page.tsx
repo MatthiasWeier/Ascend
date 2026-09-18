@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { ExerciseCombobox } from "@/components/exercise-combobox";
 import { CreateExerciseDialog } from "@/components/create-exercise-dialog";
+import { primeRestTimerAudio, playRestTimerAlert } from "@/lib/rest-timer-alert";
 import { cn } from "@/lib/utils";
 
 type Exercise = {
@@ -114,6 +115,7 @@ export default function NewWorkoutPage() {
     if (restSecondsLeft === null) return;
     if (restSecondsLeft <= 0) {
       toast.success("Pause vorbei - weiter geht's!");
+      playRestTimerAlert();
       setRestSecondsLeft(null);
       return;
     }
@@ -220,6 +222,9 @@ export default function NewWorkoutPage() {
     setRows((prev) => prev.map((r) => (r.key === key ? { ...r, done: !r.done } : r)));
     const row = rows.find((r) => r.key === key);
     if (!row?.done) {
+      // Must happen inside this click handler (a real user gesture), not
+      // later when the timer actually expires, or the browser blocks audio.
+      primeRestTimerAudio();
       setRestSecondsLeft(restPreset);
     }
   }
