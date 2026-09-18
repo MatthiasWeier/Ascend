@@ -7,9 +7,11 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FeedList } from "@/components/feed-list";
+import { PullToRefresh } from "@/components/pull-to-refresh";
 import { PostComposer } from "@/components/groups/post-composer";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
+import { REACTION_EMOJIS } from "@/lib/post-reactions";
 
 const TYPE_FILTERS = [
   { value: "ALL" as const, label: "Alle", icon: null },
@@ -27,6 +29,8 @@ type Post = {
   createdAt: string;
   workoutSessionId: string | null;
   user: { id: string; name: string };
+  reactionCounts: Record<string, number>;
+  myReaction: string | null;
 };
 
 export function GroupFeed({
@@ -44,12 +48,14 @@ export function GroupFeed({
   const [authorFilter, setAuthorFilter] = useState<{ id: string; name: string } | null>(null);
 
   function refetch() {
-    fetch(`/api/groups/${groupId}/posts`)
+    return fetch(`/api/groups/${groupId}/posts`)
       .then((r) => r.json())
       .then((data: { posts: Post[] }) => setPosts(data.posts));
   }
 
-  useEffect(refetch, [groupId]);
+  useEffect(() => {
+    refetch();
+  }, [groupId]);
 
   const myAlreadySharedIds = useMemo(() => {
     const myUserId = authSession?.user?.id;
@@ -67,6 +73,21 @@ export function GroupFeed({
         (authorFilter == null || p.user.id === authorFilter.id)
     );
   }, [posts, typeFilter, authorFilter]);
+
+  async function handleReact(postId: string, emoji: string) {
+    const post = posts?.find((p) => p.id === postId);
+    const removing = post?.myReaction === emoji;
+    const res = await fetch(`/api/groups/${groupId}/posts/${postId}/reactions`, {
+      method: removing ? "DELETE" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: removing ? undefined : JSON.stringify({ emoji }),
+    });
+    if (!res.ok) {
+      toast.error("Konnte Reaktion nicht speichern.");
+      return;
+    }
+    refetch();
+  }
 
   async function handleToggleAutoShare(next: boolean) {
     setTogglingAutoShare(true);
@@ -95,6 +116,7 @@ export function GroupFeed({
   }
 
   return (
+    <PullToRefresh onRefresh={refetch}>
     <div className="flex flex-col gap-4">
       <PostComposer groupId={groupId} alreadySharedIds={myAlreadySharedIds} onPosted={refetch} />
 
@@ -183,11 +205,35 @@ export function GroupFeed({
                 {post.content && post.type !== "WORKOUT_SHARE" && (
                   <p className="text-sm">{post.content}</p>
                 )}
+
+                <div className="flex flex-wrap items-center gap-1">
+                  {REACTION_EMOJIS.map((emoji) => {
+                    const count = post.reactionCounts[emoji] ?? 0;
+                    const active = post.myReaction === emoji;
+                    return (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => handleReact(post.id, emoji)}
+                        className={cn(
+                          "flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors",
+                          active
+                            ? "border-primary/40 bg-primary/15"
+                            : "border-border bg-transparent hover:bg-secondary"
+                        )}
+                      >
+                        {emoji}
+                        {count > 0 && <span className="text-muted-foreground">{count}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
               </CardContent>
             </Card>
           ))}
         </FeedList>
       )}
     </div>
+    </PullToRefresh>
   );
 }

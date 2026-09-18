@@ -5,6 +5,12 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.17.0] - 2026-09-18
+
+### Added
+- **Pull-to-refresh** auf Dashboard und Gruppen-Feed: am oberen Rand nach
+  unten ziehen lädt neu, statt die Seite manuell neu laden zu müssen
+
 ## [0.16.0] - 2026-09-18
 
 ### Added

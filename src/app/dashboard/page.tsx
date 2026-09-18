@@ -13,6 +13,7 @@ import { DailyChallengeReminder } from "@/components/daily-challenge-reminder";
 import { GroupActivityFeed } from "@/components/group-activity-feed";
 import { WorkoutSessionCard } from "@/components/workout-session-card";
 import { FeedList } from "@/components/feed-list";
+import { DashboardRefresh } from "@/components/dashboard-refresh";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -33,6 +34,7 @@ export default async function DashboardPage() {
   ]);
 
   return (
+    <DashboardRefresh>
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">
       <DailyChallengeReminder pending={pendingChallenges} />
 
@@ -91,5 +93,6 @@ export default async function DashboardPage() {
         )}
       </div>
     </div>
+    </DashboardRefresh>
   );
 }
