@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
+import { Heartbeat } from "@/components/heartbeat";
 
 export default async function DashboardLayout({
   children,
@@ -15,6 +16,7 @@ export default async function DashboardLayout({
 
   return (
     <AppShell userName={session!.user.name!} avatarUrl={user?.avatarUrl ?? null}>
+      <Heartbeat />
       {children}
     </AppShell>
   );

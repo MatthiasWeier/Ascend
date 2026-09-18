@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { Bell, Crown, LogOut, Pencil, UserX } from "lucide-react";
+import { Bell, CalendarDays, Crown, LogOut, Pencil, UserX } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -31,11 +31,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { undoableAction } from "@/lib/undo-toast";
+import { formatTimeAgo } from "@/lib/time-ago";
+import { cn } from "@/lib/utils";
 import { InviteButton } from "@/components/groups/invite-button";
 import { GroupFeed } from "@/components/groups/group-feed";
 import { GroupChallenges } from "@/components/groups/group-challenges";
 import { GroupGoals } from "@/components/groups/group-goals";
 import { GroupAnalytics } from "@/components/groups/group-analytics";
+import { ActivityCalendar } from "@/components/analytics/activity-calendar";
 
 type GroupInfo = {
   id: string;
@@ -43,11 +46,25 @@ type GroupInfo = {
   inviteCode: string;
   myRole: "LEADER" | "MEMBER";
   autoShareWorkouts: boolean;
-  members: { id: string; name: string; avatarUrl: string | null; role: "LEADER" | "MEMBER" }[];
+  members: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+    lastActiveAt: string | null;
+    role: "LEADER" | "MEMBER";
+  }[];
 };
 
 function initials(name: string) {
   return name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+}
+
+const ONLINE_THRESHOLD_MS = 2 * 60 * 1000;
+
+function onlineStatusLabel(lastActiveAt: string | null): { text: string; online: boolean } {
+  if (!lastActiveAt) return { text: "noch nie online", online: false };
+  const online = Date.now() - new Date(lastActiveAt).getTime() <= ONLINE_THRESHOLD_MS;
+  return { text: online ? "Online" : `zuletzt online ${formatTimeAgo(lastActiveAt)}`, online };
 }
 
 const VALID_TABS = ["feed", "challenges", "goals", "analytics", "members"] as const;
@@ -68,6 +85,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
   const [leaving, setLeaving] = useState(false);
   const [transferringTo, setTransferringTo] = useState<string | null>(null);
   const [nudging, setNudging] = useState<string | null>(null);
+  const [calendarMember, setCalendarMember] = useState<{ id: string; name: string } | null>(null);
 
   function refetch() {
     fetch(`/api/groups/${groupId}`)
@@ -255,7 +273,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
         </TabsList>
 
         <TabsContent value="feed">
-          <GroupFeed groupId={groupId} initialAutoShare={group.autoShareWorkouts} />
+          <GroupFeed groupId={groupId} initialAutoShare={group.autoShareWorkouts} isLeader={isLeader} />
         </TabsContent>
 
         <TabsContent value="challenges">
@@ -280,7 +298,23 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                     {initials(m.name)}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-medium">{m.name}</span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">{m.name}</span>
+                  {(() => {
+                    const status = onlineStatusLabel(m.lastActiveAt);
+                    return (
+                      <span
+                        className={cn(
+                          "flex items-center gap-1 text-xs",
+                          status.online ? "text-success" : "text-muted-foreground"
+                        )}
+                      >
+                        {status.online && <span className="size-1.5 rounded-full bg-success" />}
+                        {status.text}
+                      </span>
+                    );
+                  })()}
+                </div>
                 <div className="ml-auto flex items-center gap-1">
                   {m.role === "LEADER" && (
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -288,6 +322,15 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                       Leader
                     </span>
                   )}
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-muted-foreground"
+                    title="Kalender ansehen"
+                    onClick={() => setCalendarMember({ id: m.id, name: m.name })}
+                  >
+                    <CalendarDays className="size-4" />
+                  </Button>
                   {m.id !== authSession?.user?.id && (
                     <Button
                       variant="ghost"
@@ -349,6 +392,24 @@ export function GroupDetail({ groupId }: { groupId: string }) {
           </div>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={calendarMember != null} onOpenChange={(open) => !open && setCalendarMember(null)}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Kalender von {calendarMember?.name}</DialogTitle>
+            <DialogDescription>Nur Workouts, die in dieser Gruppe geteilt wurden.</DialogDescription>
+          </DialogHeader>
+          {calendarMember && (
+            <ActivityCalendar
+              daysUrl={(year) => `/api/groups/${groupId}/members/${calendarMember.id}/calendar?year=${year}`}
+              sessionsUrl={(date) =>
+                `/api/groups/${groupId}/members/${calendarMember.id}/workouts-by-date?date=${date}`
+              }
+              editable={false}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

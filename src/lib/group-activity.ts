@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 
 export type ActivityItem =
   | {
-      kind: "WORKOUT_SHARE";
+      kind: "WORKOUT_SHARE" | "CHAT_TEXT" | "CHAT_PHOTO";
       timestamp: Date;
       userName: string;
       groupId: string;
@@ -31,7 +31,7 @@ export async function getRecentGroupActivity(userId: string, limit = 20): Promis
 
   const [posts, attempts] = await Promise.all([
     prisma.groupPost.findMany({
-      where: { groupId: { in: myGroupIds }, type: "WORKOUT_SHARE" },
+      where: { groupId: { in: myGroupIds } },
       orderBy: { createdAt: "desc" },
       take: limit,
       include: { user: { select: { name: true } }, group: { select: { id: true, name: true } } },
@@ -60,14 +60,18 @@ export async function getRecentGroupActivity(userId: string, limit = 20): Promis
   ]);
 
   const items: ActivityItem[] = [
-    ...posts.map((p) => ({
-      kind: "WORKOUT_SHARE" as const,
-      timestamp: p.createdAt,
-      userName: p.user.name,
-      groupId: p.group.id,
-      groupName: p.group.name,
-      content: p.content,
-    })),
+    ...posts.map((p) => {
+      const kind: "WORKOUT_SHARE" | "CHAT_TEXT" | "CHAT_PHOTO" =
+        p.type === "WORKOUT_SHARE" ? "WORKOUT_SHARE" : p.type === "PHOTO" ? "CHAT_PHOTO" : "CHAT_TEXT";
+      return {
+        kind,
+        timestamp: p.createdAt,
+        userName: p.user.name,
+        groupId: p.group.id,
+        groupName: p.group.name,
+        content: p.content,
+      };
+    }),
     ...attempts.map((a): ActivityItem => {
       const kind: "CHALLENGE_COMPLETED" | "CHALLENGE_ENDED_EARLY" =
         a.status === "COMPLETED" ? "CHALLENGE_COMPLETED" : "CHALLENGE_ENDED_EARLY";

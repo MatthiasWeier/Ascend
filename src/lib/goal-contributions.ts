@@ -29,11 +29,13 @@ export async function contributeWorkoutSetToGoals(params: {
   ).map((m) => m.groupId);
   if (myGroupIds.length === 0) return;
 
+  const now = new Date();
   const goals = await prisma.groupGoal.findMany({
     where: {
       groupId: { in: myGroupIds },
       exerciseId,
-      OR: [{ deadline: null }, { deadline: { gte: new Date() } }],
+      OR: [{ deadline: null }, { deadline: { gte: now } }],
+      AND: [{ OR: [{ startDate: null }, { startDate: { lte: now } }] }],
     },
   });
   if (goals.length === 0) return;
@@ -61,12 +63,14 @@ export async function contributeChallengeAttemptToGoals(params: {
   const { attemptId, userId, groupId, exerciseId, finalReps } = params;
   if (finalReps <= 0) return;
 
+  const now = new Date();
   const goals = await prisma.groupGoal.findMany({
     where: {
       groupId,
       exerciseId,
       unit: "REPS",
-      OR: [{ deadline: null }, { deadline: { gte: new Date() } }],
+      OR: [{ deadline: null }, { deadline: { gte: now } }],
+      AND: [{ OR: [{ startDate: null }, { startDate: { lte: now } }] }],
     },
   });
   if (goals.length === 0) return;
@@ -92,6 +96,8 @@ export async function backfillGoalFromHistory(goal: {
   groupId: string;
   exerciseId: string;
   unit: GoalUnit;
+  startDate: Date | null;
+  deadline: Date | null;
 }): Promise<number> {
   const memberIds = (
     await prisma.groupMember.findMany({ where: { groupId: goal.groupId }, select: { userId: true } })
@@ -102,7 +108,13 @@ export async function backfillGoalFromHistory(goal: {
   const rows: Row[] = [];
 
   const sets = await prisma.workoutSet.findMany({
-    where: { exerciseId: goal.exerciseId, session: { userId: { in: memberIds } } },
+    where: {
+      exerciseId: goal.exerciseId,
+      session: {
+        userId: { in: memberIds },
+        date: { gte: goal.startDate ?? undefined, lte: goal.deadline ?? undefined },
+      },
+    },
     select: { id: true, reps: true, durationSec: true, session: { select: { userId: true } } },
   });
   for (const set of sets) {
@@ -115,6 +127,7 @@ export async function backfillGoalFromHistory(goal: {
     const attempts = await prisma.dailyChallengeAttempt.findMany({
       where: {
         status: { in: ["COMPLETED", "ENDED_EARLY"] },
+        startedAt: { gte: goal.startDate ?? undefined, lte: goal.deadline ?? undefined },
         userChallengeGoal: {
           userId: { in: memberIds },
           groupDailyChallenge: { groupId: goal.groupId, challengeTemplate: { exerciseId: goal.exerciseId } },

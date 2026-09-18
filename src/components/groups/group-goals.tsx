@@ -39,6 +39,7 @@ type GroupGoal = {
   unit: GoalUnitValue;
   unitLabel: string;
   targetValue: number;
+  startDate: string | null;
   deadline: string | null;
   exerciseId: string | null;
   exerciseName: string | null;
@@ -64,6 +65,7 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
   const [customUnitLabel, setCustomUnitLabel] = useState("");
   const [exerciseId, setExerciseId] = useState("");
   const [targetValue, setTargetValue] = useState("");
+  const [startDate, setStartDate] = useState("");
   const [deadline, setDeadline] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -101,6 +103,10 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
       toast.error("Bitte eine Einheit angeben.");
       return;
     }
+    if (startDate && deadline && startDate > deadline) {
+      toast.error("Start muss vor der Frist liegen.");
+      return;
+    }
     setSaving(true);
     const res = await fetch(`/api/groups/${groupId}/goals`, {
       method: "POST",
@@ -110,6 +116,7 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
         unit,
         customUnitLabel: unit === "CUSTOM" ? customUnitLabel.trim() : undefined,
         targetValue: target,
+        startDate: startDate ? new Date(startDate).toISOString() : undefined,
         deadline: deadline ? new Date(deadline).toISOString() : undefined,
         exerciseId: exerciseId || undefined,
       }),
@@ -132,6 +139,7 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
     setCustomUnitLabel("");
     setExerciseId("");
     setTargetValue("");
+    setStartDate("");
     setDeadline("");
     refetch();
   }
@@ -275,15 +283,30 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
                     </p>
                   </div>
                 )}
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="goal-deadline">Frist (optional)</Label>
-                  <Input
-                    id="goal-deadline"
-                    type="date"
-                    value={deadline}
-                    onChange={(e) => setDeadline(e.target.value)}
-                  />
+                <div className="flex gap-3">
+                  <div className="flex flex-1 flex-col gap-1.5">
+                    <Label htmlFor="goal-start">Start (optional)</Label>
+                    <Input
+                      id="goal-start"
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex flex-1 flex-col gap-1.5">
+                    <Label htmlFor="goal-deadline">Frist (optional)</Label>
+                    <Input
+                      id="goal-deadline"
+                      type="date"
+                      value={deadline}
+                      onChange={(e) => setDeadline(e.target.value)}
+                    />
+                  </div>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Ohne Start zählt die gesamte Trainings-Historie mit - bei "1000 Klimmzüge im
+                  Oktober" also September und früher. Zum Ausschließen Start setzen.
+                </p>
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={saving}>
@@ -351,9 +374,13 @@ function GoalCard({
             )}
             <div>
               <p className="font-medium">{goal.title}</p>
-              {goal.deadline && (
+              {(goal.startDate || goal.deadline) && (
                 <p className="text-xs text-muted-foreground">
-                  bis {new Date(goal.deadline).toLocaleDateString("de-DE")}
+                  {goal.startDate && goal.deadline
+                    ? `${new Date(goal.startDate).toLocaleDateString("de-DE")} – ${new Date(goal.deadline).toLocaleDateString("de-DE")}`
+                    : goal.startDate
+                      ? `ab ${new Date(goal.startDate).toLocaleDateString("de-DE")}`
+                      : `bis ${new Date(goal.deadline!).toLocaleDateString("de-DE")}`}
                 </p>
               )}
             </div>

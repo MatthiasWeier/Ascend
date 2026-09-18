@@ -2,15 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Dumbbell, Image as ImageIcon, MessageSquare, X } from "lucide-react";
+import { Dumbbell, Image as ImageIcon, MessageSquare, Trash2, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { FeedList } from "@/components/feed-list";
 import { PullToRefresh } from "@/components/pull-to-refresh";
 import { PostComposer, type PostPayload } from "@/components/groups/post-composer";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
+import { undoableAction } from "@/lib/undo-toast";
 import { REACTION_EMOJIS } from "@/lib/post-reactions";
 
 const TYPE_FILTERS = [
@@ -30,6 +33,7 @@ type Post = {
   workoutSessionId: string | null;
   user: { id: string; name: string };
   reactionCounts: Record<string, number>;
+  reactionUsers: Record<string, string[]>;
   myReaction: string | null;
   pending?: boolean;
 };
@@ -37,9 +41,11 @@ type Post = {
 export function GroupFeed({
   groupId,
   initialAutoShare,
+  isLeader,
 }: {
   groupId: string;
   initialAutoShare: boolean;
+  isLeader: boolean;
 }) {
   const { data: authSession } = useSession();
   const [posts, setPosts] = useState<Post[] | null>(null);
@@ -81,13 +87,21 @@ export function GroupFeed({
     if (!post) return;
     const removing = post.myReaction === emoji;
 
+    const myName = authSession?.user?.name ?? "";
     setPosts(
       (posts ?? []).map((p) => {
         if (p.id !== postId) return p;
         const counts = { ...p.reactionCounts };
-        if (p.myReaction) counts[p.myReaction] = Math.max(0, (counts[p.myReaction] ?? 0) - 1);
-        if (!removing) counts[emoji] = (counts[emoji] ?? 0) + 1;
-        return { ...p, reactionCounts: counts, myReaction: removing ? null : emoji };
+        const users = { ...p.reactionUsers };
+        if (p.myReaction) {
+          counts[p.myReaction] = Math.max(0, (counts[p.myReaction] ?? 0) - 1);
+          users[p.myReaction] = (users[p.myReaction] ?? []).filter((n) => n !== myName);
+        }
+        if (!removing) {
+          counts[emoji] = (counts[emoji] ?? 0) + 1;
+          users[emoji] = [...(users[emoji] ?? []), myName];
+        }
+        return { ...p, reactionCounts: counts, reactionUsers: users, myReaction: removing ? null : emoji };
       })
     );
 
@@ -119,6 +133,7 @@ export function GroupFeed({
       workoutSessionId: payload.type === "WORKOUT_SHARE" ? payload.workoutSessionId : null,
       user: { id: authSession?.user?.id ?? "me", name: authSession?.user?.name ?? "" },
       reactionCounts: {},
+      reactionUsers: {},
       myReaction: null,
       pending: true,
     };
@@ -152,6 +167,27 @@ export function GroupFeed({
     await refetch();
     if (objectUrl) URL.revokeObjectURL(objectUrl);
     return true;
+  }
+
+  function handleDeletePost(postId: string) {
+    const index = posts?.findIndex((p) => p.id === postId) ?? -1;
+    if (index === -1 || !posts) return;
+    const post = posts[index];
+    setPosts((prev) => (prev ?? []).filter((p) => p.id !== postId));
+
+    undoableAction({
+      message: "Beitrag gelöscht.",
+      onCommit: () => {
+        fetch(`/api/groups/${groupId}/posts/${postId}`, { method: "DELETE" }).catch(() => {});
+      },
+      onUndo: () => {
+        setPosts((prev) => {
+          const next = [...(prev ?? [])];
+          next.splice(index, 0, post);
+          return next;
+        });
+      },
+    });
   }
 
   async function handleToggleAutoShare(next: boolean) {
@@ -236,7 +272,11 @@ export function GroupFeed({
         </p>
       ) : (
         <FeedList>
-          {visiblePosts.map((post) => (
+          {visiblePosts.map((post) => {
+            const canDelete =
+              !post.pending &&
+              (post.user.id === authSession?.user?.id || (isLeader && post.type !== "WORKOUT_SHARE"));
+            return (
             <Card key={post.id} className={cn(post.pending && "opacity-60")}>
               <CardContent className="flex flex-col gap-2 px-5">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -247,11 +287,25 @@ export function GroupFeed({
                   >
                     {post.user.name}
                   </button>
-                  <span>
-                    {post.pending
-                      ? "Wird gepostet…"
-                      : new Date(post.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <span>
+                      {post.pending
+                        ? "Wird gepostet…"
+                        : new Date(post.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    {canDelete && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        className="size-5 text-muted-foreground hover:text-destructive"
+                        title="Löschen"
+                        onClick={() => handleDeletePost(post.id)}
+                      >
+                        <Trash2 className="size-3" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 {post.type === "PHOTO" && post.imageUrl && (
@@ -277,7 +331,8 @@ export function GroupFeed({
                   {REACTION_EMOJIS.map((emoji) => {
                     const count = post.reactionCounts[emoji] ?? 0;
                     const active = post.myReaction === emoji;
-                    return (
+                    const reactors = post.reactionUsers[emoji] ?? [];
+                    const button = (
                       <button
                         key={emoji}
                         type="button"
@@ -293,11 +348,19 @@ export function GroupFeed({
                         {count > 0 && <span className="text-muted-foreground">{count}</span>}
                       </button>
                     );
+                    if (reactors.length === 0) return button;
+                    return (
+                      <Tooltip key={emoji}>
+                        <TooltipTrigger render={button} />
+                        <TooltipContent>{reactors.join(", ")}</TooltipContent>
+                      </Tooltip>
+                    );
                   })}
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </FeedList>
       )}
     </div>

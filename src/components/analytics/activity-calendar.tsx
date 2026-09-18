@@ -43,22 +43,35 @@ function toIsoDate(d: Date) {
   return d.toISOString().slice(0, 10);
 }
 
-export function ActivityCalendar() {
+export function ActivityCalendar({
+  daysUrl = (year: number) => `/api/analytics/calendar?year=${year}`,
+  sessionsUrl = (date: string) => `/api/workouts/by-date?date=${date}`,
+  editable = true,
+}: {
+  daysUrl?: (year: number) => string;
+  sessionsUrl?: (date: string) => string;
+  editable?: boolean;
+} = {}) {
   const [year] = useState(new Date().getFullYear());
   const [days, setDays] = useState<Day[] | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [daySessions, setDaySessions] = useState<DaySession[] | null>(null);
 
   useEffect(() => {
-    fetch(`/api/analytics/calendar?year=${year}`)
+    setDays(null);
+    fetch(daysUrl(year))
       .then((r) => r.json())
       .then((data: { days: Day[] }) => setDays(data.days));
+    // daysUrl is treated as static config, not reactive state - including
+    // it would refetch every render since callers typically pass an inline
+    // function (a fresh reference each time).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year]);
 
   function openDay(date: string) {
     setSelectedDate(date);
     setDaySessions(null);
-    fetch(`/api/workouts/by-date?date=${date}`)
+    fetch(sessionsUrl(date))
       .then((r) => r.json())
       .then((data: { sessions: DaySession[] }) => setDaySessions(data.sessions));
   }
@@ -181,7 +194,7 @@ export function ActivityCalendar() {
               {daySessions.map((s) => (
                 <WorkoutSessionCard
                   key={s.id}
-                  sessionId={s.id}
+                  sessionId={editable ? s.id : undefined}
                   date={s.date}
                   notes={s.notes}
                   perceivedExertion={s.perceivedExertion}

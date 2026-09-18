@@ -22,7 +22,10 @@ export async function GET(
   const group = await prisma.group.findUnique({
     where: { id: groupId },
     include: {
-      members: { include: { user: { select: { id: true, name: true, avatarUrl: true } } }, orderBy: { joinedAt: "asc" } },
+      members: {
+        include: { user: { select: { id: true, name: true, avatarUrl: true, lastActiveAt: true } } },
+        orderBy: { joinedAt: "asc" },
+      },
     },
   });
 
@@ -37,7 +40,13 @@ export async function GET(
       inviteCode: group.inviteCode,
       myRole: membership.role,
       autoShareWorkouts: membership.autoShareWorkouts,
-      members: group.members.map((m) => ({ id: m.user.id, name: m.user.name, avatarUrl: m.user.avatarUrl, role: m.role })),
+      members: group.members.map((m) => ({
+        id: m.user.id,
+        name: m.user.name,
+        avatarUrl: m.user.avatarUrl,
+        lastActiveAt: m.user.lastActiveAt,
+        role: m.role,
+      })),
     },
   });
 }

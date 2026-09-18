@@ -12,12 +12,17 @@ const createGoalSchema = z
     unit: z.enum(["REPS", "DURATION_SEC", "KM", "CUSTOM"]),
     customUnitLabel: z.string().min(1).max(20).optional(),
     targetValue: z.number().positive(),
+    startDate: z.string().datetime().optional(),
     deadline: z.string().datetime().optional(),
     exerciseId: z.string().optional(),
   })
   .refine((v) => v.unit !== "CUSTOM" || !!v.customUnitLabel, {
     message: "customUnitLabel ist bei unit=CUSTOM erforderlich",
     path: ["customUnitLabel"],
+  })
+  .refine((v) => !v.startDate || !v.deadline || new Date(v.startDate) <= new Date(v.deadline), {
+    message: "Start muss vor der Frist liegen",
+    path: ["startDate"],
   });
 
 export async function GET(
@@ -86,6 +91,7 @@ export async function POST(
       unit: parsed.data.unit,
       customUnitLabel: parsed.data.unit === "CUSTOM" ? parsed.data.customUnitLabel : null,
       targetValue: parsed.data.targetValue,
+      startDate: parsed.data.startDate ? new Date(parsed.data.startDate) : undefined,
       deadline: parsed.data.deadline ? new Date(parsed.data.deadline) : undefined,
       exerciseId: exerciseId ?? null,
       createdById: session.user.id,
@@ -99,6 +105,8 @@ export async function POST(
       groupId,
       exerciseId,
       unit: goal.unit,
+      startDate: goal.startDate,
+      deadline: goal.deadline,
     });
   }
 

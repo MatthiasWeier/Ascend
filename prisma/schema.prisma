@@ -31,6 +31,10 @@ model User {
   name         String
   bodyWeightKg Float?
   avatarUrl    String?
+  // Bumped by a client-side heartbeat while the app is open (see
+  // /api/heartbeat) - drives the "Online" / "zuletzt online vor X" label
+  // on group member lists.
+  lastActiveAt DateTime?
   createdAt    DateTime @default(now())
 
   workoutSessions   WorkoutSession[]
@@ -382,6 +386,12 @@ model GroupGoal {
   // Only meaningful (and required) when unit = CUSTOM, e.g. "Bahnen".
   customUnitLabel String?
   targetValue Float
+  // Only contributions dated on/after startDate (and on/before deadline)
+  // count - without it, linking an exercise would backfill and
+  // auto-contribute the member's entire training history for it, not just
+  // what happened during the goal's actual window (e.g. "1000 pull-ups in
+  // October" pulling in September's reps too).
+  startDate   DateTime?
   deadline    DateTime?
 
   // Optional link to an Exercise: when set, matching WorkoutSets and

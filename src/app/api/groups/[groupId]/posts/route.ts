@@ -38,19 +38,21 @@ export async function GET(
     take: 50,
     include: {
       user: { select: { id: true, name: true } },
-      reactions: { select: { userId: true, emoji: true } },
+      reactions: { select: { userId: true, emoji: true, user: { select: { name: true } } } },
     },
   });
 
   const shaped = posts.map((post) => {
     const counts: Record<string, number> = {};
+    const users: Record<string, string[]> = {};
     let myEmoji: string | null = null;
     for (const r of post.reactions) {
       counts[r.emoji] = (counts[r.emoji] ?? 0) + 1;
+      (users[r.emoji] ??= []).push(r.user.name);
       if (r.userId === session.user.id) myEmoji = r.emoji;
     }
     const { reactions: _reactions, ...rest } = post;
-    return { ...rest, reactionCounts: counts, myReaction: myEmoji };
+    return { ...rest, reactionCounts: counts, reactionUsers: users, myReaction: myEmoji };
   });
 
   return NextResponse.json({ posts: shaped });

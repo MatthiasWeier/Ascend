@@ -37,6 +37,13 @@ export async function POST(
       { status: 400 }
     );
   }
+  const now = new Date();
+  if (goal.startDate && now < goal.startDate) {
+    return NextResponse.json({ error: "Dieses Ziel hat noch nicht begonnen" }, { status: 400 });
+  }
+  if (goal.deadline && now > goal.deadline) {
+    return NextResponse.json({ error: "Die Frist für dieses Ziel ist abgelaufen" }, { status: 400 });
+  }
 
   await prisma.groupGoalContribution.create({
     data: { goalId, userId: session.user.id, amount: parsed.data.amount, source: "MANUAL" },

@@ -35,6 +35,7 @@ export async function buildGroupGoalsView(groupId: string, viewerId: string) {
       unit: goal.unit,
       unitLabel: formatGoalUnit(goal.unit, goal.customUnitLabel),
       targetValue: goal.targetValue,
+      startDate: goal.startDate,
       deadline: goal.deadline,
       exerciseId: goal.exerciseId,
       exerciseName: goal.exercise?.name ?? null,

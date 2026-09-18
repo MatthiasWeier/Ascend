@@ -5,6 +5,24 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.22.0] - 2026-09-18
+
+### Added
+- **Gruppen-Aktivität** auf dem Dashboard zeigt jetzt auch Chat-Nachrichten
+  und Fotos, nicht mehr nur geteilte Workouts und Challenges
+- **Start-Datum ("Von")** für Gruppenziele: ohne Start zählte "1000
+  Klimmzüge im Oktober" bisher auch September und früher mit - jetzt lässt
+  sich ein Zeitfenster statt nur einer Frist definieren
+- **Online-Status** in der Mitgliederliste: "Online" oder "zuletzt online
+  vor X"
+- **Mitglieder-Kalender**: der Trainings-Kalender eines anderen
+  Gruppenmitglieds ist jetzt einsehbar - nur mit dem, was in dieser Gruppe
+  tatsächlich geteilt wurde, nie die private Historie
+- Jeder kann jetzt eigene Beiträge (Nachrichten, Fotos, geteilte Workouts)
+  im Gruppen-Feed löschen; der Leader kann zusätzlich fremde
+  Nachrichten/Fotos moderieren, aber keine fremden Workout-Shares
+- Beim Hovern über eine Reaktion sieht man jetzt, wer reagiert hat
+
 ## [0.21.0] - 2026-09-18
 
 ### Changed
