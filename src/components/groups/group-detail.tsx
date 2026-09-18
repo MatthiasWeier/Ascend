@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { Crown, LogOut, Pencil, UserX } from "lucide-react";
+import { Bell, Crown, LogOut, Pencil, UserX } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -66,6 +66,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
   const [renaming, setRenaming] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [transferringTo, setTransferringTo] = useState<string | null>(null);
+  const [nudging, setNudging] = useState<string | null>(null);
 
   function refetch() {
     fetch(`/api/groups/${groupId}`)
@@ -117,6 +118,18 @@ export function GroupDetail({ groupId }: { groupId: string }) {
     toast.success("Gruppe umbenannt.");
     setRenameOpen(false);
     refetch();
+  }
+
+  async function handleNudge(userId: string) {
+    setNudging(userId);
+    const res = await fetch(`/api/groups/${groupId}/members/${userId}/nudge`, { method: "POST" });
+    setNudging(null);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      toast.error(data.error ?? "Konnte nicht anstupsen.");
+      return;
+    }
+    toast.success("Angestupst!");
   }
 
   async function handleTransfer(userId: string) {
@@ -252,21 +265,34 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium">{m.name}</span>
-                {m.role === "LEADER" && (
-                  <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-                    <Crown className="size-3" />
-                    Leader
-                  </span>
-                )}
-                {isLeader && m.role !== "LEADER" && (
-                  <>
+                <div className="ml-auto flex items-center gap-1">
+                  {m.role === "LEADER" && (
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Crown className="size-3" />
+                      Leader
+                    </span>
+                  )}
+                  {m.id !== authSession?.user?.id && (
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-muted-foreground"
+                      disabled={nudging === m.id}
+                      title="Anstupsen"
+                      onClick={() => handleNudge(m.id)}
+                    >
+                      <Bell className="size-4" />
+                    </Button>
+                  )}
+                  {isLeader && m.role !== "LEADER" && (
+                    <>
                     <AlertDialog>
                       <AlertDialogTrigger
                         render={
                           <Button
                             variant="ghost"
                             size="icon-sm"
-                            className="ml-auto text-muted-foreground"
+                            className="text-muted-foreground"
                             disabled={transferringTo === m.id}
                             title="Leitung übergeben"
                           />
@@ -308,6 +334,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                     </AlertDialog>
                   </>
                 )}
+                </div>
               </div>
             ))}
           </div>

@@ -115,6 +115,8 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 
 ### Analytics
 - ✅ 1RM-Schätzung (Epley) & Maximalkraft-Verlauf
+- ✅ Persönliche-Rekorde-Übersicht: aktueller Bestwert pro Übung
+- ✅ Trainings-Streak auf der Startseite (deutsche Kalendertage)
 - ✅ **Bodyweight-adjustiert**: Klimmzüge & Co. fließen mit dem geloggten
   Körpergewicht *zum jeweiligen Trainingszeitpunkt* in Power/Workload ein -
   nicht mit dem aktuellen Gewicht (`lib/bodyweight.ts`)
@@ -140,6 +142,8 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   Workouts werden nie doppelt gepostet
 - ✅ Feed-Filter nach Typ (Alle/Text/Workout/Foto) und per Klick auf einen
   Namen nach Person
+- ✅ Reaktionen auf Posts (👍❤️💪🔥, eine pro Person)
+- ✅ Anstupsen: Mitglieder gegenseitig per Push erinnern (rate-limited)
 - ✅ **Daily Challenges**: Leader aktiviert bis zu 4 Themen aus einem
   Katalog (`ChallengeTemplate`), jeder setzt sein eigenes Reps-Ziel
 - ✅ **Yammer-System** (Anti-Sandbagging): andere Mitglieder können ein zu

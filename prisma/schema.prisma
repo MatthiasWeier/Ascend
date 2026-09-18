@@ -47,6 +47,7 @@ model User {
   createdGroupGoals GroupGoal[]             @relation("GroupGoalCreator")
   goalContributions GroupGoalContribution[]
   pushSubscriptions PushSubscription[]
+  postReactions     PostReaction[]
 }
 
 // Catalog of exercises. Seeded with defaults; users/groups can add their own.
@@ -247,8 +248,25 @@ model GroupPost {
   workoutSessionId String?
   workoutSession   WorkoutSession? @relation(fields: [workoutSessionId], references: [id], onDelete: SetNull)
 
+  reactions PostReaction[]
+
   @@unique([groupId, workoutSessionId])
   @@index([groupId, createdAt])
+}
+
+// One reaction per user per post - picking a different emoji replaces the
+// old one rather than adding a second, same as most chat apps.
+model PostReaction {
+  id        String   @id @default(cuid())
+  postId    String
+  post      GroupPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emoji     String
+  createdAt DateTime  @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
 }
 
 // Catalog of daily-challenge "themes" a group leader can activate, e.g.

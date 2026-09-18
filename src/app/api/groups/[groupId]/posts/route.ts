@@ -36,10 +36,24 @@ export async function GET(
     where: { groupId },
     orderBy: { createdAt: "desc" },
     take: 50,
-    include: { user: { select: { id: true, name: true } } },
+    include: {
+      user: { select: { id: true, name: true } },
+      reactions: { select: { userId: true, emoji: true } },
+    },
   });
 
-  return NextResponse.json({ posts });
+  const shaped = posts.map((post) => {
+    const counts: Record<string, number> = {};
+    let myEmoji: string | null = null;
+    for (const r of post.reactions) {
+      counts[r.emoji] = (counts[r.emoji] ?? 0) + 1;
+      if (r.userId === session.user.id) myEmoji = r.emoji;
+    }
+    const { reactions: _reactions, ...rest } = post;
+    return { ...rest, reactionCounts: counts, myReaction: myEmoji };
+  });
+
+  return NextResponse.json({ posts: shaped });
 }
 
 export async function POST(

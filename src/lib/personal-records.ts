@@ -58,3 +58,61 @@ export async function computePrSetIds(userId: string): Promise<Set<string>> {
 
   return prIds;
 }
+
+export type CurrentPR = {
+  exerciseId: string;
+  exerciseName: string;
+  focus: string;
+  type: "REPS" | "HOLD";
+  bestValue: number;
+  achievedAt: Date;
+};
+
+// Same chronological walk as computePrSetIds, but returns the full current
+// best per exercise (value + when it was set) instead of just which sets
+// were a PR at the time - for a "your records" overview page.
+export async function getCurrentPRs(userId: string): Promise<CurrentPR[]> {
+  const [sets, resolveBodyWeight] = await Promise.all([
+    prisma.workoutSet.findMany({
+      where: { session: { userId } },
+      orderBy: [{ session: { date: "asc" } }, { order: "asc" }],
+      select: {
+        reps: true,
+        weightKg: true,
+        durationSec: true,
+        exerciseId: true,
+        session: { select: { date: true } },
+        exercise: { select: { name: true, focus: true, type: true, isBodyweight: true } },
+      },
+    }),
+    makeBodyWeightResolver(userId),
+  ]);
+
+  const best = new Map<string, CurrentPR>();
+
+  for (const set of sets) {
+    let value: number | null = null;
+    if (set.exercise.type === "HOLD") {
+      value = set.durationSec;
+    } else if (set.reps != null) {
+      const bodyWeightKg = set.exercise.isBodyweight ? resolveBodyWeight(set.session.date) : null;
+      const loadKg = effectiveLoadKg(set.exercise.isBodyweight, bodyWeightKg, set.weightKg ?? 0);
+      value = repsValue(set.reps, loadKg);
+    }
+    if (value == null) continue;
+
+    const existing = best.get(set.exerciseId);
+    if (!existing || value > existing.bestValue) {
+      best.set(set.exerciseId, {
+        exerciseId: set.exerciseId,
+        exerciseName: set.exercise.name,
+        focus: set.exercise.focus,
+        type: set.exercise.type,
+        bestValue: value,
+        achievedAt: set.session.date,
+      });
+    }
+  }
+
+  return Array.from(best.values()).sort((a, b) => a.exerciseName.localeCompare(b.exerciseName));
+}

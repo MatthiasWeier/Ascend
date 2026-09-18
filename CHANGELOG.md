@@ -5,6 +5,18 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.15.0] - 2026-09-18
+
+### Added
+- **Anstupsen**: jedes Mitglied kann jedes andere Mitglied per Push
+  anstupsen ("Zieh dein Workout durch!"), max. einmal pro Stunde pro Person
+- **Reaktionen** auf Feed-Posts (👍❤️💪🔥) - eine Reaktion pro Person und
+  Post, ein anderes Emoji wählen ersetzt die alte
+- **Streak-Anzeige** auf der Startseite: aufeinanderfolgende Trainingstage
+  in deutscher Zeitzone, bricht erst nach einem komplett verpassten Tag
+- **Persönliche-Rekorde-Übersicht**: neuer "Rekorde"-Tab in Analytics mit
+  dem aktuellen Bestwert pro Übung (statt nur als Badge im Feed sichtbar)
+
 ## [0.14.0] - 2026-09-18
 
 ### Added

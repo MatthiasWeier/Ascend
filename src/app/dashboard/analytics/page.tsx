@@ -14,6 +14,7 @@ import { BalanceRadar } from "@/components/analytics/balance-radar";
 import { ActivityCalendar } from "@/components/analytics/activity-calendar";
 import { ClimbingPyramid } from "@/components/analytics/climbing-pyramid";
 import { BoulderCalendar } from "@/components/analytics/boulder-calendar";
+import { PersonalRecords } from "@/components/analytics/personal-records";
 
 export default function AnalyticsPage() {
   return (
@@ -26,6 +27,7 @@ export default function AnalyticsPage() {
       <Tabs defaultValue="strength">
         <TabsList className="w-full flex-wrap">
           <TabsTrigger value="strength">Kraft</TabsTrigger>
+          <TabsTrigger value="records">Rekorde</TabsTrigger>
           <TabsTrigger value="volume">Volumen</TabsTrigger>
           <TabsTrigger value="balance">Balance</TabsTrigger>
           <TabsTrigger value="calendar">Kalender</TabsTrigger>
@@ -40,6 +42,18 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <OneRmChart />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="records">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Persönliche Rekorde</CardTitle>
+              <CardDescription>Dein aktueller Bestwert pro Übung.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PersonalRecords />
             </CardContent>
           </Card>
         </TabsContent>
