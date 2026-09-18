@@ -2,13 +2,22 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Dumbbell } from "lucide-react";
+import { Dumbbell, Image as ImageIcon, MessageSquare, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FeedList } from "@/components/feed-list";
 import { PostComposer } from "@/components/groups/post-composer";
 import { useSession } from "next-auth/react";
+import { cn } from "@/lib/utils";
+
+const TYPE_FILTERS = [
+  { value: "ALL" as const, label: "Alle", icon: null },
+  { value: "TEXT" as const, label: "Text", icon: MessageSquare },
+  { value: "WORKOUT_SHARE" as const, label: "Workout", icon: Dumbbell },
+  { value: "PHOTO" as const, label: "Foto", icon: ImageIcon },
+];
+type TypeFilter = (typeof TYPE_FILTERS)[number]["value"];
 
 type Post = {
   id: string;
@@ -31,6 +40,8 @@ export function GroupFeed({
   const [posts, setPosts] = useState<Post[] | null>(null);
   const [autoShare, setAutoShare] = useState(initialAutoShare);
   const [togglingAutoShare, setTogglingAutoShare] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("ALL");
+  const [authorFilter, setAuthorFilter] = useState<{ id: string; name: string } | null>(null);
 
   function refetch() {
     fetch(`/api/groups/${groupId}/posts`)
@@ -48,6 +59,14 @@ export function GroupFeed({
         .map((p) => p.workoutSessionId as string)
     );
   }, [posts, authSession]);
+
+  const visiblePosts = useMemo(() => {
+    return (posts ?? []).filter(
+      (p) =>
+        (typeFilter === "ALL" || p.type === typeFilter) &&
+        (authorFilter == null || p.user.id === authorFilter.id)
+    );
+  }, [posts, typeFilter, authorFilter]);
 
   async function handleToggleAutoShare(next: boolean) {
     setTogglingAutoShare(true);
@@ -89,19 +108,58 @@ export function GroupFeed({
         <Switch checked={autoShare} onCheckedChange={handleToggleAutoShare} disabled={togglingAutoShare} />
       </div>
 
+      <div className="flex flex-wrap items-center gap-1.5">
+        {TYPE_FILTERS.map((f) => (
+          <button
+            key={f.value}
+            type="button"
+            onClick={() => setTypeFilter(f.value)}
+            className={cn(
+              "flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+              typeFilter === f.value
+                ? "bg-primary/15 text-primary"
+                : "text-muted-foreground hover:bg-secondary"
+            )}
+          >
+            {f.icon && <f.icon className="size-3" />}
+            {f.label}
+          </button>
+        ))}
+        {authorFilter && (
+          <button
+            type="button"
+            onClick={() => setAuthorFilter(null)}
+            className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground"
+          >
+            Nur {authorFilter.name}
+            <X className="size-3" />
+          </button>
+        )}
+      </div>
+
       {posts == null ? (
         <Skeleton className="h-32 w-full" />
       ) : posts.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
           Noch nichts gepostet. Sei der Erste!
         </p>
+      ) : visiblePosts.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          Nichts mit diesem Filter.
+        </p>
       ) : (
         <FeedList>
-          {posts.map((post) => (
+          {visiblePosts.map((post) => (
             <Card key={post.id}>
               <CardContent className="flex flex-col gap-2 px-5">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">{post.user.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setAuthorFilter({ id: post.user.id, name: post.user.name })}
+                    className="font-medium text-foreground hover:underline"
+                  >
+                    {post.user.name}
+                  </button>
                   <span>
                     {new Date(post.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                   </span>

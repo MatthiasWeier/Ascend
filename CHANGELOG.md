@@ -5,6 +5,12 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.6.0] - 2026-09-18
+
+### Added
+- Gruppen-Feed-Filter nach Typ (Alle/Text/Workout/Foto)
+- Auf einen Namen im Feed klicken zeigt nur noch dessen Posts
+
 ## [0.5.0] - 2026-09-18
 
 ### Added

@@ -129,6 +129,8 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   einzeln über den Composer oder per Toggle **"Workouts automatisch
   teilen"** dauerhaft (rückwirkend + alle zukünftigen); bereits geteilte
   Workouts werden nie doppelt gepostet
+- ✅ Feed-Filter nach Typ (Alle/Text/Workout/Foto) und per Klick auf einen
+  Namen nach Person
 - ✅ **Daily Challenges**: Leader aktiviert bis zu 4 Themen aus einem
   Katalog (`ChallengeTemplate`), jeder setzt sein eigenes Reps-Ziel
 - ✅ **Yammer-System** (Anti-Sandbagging): andere Mitglieder können ein zu
