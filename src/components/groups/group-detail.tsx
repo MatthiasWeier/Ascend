@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Bell, Crown, LogOut, Pencil, UserX } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -42,7 +42,7 @@ type GroupInfo = {
   inviteCode: string;
   myRole: "LEADER" | "MEMBER";
   autoShareWorkouts: boolean;
-  members: { id: string; name: string; role: "LEADER" | "MEMBER" }[];
+  members: { id: string; name: string; avatarUrl: string | null; role: "LEADER" | "MEMBER" }[];
 };
 
 function initials(name: string) {
@@ -260,6 +260,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
             {group.members.map((m) => (
               <div key={m.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
                 <Avatar className="size-8">
+                  {m.avatarUrl && <AvatarImage src={m.avatarUrl} alt={m.name} />}
                   <AvatarFallback className="bg-primary/15 text-xs font-semibold text-primary">
                     {initials(m.name)}
                   </AvatarFallback>

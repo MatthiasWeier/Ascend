@@ -5,6 +5,13 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.16.0] - 2026-09-18
+
+### Added
+- **Profilbild-Upload**: eigenes Bild statt nur Initialen-Avatar, sichtbar
+  im Nutzermenü, in den Einstellungen und in der Mitgliederliste jeder
+  Gruppe
+
 ## [0.15.0] - 2026-09-18
 
 ### Added

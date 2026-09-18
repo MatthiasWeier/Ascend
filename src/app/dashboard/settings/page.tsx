@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Line, LineChart, XAxis, YAxis } from "recharts";
+import { Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
   CardContent,
@@ -23,10 +25,19 @@ import { PushNotificationToggle } from "@/components/push-notification-toggle";
 import { APP_VERSION } from "@/lib/version";
 
 type SettingsData = {
-  user: { name: string; username: string; bodyWeightKg: number | null };
+  user: { name: string; username: string; bodyWeightKg: number | null; avatarUrl: string | null };
   balanceGoals: { focus: MuscleFocus; targetPercent: number }[];
   bodyWeightHistory: { dateKey: string; weightKg: number }[];
 };
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
 const weightChartConfig = {
   weightKg: { label: "Gewicht", color: "var(--chart-1)" },
@@ -44,6 +55,8 @@ export default function SettingsPage() {
     GRIP: 20,
   });
   const [savingGoals, setSavingGoals] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   function refetch() {
     fetch("/api/settings")
@@ -83,6 +96,27 @@ export default function SettingsPage() {
     refetch();
   }
 
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+      toast.error("Bild zu groß (max. 4MB).");
+      return;
+    }
+    setUploadingAvatar(true);
+    const formData = new FormData();
+    formData.append("avatar", file);
+    const res = await fetch("/api/settings/avatar", { method: "POST", body: formData });
+    setUploadingAvatar(false);
+    if (!res.ok) {
+      toast.error("Konnte Profilbild nicht hochladen.");
+      return;
+    }
+    toast.success("Profilbild aktualisiert!");
+    refetch();
+  }
+
   async function handleSaveGoals() {
     setSavingGoals(true);
     const res = await fetch("/api/settings", {
@@ -112,10 +146,35 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Einstellungen</h1>
-        <p className="text-sm text-muted-foreground">{data.user.name} · @{data.user.username}</p>
-        <p className="mt-1 text-xs text-muted-foreground/60">Ascend v{APP_VERSION}</p>
+      <div className="flex items-center gap-4">
+        <button
+          type="button"
+          onClick={() => avatarInputRef.current?.click()}
+          disabled={uploadingAvatar}
+          className="group relative shrink-0 rounded-full"
+        >
+          <Avatar className="size-16">
+            {data.user.avatarUrl && <AvatarImage src={data.user.avatarUrl} alt={data.user.name} />}
+            <AvatarFallback className="bg-primary text-lg font-semibold text-primary-foreground">
+              {initials(data.user.name)}
+            </AvatarFallback>
+          </Avatar>
+          <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+            <Camera className="size-5 text-white" />
+          </span>
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="hidden"
+            onChange={handleAvatarChange}
+          />
+        </button>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Einstellungen</h1>
+          <p className="text-sm text-muted-foreground">{data.user.name} · @{data.user.username}</p>
+          <p className="mt-1 text-xs text-muted-foreground/60">Ascend v{APP_VERSION}</p>
+        </div>
       </div>
 
       <Card>

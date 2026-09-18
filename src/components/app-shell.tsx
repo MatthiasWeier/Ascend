@@ -15,7 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LegalFooter } from "@/components/legal-footer";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,9 +45,11 @@ function initials(name: string) {
 export function AppShell({
   children,
   userName,
+  avatarUrl,
 }: {
   children: React.ReactNode;
   userName: string;
+  avatarUrl?: string | null;
 }) {
   const pathname = usePathname();
 
@@ -109,6 +111,7 @@ export function AppShell({
             <DropdownMenu>
               <DropdownMenuTrigger className="outline-none">
                 <Avatar className="size-8 cursor-pointer">
+                  {avatarUrl && <AvatarImage src={avatarUrl} alt={userName} />}
                   <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                     {initials(userName)}
                   </AvatarFallback>

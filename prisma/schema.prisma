@@ -30,6 +30,7 @@ model User {
   passwordHash String
   name         String
   bodyWeightKg Float?
+  avatarUrl    String?
   createdAt    DateTime @default(now())
 
   workoutSessions   WorkoutSession[]
