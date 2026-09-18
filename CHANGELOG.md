@@ -5,6 +5,13 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.8.0] - 2026-09-18
+
+### Added
+- "Gruppen-Aktivität" auf der Startseite: geteilte Workouts und
+  abgeschlossene/abgebrochene Challenges aus allen eigenen Gruppen,
+  neueste zuerst, mit Zeitangabe und Link zur jeweiligen Gruppe
+
 ## [0.7.0] - 2026-09-18
 
 ### Added

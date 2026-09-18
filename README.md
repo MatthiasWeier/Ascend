@@ -106,6 +106,8 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 - ✅ Daily-Challenge-Reminder auf der Startseite (inline, kein Pop-up):
   zeigt jede heute noch offene Challenge über allen Gruppen mit direktem
   Link zur Gruppe/Challenge
+- ✅ "Gruppen-Aktivität" auf der Startseite: geteilte Workouts und
+  Challenge-Ergebnisse aus allen Gruppen, neueste zuerst, mit Zeitstempel
 
 ### Analytics
 - ✅ 1RM-Schätzung (Epley) & Maximalkraft-Verlauf

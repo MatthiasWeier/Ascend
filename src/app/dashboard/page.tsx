@@ -5,9 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { getBrainSuggestion } from "@/lib/workout-brain";
 import { computePrSetIds } from "@/lib/personal-records";
 import { getPendingDailyChallenges } from "@/lib/pending-challenges";
+import { getRecentGroupActivity } from "@/lib/group-activity";
 import { Button } from "@/components/ui/button";
 import { BrainCard } from "@/components/brain-card";
 import { DailyChallengeReminder } from "@/components/daily-challenge-reminder";
+import { GroupActivityFeed } from "@/components/group-activity-feed";
 import { WorkoutSessionCard } from "@/components/workout-session-card";
 import { FeedList } from "@/components/feed-list";
 
@@ -15,7 +17,7 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user.id;
 
-  const [suggestion, sessions, prSetIds, pendingChallenges] = await Promise.all([
+  const [suggestion, sessions, prSetIds, pendingChallenges, groupActivity] = await Promise.all([
     getBrainSuggestion(userId),
     prisma.workoutSession.findMany({
       where: { userId },
@@ -25,6 +27,7 @@ export default async function DashboardPage() {
     }),
     computePrSetIds(userId),
     getPendingDailyChallenges(userId),
+    getRecentGroupActivity(userId),
   ]);
 
   return (
@@ -43,6 +46,8 @@ export default async function DashboardPage() {
       </div>
 
       <BrainCard suggestion={suggestion} />
+
+      <GroupActivityFeed items={groupActivity} />
 
       <Button
         render={<Link href="/dashboard/workouts/new" />}
