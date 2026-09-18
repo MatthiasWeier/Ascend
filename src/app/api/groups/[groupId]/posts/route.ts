@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
-import path from "node:path";
-import { mkdir, writeFile } from "node:fs/promises";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getGroupMembership } from "@/lib/group-auth";
-import { UPLOADS_DIR, extensionForImageType } from "@/lib/uploads";
+import { extensionForImageType } from "@/lib/uploads";
+import { storageWriteFile } from "@/lib/storage";
 import { summarizeWorkoutSession } from "@/lib/workout-summary";
 import { sendPushToUsers } from "@/lib/push";
 
@@ -90,11 +89,9 @@ export async function POST(
       return NextResponse.json({ error: "Nicht unterstütztes Bildformat" }, { status: 400 });
     }
 
-    const dir = path.join(UPLOADS_DIR, groupId);
-    await mkdir(dir, { recursive: true });
     const filename = `${randomUUID()}.${ext}`;
     const bytes = Buffer.from(await file.arrayBuffer());
-    await writeFile(path.join(/* turbopackIgnore: true */ dir, filename), bytes);
+    await storageWriteFile(`${groupId}/${filename}`, bytes);
 
     const post = await prisma.groupPost.create({
       data: {

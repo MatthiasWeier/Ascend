@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import path from "node:path";
-import { unlink } from "node:fs/promises";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getGroupMembership } from "@/lib/group-auth";
-import { UPLOADS_DIR } from "@/lib/uploads";
+import { storageDeleteFile } from "@/lib/storage";
 
 const editSchema = z.object({ content: z.string().min(1).max(2000) });
 
@@ -86,7 +85,7 @@ export async function DELETE(
 
   if (post.type === "PHOTO" && post.imageUrl) {
     const filename = path.basename(post.imageUrl);
-    await unlink(path.join(UPLOADS_DIR, groupId, filename)).catch(() => {});
+    await storageDeleteFile(`${groupId}/${filename}`);
   }
 
   await prisma.groupPost.delete({ where: { id: postId } });

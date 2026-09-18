@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import path from "node:path";
-import { readFile, stat } from "node:fs/promises";
 import { auth } from "@/lib/auth";
-import { UPLOADS_DIR } from "@/lib/uploads";
+import { storageReadFile } from "@/lib/storage";
 import { getGroupMembership } from "@/lib/group-auth";
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -29,29 +28,27 @@ export async function GET(
     return NextResponse.json({ error: "Not a member" }, { status: 403 });
   }
 
-  // Resolve and verify the path stays inside UPLOADS_DIR - blocks traversal
-  // via segments like "..".
-  const resolved = path.resolve(UPLOADS_DIR, ...segments);
-  if (!resolved.startsWith(UPLOADS_DIR + path.sep)) {
+  // No ".." segments allowed at all - blocks traversal regardless of
+  // storage backend.
+  if (segments.some((s) => s.includes("..") || s.includes("/") || s.includes("\\"))) {
     return NextResponse.json({ error: "Invalid path" }, { status: 400 });
   }
 
-  const ext = path.extname(resolved).toLowerCase();
+  const ext = path.extname(segments[segments.length - 1] ?? "").toLowerCase();
   const contentType = CONTENT_TYPES[ext];
   if (!contentType) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  try {
-    await stat(resolved);
-    const bytes = await readFile(resolved);
-    return new NextResponse(new Uint8Array(bytes), {
-      headers: {
-        "Content-Type": contentType,
-        "Cache-Control": "private, max-age=31536000, immutable",
-      },
-    });
-  } catch {
+  const bytes = await storageReadFile(segments.join("/"));
+  if (!bytes) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+
+  return new NextResponse(new Uint8Array(bytes), {
+    headers: {
+      "Content-Type": contentType,
+      "Cache-Control": "private, max-age=31536000, immutable",
+    },
+  });
 }

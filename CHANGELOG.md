@@ -5,6 +5,20 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.29.0] - 2026-09-19
+
+### Added
+- **S3/MinIO-Storage-Backend** (optional): Avatare und Gruppen-Fotos können
+  statt auf lokaler Disk in einem S3-kompatiblen Bucket (z.B. MinIO)
+  abgelegt werden - nützlich für Multi-Host- oder Kubernetes-Deployments,
+  wo das lokale `uploads`-Volume nicht praktikabel ist. Aktiviert durch
+  Setzen von `S3_ENDPOINT`/`S3_BUCKET`/`S3_REGION`/`S3_ACCESS_KEY_ID`/
+  `S3_SECRET_ACCESS_KEY` (siehe `.env.example`); ohne diese bleibt alles
+  beim bisherigen lokalen Disk-Verhalten. Dateien werden nie über eine
+  öffentliche Bucket-URL ausgeliefert, sondern immer über die
+  bestehenden authentifizierten App-Routen gestreamt, damit die
+  Gruppen-Zugriffskontrolle unverändert greift.
+
 ## [0.28.0] - 2026-09-19
 
 ### Added

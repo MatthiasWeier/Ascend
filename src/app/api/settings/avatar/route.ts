@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
-import path from "node:path";
-import { mkdir, writeFile } from "node:fs/promises";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { UPLOADS_DIR, extensionForImageType } from "@/lib/uploads";
+import { extensionForImageType } from "@/lib/uploads";
+import { storageWriteFile } from "@/lib/storage";
 
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024;
 
@@ -27,11 +26,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Nicht unterstütztes Bildformat" }, { status: 400 });
   }
 
-  const dir = path.join(UPLOADS_DIR, "avatars");
-  await mkdir(dir, { recursive: true });
   const filename = `${randomUUID()}.${ext}`;
   const bytes = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(dir, filename), bytes);
+  await storageWriteFile(`avatars/${filename}`, bytes);
 
   const avatarUrl = `/api/avatars/${filename}`;
   await prisma.user.update({ where: { id: session.user.id }, data: { avatarUrl } });

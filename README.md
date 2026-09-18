@@ -40,7 +40,10 @@ Database migrations run automatically on every `docker compose up` (a
 one-shot `migrate` service that `app` waits on) - no manual step needed
 there. The app is then on `http://localhost:3000` (or your server's
 address). Data lives in two named Docker volumes (`db-data`,
-`uploads-data`) that survive rebuilds/restarts.
+`uploads-data`) that survive rebuilds/restarts. Uploads (avatars, group
+photos) can instead go to an S3-compatible bucket like MinIO - set the
+`S3_*` variables in `.env.example`; unset, everything stays on local
+disk as above.
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for reverse proxy / HTTPS setup,
 backups, the healthcheck, and Prometheus metrics.
@@ -206,6 +209,7 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 - ✅ Prometheus-Metriken (`/api/metrics`, hinter `METRICS_TOKEN`)
 - ✅ Backup/Restore-Scripts (`scripts/backup.sh`, `scripts/restore.sh`)
 - ✅ Non-root Container-User
+- ✅ S3/MinIO-Storage-Backend für Uploads (optional, siehe `.env.example`)
 - ⏳ Externes Monitoring/Alerting (Sentry o.ä.) - braucht einen eigenen
   Account, nicht Teil des Projekts
 - ❓ Mobile/Cross-Browser-UI ist nicht in einem echten Browser getestet -
