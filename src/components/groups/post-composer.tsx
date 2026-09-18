@@ -20,14 +20,17 @@ type Session = {
   sets: { exercise: { name: string }; reps: number | null; weightKg: number | null; durationSec: number | null }[];
 };
 
+export type PostPayload =
+  | { type: "TEXT"; content: string }
+  | { type: "WORKOUT_SHARE"; workoutSessionId: string }
+  | { type: "PHOTO"; file: File; caption: string };
+
 export function PostComposer({
-  groupId,
   alreadySharedIds,
-  onPosted,
+  onSubmit,
 }: {
-  groupId: string;
   alreadySharedIds: Set<string>;
-  onPosted: () => void;
+  onSubmit: (payload: PostPayload) => Promise<boolean>;
 }) {
   const [mode, setMode] = useState<"TEXT" | "WORKOUT_SHARE" | "PHOTO">("TEXT");
   const [text, setText] = useState("");
@@ -50,57 +53,43 @@ export function PostComposer({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
 
-    try {
-      if (mode === "PHOTO") {
-        if (!file) {
-          toast.error("Bitte ein Bild wählen.");
-          return;
-        }
-        const form = new FormData();
-        form.append("image", file);
-        form.append("caption", caption);
-        const res = await fetch(`/api/groups/${groupId}/posts`, { method: "POST", body: form });
-        if (!res.ok) throw new Error();
-        setFile(null);
-        setCaption("");
-        if (fileInputRef.current) fileInputRef.current.value = "";
-      } else if (mode === "WORKOUT_SHARE") {
-        if (!sessionId) {
-          toast.error("Bitte ein Workout wählen.");
-          return;
-        }
-        const res = await fetch(`/api/groups/${groupId}/posts`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "WORKOUT_SHARE", workoutSessionId: sessionId }),
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          toast.error(data.error ?? "Konnte nicht posten.");
-          return;
-        }
-        setSessionId("");
-      } else {
-        if (!text.trim()) {
-          toast.error("Text darf nicht leer sein.");
-          return;
-        }
-        const res = await fetch(`/api/groups/${groupId}/posts`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "TEXT", content: text.trim() }),
-        });
-        if (!res.ok) throw new Error();
-        setText("");
-      }
-      toast.success("Gepostet!");
-      onPosted();
-    } catch {
+    if (mode === "PHOTO" && !file) {
+      toast.error("Bitte ein Bild wählen.");
+      return;
+    }
+    if (mode === "WORKOUT_SHARE" && !sessionId) {
+      toast.error("Bitte ein Workout wählen.");
+      return;
+    }
+    if (mode === "TEXT" && !text.trim()) {
+      toast.error("Text darf nicht leer sein.");
+      return;
+    }
+
+    setLoading(true);
+    const ok = await onSubmit(
+      mode === "PHOTO"
+        ? { type: "PHOTO", file: file!, caption }
+        : mode === "WORKOUT_SHARE"
+          ? { type: "WORKOUT_SHARE", workoutSessionId: sessionId }
+          : { type: "TEXT", content: text.trim() }
+    );
+    setLoading(false);
+
+    if (!ok) {
       toast.error("Konnte nicht posten.");
-    } finally {
-      setLoading(false);
+      return;
+    }
+    toast.success("Gepostet!");
+    if (mode === "PHOTO") {
+      setFile(null);
+      setCaption("");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    } else if (mode === "WORKOUT_SHARE") {
+      setSessionId("");
+    } else {
+      setText("");
     }
   }
 

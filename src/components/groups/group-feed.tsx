@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FeedList } from "@/components/feed-list";
 import { PullToRefresh } from "@/components/pull-to-refresh";
-import { PostComposer } from "@/components/groups/post-composer";
+import { PostComposer, type PostPayload } from "@/components/groups/post-composer";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { REACTION_EMOJIS } from "@/lib/post-reactions";
@@ -31,6 +31,7 @@ type Post = {
   user: { id: string; name: string };
   reactionCounts: Record<string, number>;
   myReaction: string | null;
+  pending?: boolean;
 };
 
 export function GroupFeed({
@@ -75,18 +76,82 @@ export function GroupFeed({
   }, [posts, typeFilter, authorFilter]);
 
   async function handleReact(postId: string, emoji: string) {
+    const previousPosts = posts;
     const post = posts?.find((p) => p.id === postId);
-    const removing = post?.myReaction === emoji;
+    if (!post) return;
+    const removing = post.myReaction === emoji;
+
+    setPosts(
+      (posts ?? []).map((p) => {
+        if (p.id !== postId) return p;
+        const counts = { ...p.reactionCounts };
+        if (p.myReaction) counts[p.myReaction] = Math.max(0, (counts[p.myReaction] ?? 0) - 1);
+        if (!removing) counts[emoji] = (counts[emoji] ?? 0) + 1;
+        return { ...p, reactionCounts: counts, myReaction: removing ? null : emoji };
+      })
+    );
+
     const res = await fetch(`/api/groups/${groupId}/posts/${postId}/reactions`, {
       method: removing ? "DELETE" : "POST",
       headers: { "Content-Type": "application/json" },
       body: removing ? undefined : JSON.stringify({ emoji }),
     });
     if (!res.ok) {
+      setPosts(previousPosts);
       toast.error("Konnte Reaktion nicht speichern.");
-      return;
     }
-    refetch();
+  }
+
+  async function handleCreatePost(payload: PostPayload): Promise<boolean> {
+    const tempId = `temp-${Date.now()}`;
+    const objectUrl = payload.type === "PHOTO" ? URL.createObjectURL(payload.file) : null;
+    const optimisticPost: Post = {
+      id: tempId,
+      type: payload.type,
+      content:
+        payload.type === "TEXT"
+          ? payload.content
+          : payload.type === "PHOTO"
+            ? payload.caption || null
+            : "Workout wird geteilt…",
+      imageUrl: objectUrl,
+      createdAt: new Date().toISOString(),
+      workoutSessionId: payload.type === "WORKOUT_SHARE" ? payload.workoutSessionId : null,
+      user: { id: authSession?.user?.id ?? "me", name: authSession?.user?.name ?? "" },
+      reactionCounts: {},
+      myReaction: null,
+      pending: true,
+    };
+    setPosts((prev) => [optimisticPost, ...(prev ?? [])]);
+
+    let res: Response;
+    if (payload.type === "PHOTO") {
+      const form = new FormData();
+      form.append("image", payload.file);
+      form.append("caption", payload.caption);
+      res = await fetch(`/api/groups/${groupId}/posts`, { method: "POST", body: form });
+    } else if (payload.type === "WORKOUT_SHARE") {
+      res = await fetch(`/api/groups/${groupId}/posts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "WORKOUT_SHARE", workoutSessionId: payload.workoutSessionId }),
+      });
+    } else {
+      res = await fetch(`/api/groups/${groupId}/posts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "TEXT", content: payload.content }),
+      });
+    }
+
+    if (!res.ok) {
+      setPosts((prev) => (prev ?? []).filter((p) => p.id !== tempId));
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      return false;
+    }
+    await refetch();
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    return true;
   }
 
   async function handleToggleAutoShare(next: boolean) {
@@ -118,7 +183,7 @@ export function GroupFeed({
   return (
     <PullToRefresh onRefresh={refetch}>
     <div className="flex flex-col gap-4">
-      <PostComposer groupId={groupId} alreadySharedIds={myAlreadySharedIds} onPosted={refetch} />
+      <PostComposer alreadySharedIds={myAlreadySharedIds} onSubmit={handleCreatePost} />
 
       <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4">
         <div>
@@ -172,7 +237,7 @@ export function GroupFeed({
       ) : (
         <FeedList>
           {visiblePosts.map((post) => (
-            <Card key={post.id}>
+            <Card key={post.id} className={cn(post.pending && "opacity-60")}>
               <CardContent className="flex flex-col gap-2 px-5">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <button
@@ -183,7 +248,9 @@ export function GroupFeed({
                     {post.user.name}
                   </button>
                   <span>
-                    {new Date(post.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                    {post.pending
+                      ? "Wird gepostet…"
+                      : new Date(post.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
 
@@ -206,7 +273,7 @@ export function GroupFeed({
                   <p className="text-sm">{post.content}</p>
                 )}
 
-                <div className="flex flex-wrap items-center gap-1">
+                <div className={cn("flex flex-wrap items-center gap-1", post.pending && "pointer-events-none")}>
                   {REACTION_EMOJIS.map((emoji) => {
                     const count = post.reactionCounts[emoji] ?? 0;
                     const active = post.myReaction === emoji;

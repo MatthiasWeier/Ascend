@@ -5,6 +5,13 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.18.0] - 2026-09-18
+
+### Added
+- **Optimistische UI-Updates**: Posten im Gruppen-Feed, Reagieren auf Posts
+  und Beitragen zu Gruppenzielen fühlen sich jetzt sofort an, statt auf die
+  Server-Antwort zu warten (mit automatischem Rollback bei Fehlern)
+
 ## [0.17.0] - 2026-09-18
 
 ### Added

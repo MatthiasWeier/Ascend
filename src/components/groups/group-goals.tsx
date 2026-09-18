@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Plus, Target, Trophy, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ function formatAmount(n: number) {
 }
 
 export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: boolean }) {
+  const { data: authSession } = useSession();
   const [goals, setGoals] = useState<GroupGoal[] | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
@@ -144,12 +146,40 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
   }
 
   async function handleContribute(goalId: string, amount: number) {
+    const previousGoals = goals;
+    setGoals(
+      (goals ?? []).map((g) => {
+        if (g.id !== goalId) return g;
+        const total = g.total + amount;
+        const contributors = [...g.contributors];
+        const mine = contributors.findIndex((c) => c.isMe);
+        if (mine >= 0) {
+          contributors[mine] = { ...contributors[mine], amount: contributors[mine].amount + amount };
+        } else {
+          contributors.push({
+            userId: authSession?.user?.id ?? "me",
+            userName: authSession?.user?.name ?? "",
+            amount,
+            isMe: true,
+          });
+        }
+        return {
+          ...g,
+          total,
+          progress: Math.min(total / g.targetValue, 1),
+          isComplete: total >= g.targetValue,
+          contributors,
+        };
+      })
+    );
+
     const res = await fetch(`/api/groups/${groupId}/goals/${goalId}/contributions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ amount }),
     });
     if (!res.ok) {
+      setGoals(previousGoals);
       toast.error("Fehlgeschlagen.");
       return;
     }
