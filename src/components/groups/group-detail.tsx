@@ -1,13 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { Crown, UserX } from "lucide-react";
+import { Crown, LogOut, Pencil, UserX } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +52,8 @@ function initials(name: string) {
 const VALID_TABS = ["feed", "challenges", "goals", "analytics", "members"] as const;
 
 export function GroupDetail({ groupId }: { groupId: string }) {
+  const router = useRouter();
+  const { data: authSession } = useSession();
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get("tab");
   const initialTab = (VALID_TABS as readonly string[]).includes(requestedTab ?? "")
@@ -48,6 +61,11 @@ export function GroupDetail({ groupId }: { groupId: string }) {
     : "feed";
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [group, setGroup] = useState<GroupInfo | null>(null);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [renaming, setRenaming] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [transferringTo, setTransferringTo] = useState<string | null>(null);
 
   function refetch() {
     fetch(`/api/groups/${groupId}`)
@@ -67,6 +85,57 @@ export function GroupDetail({ groupId }: { groupId: string }) {
     refetch();
   }
 
+  async function handleLeave() {
+    const myUserId = authSession?.user?.id;
+    if (!myUserId) return;
+    setLeaving(true);
+    const res = await fetch(`/api/groups/${groupId}/members/${myUserId}`, { method: "DELETE" });
+    setLeaving(false);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      toast.error(data.error ?? "Konnte Gruppe nicht verlassen.");
+      return;
+    }
+    toast.success("Gruppe verlassen.");
+    router.push("/dashboard/groups");
+  }
+
+  async function handleRename(e: React.FormEvent) {
+    e.preventDefault();
+    if (!renameValue.trim()) return;
+    setRenaming(true);
+    const res = await fetch(`/api/groups/${groupId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: renameValue.trim() }),
+    });
+    setRenaming(false);
+    if (!res.ok) {
+      toast.error("Konnte Gruppe nicht umbenennen.");
+      return;
+    }
+    toast.success("Gruppe umbenannt.");
+    setRenameOpen(false);
+    refetch();
+  }
+
+  async function handleTransfer(userId: string) {
+    setTransferringTo(userId);
+    const res = await fetch(`/api/groups/${groupId}/transfer-leadership`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId }),
+    });
+    setTransferringTo(null);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      toast.error(data.error ?? "Konnte Leitung nicht übergeben.");
+      return;
+    }
+    toast.success("Leitung übergeben.");
+    refetch();
+  }
+
   if (group == null) {
     return (
       <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">
@@ -82,12 +151,70 @@ export function GroupDetail({ groupId }: { groupId: string }) {
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{group.name}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-2xl font-bold tracking-tight">{group.name}</h1>
+            {isLeader && (
+              <Dialog
+                open={renameOpen}
+                onOpenChange={(open) => {
+                  setRenameOpen(open);
+                  if (open) setRenameValue(group.name);
+                }}
+              >
+                <DialogTrigger render={<Button variant="ghost" size="icon-sm" className="text-muted-foreground" />}>
+                  <Pencil className="size-3.5" />
+                </DialogTrigger>
+                <DialogContent>
+                  <form onSubmit={handleRename}>
+                    <DialogHeader>
+                      <DialogTitle>Gruppe umbenennen</DialogTitle>
+                    </DialogHeader>
+                    <Input
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      maxLength={60}
+                      className="my-2"
+                      required
+                    />
+                    <DialogFooter>
+                      <Button type="submit" disabled={renaming}>
+                        {renaming ? "Speichern…" : "Speichern"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
           <p className="text-sm text-muted-foreground">
             {group.members.length} Mitglied{group.members.length === 1 ? "" : "er"}
           </p>
         </div>
-        <InviteButton inviteCode={group.inviteCode} />
+        <div className="flex items-center gap-1.5">
+          <InviteButton inviteCode={group.inviteCode} />
+          {!isLeader && (
+            <AlertDialog>
+              <AlertDialogTrigger render={<Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" />}>
+                <LogOut className="size-4" />
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Gruppe verlassen?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Du verlierst den Zugriff auf Feed, Ziele und Challenges dieser Gruppe. Du
+                    kannst mit einem neuen Invite-Link wieder beitreten.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                  <AlertDialogAction disabled={leaving} onClick={handleLeave}>
+                    {leaving ? "Verlassen…" : "Verlassen"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as string)}>
@@ -132,23 +259,54 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                   </span>
                 )}
                 {isLeader && m.role !== "LEADER" && (
-                  <AlertDialog>
-                    <AlertDialogTrigger render={<Button variant="ghost" size="icon-sm" className="ml-auto text-muted-foreground hover:text-destructive" />}>
-                      <UserX className="size-4" />
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>{m.name} aus der Gruppe entfernen?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Diese Person verliert den Zugriff auf Feed und Challenges der Gruppe. Sie kann per neuem Invite-Link wieder beitreten.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleKick(m.id)}>Entfernen</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <>
+                    <AlertDialog>
+                      <AlertDialogTrigger
+                        render={
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="ml-auto text-muted-foreground"
+                            disabled={transferringTo === m.id}
+                            title="Leitung übergeben"
+                          />
+                        }
+                      >
+                        <Crown className="size-4" />
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Leitung an {m.name} übergeben?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {m.name} wird neuer Leader (inkl. Kick-Rechten); du wirst normales
+                            Mitglied. Löscht {m.name} später den Account, geht die Gruppe an sie/ihn
+                            über - nicht mehr an dich.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleTransfer(m.id)}>Übergeben</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                    <AlertDialog>
+                      <AlertDialogTrigger render={<Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive" />}>
+                        <UserX className="size-4" />
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{m.name} aus der Gruppe entfernen?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Diese Person verliert den Zugriff auf Feed und Challenges der Gruppe. Sie kann per neuem Invite-Link wieder beitreten.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleKick(m.id)}>Entfernen</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </>
                 )}
               </div>
             ))}

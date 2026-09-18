@@ -5,6 +5,17 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.14.0] - 2026-09-18
+
+### Added
+- Mitglieder können eine Gruppe jetzt selbst verlassen (bisher nur
+  Kicken durch den Leader möglich)
+- **Leitungs-Übergabe**: Leader kann die Leitung an ein anderes Mitglied
+  übergeben - überträgt sowohl die Rolle als auch die eigentliche
+  Besitzer-Zuordnung, damit die Gruppe beim Löschen des alten
+  Leader-Accounts nicht mehr mitgelöscht wird
+- Gruppenname kann vom Leader nachträglich geändert werden
+
 ## [0.13.0] - 2026-09-18
 
 ### Added

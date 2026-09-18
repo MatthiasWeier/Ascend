@@ -131,7 +131,9 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 ### Gruppen
 - ✅ Erstellen, Beitreten per Invite-Link
 - ✅ Rollen: **Leader** (Ersteller) / **Member** - jeder darf einladen, nur
-  der Leader darf kicken
+  der Leader darf kicken; Mitglieder können selbst austreten; Leitung kann
+  übergeben werden (überträgt auch die echte Besitzer-Zuordnung, nicht nur
+  die Rolle); Gruppenname vom Leader änderbar
 - ✅ Feed: Text-Posts, Fotos (lokales Docker-Volume), geteilte Workouts
   einzeln über den Composer oder per Toggle **"Workouts automatisch
   teilen"** dauerhaft (rückwirkend + alle zukünftigen); bereits geteilte
