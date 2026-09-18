@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Plus, Check, Timer, X, Copy } from "lucide-react";
+import { Trash2, Plus, Check, Timer, X, Copy, BookmarkPlus, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { ExerciseCombobox } from "@/components/exercise-combobox";
 import { CreateExerciseDialog } from "@/components/create-exercise-dialog";
 import { cn } from "@/lib/utils";
@@ -31,6 +47,8 @@ type LastValues = Record<
   string,
   { reps: number | null; weightKg: number | null; durationSec: number | null }
 >;
+
+type Template = { id: string; name: string; entries: { exerciseId: string }[] };
 
 type SetRow = {
   key: number;
@@ -74,13 +92,20 @@ export default function NewWorkoutPage() {
   const [restSecondsLeft, setRestSecondsLeft] = useState<number | null>(null);
   const [restPreset, setRestPreset] = useState(90);
 
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [savingTemplate, setSavingTemplate] = useState(false);
+
   useEffect(() => {
     Promise.all([
       fetch("/api/exercises").then((r) => r.json()) as Promise<{ exercises: Exercise[] }>,
       fetch("/api/exercises/last-values").then((r) => r.json()) as Promise<{ lastValues: LastValues }>,
-    ]).then(([exercisesRes, lastValuesRes]) => {
+      fetch("/api/workout-templates").then((r) => r.json()) as Promise<{ templates: Template[] }>,
+    ]).then(([exercisesRes, lastValuesRes, templatesRes]) => {
       setExercises(exercisesRes.exercises);
       setLastValues(lastValuesRes.lastValues);
+      setTemplates(templatesRes.templates);
       setRows([emptyRow()]);
     });
   }, []);
@@ -149,6 +174,46 @@ export default function NewWorkoutPage() {
       next.splice(idx + 1, 0, copy);
       return next;
     });
+  }
+
+  function loadTemplate(templateId: string | null) {
+    const template = templates.find((t) => t.id === templateId);
+    if (!template) return;
+    setRows(
+      template.entries.map((e) => {
+        const row = emptyRow(e.exerciseId);
+        const last = lastValues[e.exerciseId];
+        if (last) {
+          if (last.reps != null) row.reps = String(last.reps);
+          if (last.weightKg != null) row.weightKg = String(last.weightKg);
+          if (last.durationSec != null) row.durationSec = String(last.durationSec);
+        }
+        return row;
+      })
+    );
+    toast.success(`Vorlage "${template.name}" geladen.`);
+  }
+
+  async function saveTemplate(e: React.FormEvent) {
+    e.preventDefault();
+    const exerciseIds = rows.filter((r) => r.exerciseId).map((r) => r.exerciseId);
+    if (exerciseIds.length === 0 || !templateName.trim()) return;
+    setSavingTemplate(true);
+    const res = await fetch("/api/workout-templates", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: templateName.trim(), exerciseIds }),
+    });
+    setSavingTemplate(false);
+    if (!res.ok) {
+      toast.error("Konnte Vorlage nicht speichern.");
+      return;
+    }
+    const data: { template: Template } = await res.json();
+    setTemplates((prev) => [data.template, ...prev]);
+    toast.success("Vorlage gespeichert!");
+    setSaveTemplateOpen(false);
+    setTemplateName("");
   }
 
   function markDone(key: number) {
@@ -249,7 +314,53 @@ export default function NewWorkoutPage() {
           <CardHeader>
             <CardTitle className="text-base">Sätze</CardTitle>
             <CardDescription>Übung wählen, Werte eintragen. ✓ startet die Pause.</CardDescription>
-            <CardAction>
+            <CardAction className="flex items-center gap-1.5">
+              {templates.length > 0 && (
+                <Select onValueChange={loadTemplate}>
+                  <SelectTrigger size="sm" className="w-auto">
+                    <FolderOpen className="size-3.5" />
+                    <SelectValue placeholder="Vorlage laden" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {templates.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              <Dialog open={saveTemplateOpen} onOpenChange={setSaveTemplateOpen}>
+                <DialogTrigger
+                  render={<Button type="button" variant="outline" size="sm" disabled={!rows.some((r) => r.exerciseId)} />}
+                >
+                  <BookmarkPlus className="size-3.5" />
+                  Als Vorlage
+                </DialogTrigger>
+                <DialogContent>
+                  <form onSubmit={saveTemplate}>
+                    <DialogHeader>
+                      <DialogTitle>Als Vorlage speichern</DialogTitle>
+                      <DialogDescription>
+                        Speichert die Übungs-Reihenfolge der aktuellen Sätze - Werte werden beim
+                        Laden wieder aus deiner letzten Session vorausgefüllt.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <Input
+                      value={templateName}
+                      onChange={(ev) => setTemplateName(ev.target.value)}
+                      placeholder="z.B. Push Day"
+                      className="my-2"
+                      required
+                    />
+                    <DialogFooter>
+                      <Button type="submit" disabled={savingTemplate}>
+                        {savingTemplate ? "Speichern…" : "Speichern"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
               <CreateExerciseDialog onCreated={handleExerciseCreated} />
             </CardAction>
           </CardHeader>

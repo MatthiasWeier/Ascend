@@ -94,8 +94,8 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 - ✅ Auto-Fill aus der letzten Session (Wdh/Gewicht/Dauer vorausgefüllt, ohne
   bereits getippte Werte zu überschreiben)
 - ✅ Integrierter Pause-Timer (60/90/120/180s, startet per ✓-Button am Satz)
-- 🚧 Trainingsvorlagen (Schema `WorkoutTemplate` steht, kein UI zum
-  Speichern/Starten)
+- ✅ Trainingsvorlagen: aktuelle Satz-Reihenfolge speichern, per Dropdown
+  wieder laden
 
 ### Workout Brain
 - ✅ Muskel-Fokus-Vorschlag (längste Pause seit dem letzten Training)

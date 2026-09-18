@@ -5,6 +5,13 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.9.0] - 2026-09-18
+
+### Added
+- Workout-Vorlagen: aktuelle Satz-Reihenfolge als benannte Vorlage
+  speichern und beim nächsten Mal per Dropdown wieder laden (Werte werden
+  weiterhin aus der letzten Session vorausgefüllt)
+
 ## [0.8.0] - 2026-09-18
 
 ### Added
