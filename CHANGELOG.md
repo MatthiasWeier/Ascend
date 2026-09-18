@@ -5,6 +5,13 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.20.0] - 2026-09-18
+
+### Added
+- **Onboarding-Checkliste** für neue Nutzer ohne Workouts: "So geht's los"
+  mit drei Schritten (Gewicht eintragen, erstes Workout eintragen, Gruppe
+  erstellen/beitreten) statt einer leeren Liste ohne Anleitung
+
 ## [0.19.0] - 2026-09-18
 
 ### Added

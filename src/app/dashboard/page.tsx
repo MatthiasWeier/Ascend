@@ -14,24 +14,28 @@ import { GroupActivityFeed } from "@/components/group-activity-feed";
 import { WorkoutSessionCard } from "@/components/workout-session-card";
 import { FeedList } from "@/components/feed-list";
 import { DashboardRefresh } from "@/components/dashboard-refresh";
+import { OnboardingChecklist } from "@/components/onboarding-checklist";
 
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user.id;
 
-  const [suggestion, sessions, prSetIds, pendingChallenges, groupActivity, streak] = await Promise.all([
-    getBrainSuggestion(userId),
-    prisma.workoutSession.findMany({
-      where: { userId },
-      orderBy: { date: "desc" },
-      take: 15,
-      include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
-    }),
-    computePrSetIds(userId),
-    getPendingDailyChallenges(userId),
-    getRecentGroupActivity(userId),
-    computeCurrentStreak(userId),
-  ]);
+  const [suggestion, sessions, prSetIds, pendingChallenges, groupActivity, streak, user, groupCount] =
+    await Promise.all([
+      getBrainSuggestion(userId),
+      prisma.workoutSession.findMany({
+        where: { userId },
+        orderBy: { date: "desc" },
+        take: 15,
+        include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
+      }),
+      computePrSetIds(userId),
+      getPendingDailyChallenges(userId),
+      getRecentGroupActivity(userId),
+      computeCurrentStreak(userId),
+      prisma.user.findUnique({ where: { id: userId }, select: { bodyWeightKg: true } }),
+      prisma.groupMember.count({ where: { userId } }),
+    ]);
 
   return (
     <DashboardRefresh>
@@ -72,9 +76,7 @@ export default async function DashboardPage() {
       <div className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-muted-foreground">Letzte Workouts</h2>
         {sessions.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            Noch keine Workouts eingetragen. Leg direkt los!
-          </p>
+          <OnboardingChecklist hasBodyWeight={user?.bodyWeightKg != null} hasGroup={groupCount > 0} />
         ) : (
           <FeedList>
             {sessions.map((s) => (
