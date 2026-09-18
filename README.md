@@ -92,6 +92,8 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   Admin-Rechte vergeben/entziehen, Nutzer löschen
 - ✅ Invite-only-Modus (`INVITE_ONLY`): Registrierung nur mit gültigem
   Gruppen-Invite-Link, siehe `.env.example`
+- ✅ Vollständiger JSON-Datenexport, CSV-Import (Strong/Hevy-kompatibel,
+  best effort), abonnierbarer ICS-Kalender-Feed - alles in Settings
 
 ### Training eintragen
 - ✅ Zwei Übungsarten: Reps+Gewicht (`REPS`) und Zeit-Halten (`HOLD`)

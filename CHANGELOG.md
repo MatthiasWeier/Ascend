@@ -5,6 +5,19 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.27.0] - 2026-09-19
+
+### Added
+- **Datenexport** (Settings): vollständiger JSON-Export aller eigenen
+  Daten (Workouts, Sätze, Körpergewicht, Klettern, Balance-Ziele,
+  Vorlagen)
+- **CSV-Import** (Strong/Hevy-kompatibel, best effort): unbekannte
+  Übungen werden automatisch angelegt, Muskel-Fokus wird aus dem
+  Übungsnamen geraten
+- **Abonnierbarer Kalender-Feed** (ICS): pro Nutzer ein privater,
+  token-basierter Link für Apple/Google Kalender etc., in Settings
+  einsehbar und neu generierbar
+
 ## [0.26.0] - 2026-09-19
 
 ### Added

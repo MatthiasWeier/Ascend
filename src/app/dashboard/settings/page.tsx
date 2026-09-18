@@ -22,6 +22,7 @@ import type { MuscleFocus } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteAccountDialog } from "@/components/delete-account-dialog";
 import { PushNotificationToggle } from "@/components/push-notification-toggle";
+import { DataExport, DataImport, CalendarFeed } from "@/components/data-portability";
 import { APP_VERSION } from "@/lib/version";
 
 type SettingsData = {
@@ -266,6 +267,18 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <PushNotificationToggle />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Deine Daten</CardTitle>
+          <CardDescription>Export, Import und ein abonnierbarer Kalender-Feed deiner Workouts.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-5">
+          <DataExport />
+          <DataImport />
+          <CalendarFeed />
         </CardContent>
       </Card>
 
