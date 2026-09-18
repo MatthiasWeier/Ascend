@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
@@ -29,11 +29,20 @@ function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const inviteFromLink = searchParams.get("invite") ?? "";
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [inviteCode, setInviteCode] = useState(inviteFromLink);
+  const [inviteOnly, setInviteOnly] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/register")
+      .then((r) => r.json())
+      .then((data: { inviteOnly: boolean }) => setInviteOnly(data.inviteOnly));
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,7 +52,7 @@ function RegisterForm() {
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, username, password }),
+      body: JSON.stringify({ name, username, password, inviteCode: inviteCode || undefined }),
     });
 
     if (!res.ok) {
@@ -51,7 +60,7 @@ function RegisterForm() {
       setError(
         data.error === "Username already registered"
           ? "Benutzername bereits vergeben."
-          : "Registrierung fehlgeschlagen."
+          : (data.error ?? "Registrierung fehlgeschlagen.")
       );
       setLoading(false);
       return;
@@ -74,10 +83,32 @@ function RegisterForm() {
         <Card>
           <CardHeader>
             <CardTitle className="text-xl">Account erstellen</CardTitle>
-            <CardDescription>Push dich selbst. Push deine Crew.</CardDescription>
+            <CardDescription>
+              {inviteFromLink
+                ? "Du wurdest zu einer Gruppe eingeladen - nach dem Anlegen bist du direkt Mitglied."
+                : "Push dich selbst. Push deine Crew."}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              {(inviteOnly || inviteFromLink) && (
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="inviteCode">Einladungscode</Label>
+                  <Input
+                    id="inviteCode"
+                    required={inviteOnly}
+                    readOnly={!!inviteFromLink}
+                    value={inviteCode}
+                    onChange={(e) => setInviteCode(e.target.value)}
+                    className={inviteFromLink ? "bg-secondary/50" : undefined}
+                  />
+                  {inviteOnly && !inviteFromLink && (
+                    <p className="text-xs text-muted-foreground">
+                      Diese Instanz ist nur mit Einladungslink zugänglich.
+                    </p>
+                  )}
+                </div>
+              )}
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="name">Name</Label>
                 <Input

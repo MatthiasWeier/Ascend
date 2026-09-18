@@ -88,6 +88,10 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   nicht nur ein einzelner Wert
 - ✅ Account-Löschung (Danger Zone in den Einstellungen, Passwort-Bestätigung,
   kaskadiert korrekt inkl. eigener Gruppen)
+- ✅ Instanzweite Admin-Rolle (`/dashboard/admin`): Nutzerverwaltung,
+  Admin-Rechte vergeben/entziehen, Nutzer löschen
+- ✅ Invite-only-Modus (`INVITE_ONLY`): Registrierung nur mit gültigem
+  Gruppen-Invite-Link, siehe `.env.example`
 
 ### Training eintragen
 - ✅ Zwei Übungsarten: Reps+Gewicht (`REPS`) und Zeit-Halten (`HOLD`)

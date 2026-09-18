@@ -11,11 +11,15 @@ export default async function DashboardLayout({
   const session = await auth();
   const user = await prisma.user.findUnique({
     where: { id: session!.user.id },
-    select: { avatarUrl: true },
+    select: { avatarUrl: true, isAdmin: true },
   });
 
   return (
-    <AppShell userName={session!.user.name!} avatarUrl={user?.avatarUrl ?? null}>
+    <AppShell
+      userName={session!.user.name!}
+      avatarUrl={user?.avatarUrl ?? null}
+      isAdmin={user?.isAdmin ?? false}
+    >
       <Heartbeat />
       {children}
     </AppShell>

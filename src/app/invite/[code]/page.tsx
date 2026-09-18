@@ -11,7 +11,11 @@ export default async function InvitePage({
   const session = await auth();
 
   if (!session?.user) {
-    redirect(`/login?callbackUrl=/invite/${code}`);
+    // Most people clicking an invite link don't have an account yet -
+    // register (which also joins the group on signup, see /api/register)
+    // is the more useful default than login. Register still links back to
+    // login for the return-user case.
+    redirect(`/register?invite=${code}&callbackUrl=/invite/${code}`);
   }
 
   const group = await prisma.group.findUnique({ where: { inviteCode: code } });

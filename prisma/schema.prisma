@@ -38,6 +38,9 @@ model User {
   name         String
   bodyWeightKg Float?
   avatarUrl    String?
+  // Instance-wide admin (not a per-group role): can manage all users from
+  // /dashboard/admin. Not derived from anything - explicitly set.
+  isAdmin      Boolean  @default(false)
   // Bumped by a client-side heartbeat while the app is open (see
   // /api/heartbeat) - drives the "Online" / "zuletzt online vor X" label
   // on group member lists.

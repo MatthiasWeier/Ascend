@@ -5,6 +5,17 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.26.0] - 2026-09-19
+
+### Added
+- **Admin-Rolle**: instanzweiter Admin (`User.isAdmin`) mit einer
+  Nutzerverwaltung unter `/dashboard/admin` - Liste aller Nutzer,
+  Admin-Rechte vergeben/entziehen, Nutzer löschen (mit Schutz gegen
+  Selbst-Löschung und Entfernen des letzten Admins)
+- **Invite-only Registrierung**: `INVITE_ONLY=true` schließt die
+  Registrierung, außer man kommt über einen gültigen Gruppen-Invite-Link -
+  Registrierung und Gruppen-Beitritt passieren dann in einem Schritt
+
 ## [0.25.0] - 2026-09-19
 
 ### Added
