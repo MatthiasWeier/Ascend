@@ -5,6 +5,13 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.11.0] - 2026-09-18
+
+### Added
+- Neuer "Analytics"-Tab in Gruppen: Gruppen-Volumen über die letzten 30
+  Tage (Sätze der ganzen Gruppe pro Tag) und Aktivität pro Mitglied
+  (geloggte Workouts, letzte 30 Tage)
+
 ## [0.10.0] - 2026-09-18
 
 ### Added

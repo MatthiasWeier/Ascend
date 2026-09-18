@@ -149,6 +149,8 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 - ✅ **Challenge-Verlauf**: rückwirkend pro Mitglied sehen, an welchem Tag
   eine Challenge geschafft, aufgegeben oder gar nicht versucht wurde,
   inkl. Prozentanzeige bei nur teilweise geschafften Versuchen
+- ✅ **Gruppen-Analytics**: Gruppen-Volumen (Sätze/Tag, 30 Tage) und
+  Aktivität pro Mitglied als eigener Tab
 - ✅ **Kollaborative Gruppenziele**: Leader legt ein gemeinsames Ziel mit
   Ziel-Wert/Einheit (Enum: Wiederholungen/Sekunden/km/Custom, kein
   Freitext)/optionaler Frist an; Fortschrittsbalken zeigt die Summe der

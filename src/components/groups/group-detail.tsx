@@ -23,6 +23,7 @@ import { InviteButton } from "@/components/groups/invite-button";
 import { GroupFeed } from "@/components/groups/group-feed";
 import { GroupChallenges } from "@/components/groups/group-challenges";
 import { GroupGoals } from "@/components/groups/group-goals";
+import { GroupAnalytics } from "@/components/groups/group-analytics";
 
 type GroupInfo = {
   id: string;
@@ -37,7 +38,7 @@ function initials(name: string) {
   return name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 }
 
-const VALID_TABS = ["feed", "challenges", "goals", "members"] as const;
+const VALID_TABS = ["feed", "challenges", "goals", "analytics", "members"] as const;
 
 export function GroupDetail({ groupId }: { groupId: string }) {
   const searchParams = useSearchParams();
@@ -94,6 +95,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
           <TabsTrigger value="feed">Feed</TabsTrigger>
           <TabsTrigger value="challenges">Challenges</TabsTrigger>
           <TabsTrigger value="goals">Ziele</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="members">Mitglieder</TabsTrigger>
         </TabsList>
 
@@ -107,6 +109,10 @@ export function GroupDetail({ groupId }: { groupId: string }) {
 
         <TabsContent value="goals">
           <GroupGoals groupId={groupId} isLeader={isLeader} />
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <GroupAnalytics groupId={groupId} />
         </TabsContent>
 
         <TabsContent value="members">
