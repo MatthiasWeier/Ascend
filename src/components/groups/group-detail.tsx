@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { Bell, CalendarDays, Crown, LogOut, Pencil, UserX } from "lucide-react";
+import { Bell, CalendarDays, ClipboardCopy, ClipboardList, Crown, LogOut, Pencil, UserX } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,8 @@ function onlineStatusLabel(lastActiveAt: string | null): { text: string; online:
   return { text: online ? "Online" : `zuletzt online ${formatTimeAgo(lastActiveAt)}`, online };
 }
 
+type MemberTemplate = { id: string; name: string; entries: { exerciseId: string; exercise: { name: string } }[] };
+
 const VALID_TABS = ["feed", "challenges", "goals", "analytics", "members"] as const;
 
 export function GroupDetail({ groupId }: { groupId: string }) {
@@ -86,6 +88,9 @@ export function GroupDetail({ groupId }: { groupId: string }) {
   const [transferringTo, setTransferringTo] = useState<string | null>(null);
   const [nudging, setNudging] = useState<string | null>(null);
   const [calendarMember, setCalendarMember] = useState<{ id: string; name: string } | null>(null);
+  const [templatesMember, setTemplatesMember] = useState<{ id: string; name: string } | null>(null);
+  const [memberTemplates, setMemberTemplates] = useState<MemberTemplate[] | null>(null);
+  const [copyingId, setCopyingId] = useState<string | null>(null);
 
   function refetch() {
     fetch(`/api/groups/${groupId}`)
@@ -180,6 +185,29 @@ export function GroupDetail({ groupId }: { groupId: string }) {
     }
     toast.success("Leitung übergeben.");
     refetch();
+  }
+
+  function openTemplates(member: { id: string; name: string }) {
+    setTemplatesMember(member);
+    setMemberTemplates(null);
+    fetch(`/api/groups/${groupId}/members/${member.id}/templates`)
+      .then((r) => r.json())
+      .then((data: { templates: MemberTemplate[] }) => setMemberTemplates(data.templates));
+  }
+
+  async function handleCopyTemplate(templateId: string) {
+    if (!templatesMember) return;
+    setCopyingId(templateId);
+    const res = await fetch(
+      `/api/groups/${groupId}/members/${templatesMember.id}/templates/${templateId}/copy`,
+      { method: "POST" }
+    );
+    setCopyingId(null);
+    if (!res.ok) {
+      toast.error("Konnte Vorlage nicht kopieren.");
+      return;
+    }
+    toast.success("Vorlage in deine Bibliothek kopiert!");
   }
 
   if (group == null) {
@@ -336,6 +364,17 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                       variant="ghost"
                       size="icon-sm"
                       className="text-muted-foreground"
+                      title="Vorlagen ansehen"
+                      onClick={() => openTemplates({ id: m.id, name: m.name })}
+                    >
+                      <ClipboardList className="size-4" />
+                    </Button>
+                  )}
+                  {m.id !== authSession?.user?.id && (
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-muted-foreground"
                       disabled={nudging === m.id}
                       title="Anstupsen"
                       onClick={() => handleNudge(m.id)}
@@ -407,6 +446,43 @@ export function GroupDetail({ groupId }: { groupId: string }) {
               }
               editable={false}
             />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={templatesMember != null} onOpenChange={(open) => !open && setTemplatesMember(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Vorlagen von {templatesMember?.name}</DialogTitle>
+            <DialogDescription>Kopieren übernimmt die Übungs-Reihenfolge in deine eigene Bibliothek.</DialogDescription>
+          </DialogHeader>
+          {memberTemplates == null ? (
+            <Skeleton className="h-24 w-full" />
+          ) : memberTemplates.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">Noch keine Vorlagen.</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {memberTemplates.map((t) => (
+                <div key={t.id} className="flex flex-col gap-1.5 rounded-lg border border-border p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-medium">{t.name}</span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={copyingId === t.id}
+                      onClick={() => handleCopyTemplate(t.id)}
+                    >
+                      <ClipboardCopy className="size-3.5" />
+                      {copyingId === t.id ? "Kopieren…" : "Kopieren"}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {t.entries.map((e) => e.exercise.name).join(", ")}
+                  </p>
+                </div>
+              ))}
+            </div>
           )}
         </DialogContent>
       </Dialog>

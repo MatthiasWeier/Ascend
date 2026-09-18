@@ -12,6 +12,8 @@ const setSchema = z.object({
   reps: z.number().int().positive().optional(),
   weightKg: z.number().nonnegative().optional(),
   durationSec: z.number().int().positive().optional(),
+  setType: z.enum(["WARMUP", "NORMAL", "DROP", "FAILURE"]).optional(),
+  notes: z.string().max(500).optional(),
 });
 
 const workoutSchema = z.object({
@@ -63,6 +65,8 @@ export async function POST(request: Request) {
           reps: set.reps,
           weightKg: set.weightKg,
           durationSec: set.durationSec,
+          setType: set.setType,
+          notes: set.notes,
           order: index,
         })),
       },
@@ -87,17 +91,20 @@ export async function POST(request: Request) {
 
   // Group Goals linked to one of these exercises auto-fill from the raw
   // logged value - this never touches daily challenges, which stay a
-  // separate, manual flow.
+  // separate, manual flow. Warm-up sets don't count - they're not working
+  // sets.
   await Promise.all(
-    created.sets.map((set) =>
-      contributeWorkoutSetToGoals({
-        userId: session.user.id,
-        exerciseId: set.exerciseId,
-        reps: set.reps,
-        durationSec: set.durationSec,
-        workoutSetId: set.id,
-      })
-    )
+    created.sets
+      .filter((set) => set.setType !== "WARMUP")
+      .map((set) =>
+        contributeWorkoutSetToGoals({
+          userId: session.user.id,
+          exerciseId: set.exerciseId,
+          reps: set.reps,
+          durationSec: set.durationSec,
+          workoutSetId: set.id,
+        })
+      )
   );
 
   return NextResponse.json(

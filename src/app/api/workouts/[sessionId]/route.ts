@@ -11,6 +11,8 @@ const setSchema = z.object({
   reps: z.number().int().positive().optional(),
   weightKg: z.number().nonnegative().optional(),
   durationSec: z.number().int().positive().optional(),
+  setType: z.enum(["WARMUP", "NORMAL", "DROP", "FAILURE"]).optional(),
+  notes: z.string().max(500).optional(),
 });
 
 const updateSchema = z.object({
@@ -99,6 +101,8 @@ export async function PATCH(
             reps: set.reps,
             weightKg: set.weightKg,
             durationSec: set.durationSec,
+            setType: set.setType,
+            notes: set.notes,
             order: index,
           })),
         },
@@ -125,17 +129,19 @@ export async function PATCH(
   }
 
   // Re-run auto-fill for any exercise linked to a Group Goal, using the
-  // edited values.
+  // edited values. Warm-up sets don't count - they're not working sets.
   await Promise.all(
-    (updated?.sets ?? []).map((set) =>
-      contributeWorkoutSetToGoals({
-        userId: session.user.id,
-        exerciseId: set.exerciseId,
-        reps: set.reps,
-        durationSec: set.durationSec,
-        workoutSetId: set.id,
-      })
-    )
+    (updated?.sets ?? [])
+      .filter((set) => set.setType !== "WARMUP")
+      .map((set) =>
+        contributeWorkoutSetToGoals({
+          userId: session.user.id,
+          exerciseId: set.exerciseId,
+          reps: set.reps,
+          durationSec: set.durationSec,
+          workoutSetId: set.id,
+        })
+      )
   );
 
   return NextResponse.json({ session: updated });

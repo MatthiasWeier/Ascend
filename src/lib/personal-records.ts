@@ -37,6 +37,7 @@ export async function computePrSetIds(userId: string): Promise<Set<string>> {
         weightKg: true,
         durationSec: true,
         exerciseId: true,
+        setType: true,
         session: { select: { date: true } },
         exercise: { select: { type: true, isBodyweight: true } },
       },
@@ -48,6 +49,7 @@ export async function computePrSetIds(userId: string): Promise<Set<string>> {
   const prIds = new Set<string>();
 
   for (const set of sets) {
+    if (set.setType === "WARMUP") continue;
     let value: number | null = null;
     if (set.exercise.type === "HOLD") {
       if (set.durationSec != null) {
@@ -96,6 +98,7 @@ export async function getCurrentPRs(userId: string): Promise<CurrentPR[]> {
         weightKg: true,
         durationSec: true,
         exerciseId: true,
+        setType: true,
         session: { select: { date: true } },
         exercise: { select: { name: true, focus: true, type: true, isBodyweight: true } },
       },
@@ -106,6 +109,7 @@ export async function getCurrentPRs(userId: string): Promise<CurrentPR[]> {
   const best = new Map<string, CurrentPR>();
 
   for (const set of sets) {
+    if (set.setType === "WARMUP") continue;
     let value: number | null = null;
     if (set.exercise.type === "HOLD") {
       if (set.durationSec != null) {

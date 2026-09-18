@@ -50,6 +50,7 @@ export async function getBrainSuggestion(userId: string): Promise<BrainSuggestio
         reps: true,
         weightKg: true,
         durationSec: true,
+        setType: true,
         session: {
           select: { date: true, focusFatigue: { select: { focus: true, rating: true } } },
         },

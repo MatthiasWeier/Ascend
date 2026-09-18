@@ -24,6 +24,13 @@ enum ClimbingStyle {
   ROUTE
 }
 
+enum SetType {
+  WARMUP
+  NORMAL
+  DROP
+  FAILURE
+}
+
 model User {
   id           String   @id @default(cuid())
   username     String   @unique
@@ -126,6 +133,11 @@ model WorkoutSet {
 
   // HOLD-type exercises
   durationSec Int?
+
+  // Warm-up sets don't count toward volume/PRs/weekly-set-count - they're
+  // not working sets. Drop/Failure are purely informational tags.
+  setType SetType @default(NORMAL)
+  notes   String?
 
   @@index([sessionId])
   @@index([exerciseId])

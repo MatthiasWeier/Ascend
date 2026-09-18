@@ -15,6 +15,7 @@ import { ActivityCalendar } from "@/components/analytics/activity-calendar";
 import { ClimbingPyramid } from "@/components/analytics/climbing-pyramid";
 import { BoulderCalendar } from "@/components/analytics/boulder-calendar";
 import { PersonalRecords } from "@/components/analytics/personal-records";
+import { WeeklySets } from "@/components/analytics/weekly-sets";
 
 export default function AnalyticsPage() {
   return (
@@ -58,7 +59,16 @@ export default function AnalyticsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="volume">
+        <TabsContent value="volume" className="flex flex-col gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Sätze diese Woche</CardTitle>
+              <CardDescription>Arbeitssätze pro Muskelgruppe seit Montag - Warm-ups zählen nicht mit.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <WeeklySets />
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Gesamtarbeit</CardTitle>

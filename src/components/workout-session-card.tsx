@@ -25,14 +25,30 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { FOCUS_LABEL } from "@/lib/muscle-focus";
-import type { MuscleFocus } from "@prisma/client";
+import { cn } from "@/lib/utils";
+import type { MuscleFocus, SetType } from "@prisma/client";
 
 type SetWithExercise = {
   id: string;
   reps: number | null;
   weightKg: number | null;
   durationSec: number | null;
+  setType?: SetType;
+  notes?: string | null;
   exercise: { name: string; focus: MuscleFocus };
+};
+
+const SET_TYPE_BADGE: Partial<Record<SetType, { label: string; className: string }>> = {
+  WARMUP: { label: "W", className: "bg-amber-500/15 text-amber-600" },
+  DROP: { label: "D", className: "bg-blue-500/15 text-blue-600" },
+  FAILURE: { label: "F", className: "bg-destructive/15 text-destructive" },
+};
+
+const SET_TYPE_LABEL_FULL: Record<SetType, string> = {
+  WARMUP: "Warm-up",
+  NORMAL: "Normal",
+  DROP: "Dropsatz",
+  FAILURE: "Failure",
 };
 
 export function WorkoutSessionCard({
@@ -119,27 +135,42 @@ export function WorkoutSessionCard({
         <ul className="flex flex-col gap-1 text-sm">
           {sets.map((set) => {
             const isPr = prSetIds?.has(set.id) ?? false;
+            const typeBadge = set.setType ? SET_TYPE_BADGE[set.setType] : undefined;
             return (
-              <li key={set.id} className="flex justify-between text-foreground/90">
-                <span className="flex items-center gap-1.5">
-                  {set.exercise.name}
-                  {isPr && (
-                    <span
-                      title="Neuer persönlicher Rekord"
-                      className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-500"
-                    >
-                      <Trophy className="size-3" />
-                      PR
-                    </span>
-                  )}
-                </span>
-                <span className="font-mono text-muted-foreground">
-                  {set.durationSec != null
-                    ? set.weightKg
-                      ? `${set.durationSec}s @ ${set.weightKg}kg`
-                      : `${set.durationSec}s`
-                    : `${set.reps ?? "-"} × ${set.weightKg ?? 0}kg`}
-                </span>
+              <li key={set.id} className="flex flex-col gap-0.5">
+                <div className="flex justify-between text-foreground/90">
+                  <span className="flex items-center gap-1.5">
+                    {typeBadge && (
+                      <span
+                        title={SET_TYPE_LABEL_FULL[set.setType!]}
+                        className={cn(
+                          "inline-flex size-4 items-center justify-center rounded-full text-[10px] font-bold",
+                          typeBadge.className
+                        )}
+                      >
+                        {typeBadge.label}
+                      </span>
+                    )}
+                    {set.exercise.name}
+                    {isPr && (
+                      <span
+                        title="Neuer persönlicher Rekord"
+                        className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-500"
+                      >
+                        <Trophy className="size-3" />
+                        PR
+                      </span>
+                    )}
+                  </span>
+                  <span className="font-mono text-muted-foreground">
+                    {set.durationSec != null
+                      ? set.weightKg
+                        ? `${set.durationSec}s @ ${set.weightKg}kg`
+                        : `${set.durationSec}s`
+                      : `${set.reps ?? "-"} × ${set.weightKg ?? 0}kg`}
+                  </span>
+                </div>
+                {set.notes && <p className="text-xs italic text-muted-foreground">{set.notes}</p>}
               </li>
             );
           })}

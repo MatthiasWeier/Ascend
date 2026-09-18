@@ -13,7 +13,13 @@ export async function GET() {
   const [sets, goals] = await Promise.all([
     prisma.workoutSet.findMany({
       where: { session: { userId } },
-      select: { reps: true, weightKg: true, durationSec: true, exercise: { select: { focus: true } } },
+      select: {
+        reps: true,
+        weightKg: true,
+        durationSec: true,
+        setType: true,
+        exercise: { select: { focus: true } },
+      },
     }),
     prisma.balanceGoal.findMany({ where: { userId } }),
   ]);

@@ -5,6 +5,23 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.24.0] - 2026-09-18
+
+### Added
+- **Satz-Typen**: jeder Satz lässt sich als Warm-up, Normal, Dropsatz oder
+  Failure markieren - Warm-up-Sätze zählen nicht in Rekorde,
+  Trainings-Balance oder Gruppenziele
+- **Notizen pro Satz** (z.B. "langsame Exzentrik"), zusätzlich zur
+  bestehenden Workout-weiten Notiz
+- **Hantelscheiben-Rechner** und **Aufwärm-Rechner** direkt beim Eintragen
+  eines Satzes
+- **"Letztes Mal"-Anzeige** im aktiven Workout, statt nur stillschweigend
+  vorauszufüllen
+- **Sätze pro Muskelgruppe diese Woche** in Analytics (Volumen-Tab) -
+  eine der wichtigsten Volumen-Steuerungs-Metriken
+- **Vorlagen von Gruppenmitgliedern kopieren**: in der Mitgliederliste
+  einsehbar und mit einem Klick in die eigene Bibliothek übernehmbar
+
 ## [0.23.1] - 2026-09-18
 
 ### Fixed

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Trash2, Plus, Check, Timer, X, Copy, BookmarkPlus, FolderOpen } from "lucide-react";
+import { Trash2, Plus, Check, Timer, X, Copy, BookmarkPlus, FolderOpen, StickyNote } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,9 @@ import { CreateExerciseDialog } from "@/components/create-exercise-dialog";
 import { cn } from "@/lib/utils";
 import { undoableAction } from "@/lib/undo-toast";
 import { FOCUS_LABEL, ALL_FOCUSES } from "@/lib/muscle-focus";
-import type { MuscleFocus } from "@prisma/client";
+import type { MuscleFocus, SetType } from "@prisma/client";
+import { PlateCalculatorPopover } from "@/components/plate-calculator-popover";
+import { WarmupCalculatorDialog } from "@/components/warmup-calculator-dialog";
 
 type Exercise = {
   id: string;
@@ -54,12 +56,22 @@ type LastValues = Record<
 
 type Template = { id: string; name: string; entries: { exerciseId: string }[] };
 
+const SET_TYPE_LABEL: Record<SetType, string> = {
+  WARMUP: "Warm-up",
+  NORMAL: "Normal",
+  DROP: "Dropsatz",
+  FAILURE: "Failure",
+};
+
 type SetRow = {
   key: number;
   exerciseId: string;
   reps: string;
   weightKg: string;
   durationSec: string;
+  setType: SetType;
+  notes: string;
+  notesExpanded: boolean;
   done: boolean;
 };
 
@@ -70,6 +82,9 @@ const emptyRow = (exerciseId: string = ""): SetRow => ({
   reps: "",
   weightKg: "",
   durationSec: "",
+  setType: "NORMAL",
+  notes: "",
+  notesExpanded: false,
   done: false,
 });
 
@@ -79,6 +94,13 @@ function formatMmSs(totalSeconds: number) {
   const m = Math.floor(totalSeconds / 60);
   const s = totalSeconds % 60;
   return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+function formatLastValue(last: { reps: number | null; weightKg: number | null; durationSec: number | null }) {
+  if (last.durationSec != null) {
+    return last.weightKg ? `${last.durationSec}s @ ${last.weightKg}kg` : `${last.durationSec}s`;
+  }
+  return `${last.weightKg ?? 0}kg × ${last.reps ?? "-"}`;
 }
 
 export default function NewWorkoutPage() {
@@ -119,7 +141,14 @@ export default function NewWorkoutPage() {
               notes: string | null;
               perceivedExertion: number | null;
               skinCondition: number | null;
-              sets: { exerciseId: string; reps: number | null; weightKg: number | null; durationSec: number | null }[];
+              sets: {
+                exerciseId: string;
+                reps: number | null;
+                weightKg: number | null;
+                durationSec: number | null;
+                setType: SetType;
+                notes: string | null;
+              }[];
               focusFatigue: { focus: MuscleFocus; rating: number }[];
             };
           }>)
@@ -156,6 +185,9 @@ export default function NewWorkoutPage() {
             reps: set.reps != null ? String(set.reps) : "",
             weightKg: set.weightKg != null ? String(set.weightKg) : "",
             durationSec: set.durationSec != null ? String(set.durationSec) : "",
+            setType: set.setType ?? "NORMAL",
+            notes: set.notes ?? "",
+            notesExpanded: !!set.notes,
             done: false,
           }))
         );
@@ -247,6 +279,22 @@ export default function NewWorkoutPage() {
 
   function removeRow(key: number) {
     setRows((prev) => prev.filter((r) => r.key !== key));
+  }
+
+  function insertWarmupSets(beforeKey: number, exerciseId: string, sets: { weightKg: number; reps: number }[]) {
+    setRows((prev) => {
+      const idx = prev.findIndex((r) => r.key === beforeKey);
+      if (idx === -1) return prev;
+      const warmupRows = sets.map((s) => ({
+        ...emptyRow(exerciseId),
+        weightKg: String(s.weightKg),
+        reps: String(s.reps),
+        setType: "WARMUP" as SetType,
+      }));
+      const next = [...prev];
+      next.splice(idx, 0, ...warmupRows);
+      return next;
+    });
   }
 
   function duplicateRow(key: number) {
@@ -348,17 +396,23 @@ export default function NewWorkoutPage() {
       skinCondition: trackSkin ? skinCondition : undefined,
       sets: rows.map((r) => {
         const ex = exerciseFor(r.exerciseId);
+        const common = {
+          setType: r.setType,
+          notes: r.notes.trim() || undefined,
+        };
         if (ex?.type === "HOLD") {
           return {
             exerciseId: r.exerciseId,
             durationSec: Number(r.durationSec),
             weightKg: r.weightKg === "" ? undefined : Number(r.weightKg),
+            ...common,
           };
         }
         return {
           exerciseId: r.exerciseId,
           reps: Number(r.reps),
           weightKg: r.weightKg === "" ? 0 : Number(r.weightKg),
+          ...common,
         };
       }),
     };
@@ -557,94 +611,148 @@ export default function NewWorkoutPage() {
             <>
               {rows.map((row) => {
                 const ex = exerciseFor(row.exerciseId);
+                const last = lastValues[row.exerciseId];
                 return (
                   <div key={row.key} className="animate-in fade-in slide-in-from-top-2 overflow-hidden duration-200">
                     <div
                       className={cn(
-                        "flex flex-wrap items-center gap-2 rounded-lg border p-3 transition-colors",
+                        "flex flex-col gap-2 rounded-lg border p-3 transition-colors",
                         row.done ? "border-success/40 bg-success/5" : "border-border bg-secondary/40"
                       )}
                     >
-                      <ExerciseCombobox
-                        exercises={exercises}
-                        value={row.exerciseId}
-                        onChange={(id) => handleExerciseChange(row.key, id)}
-                      />
-
-                      {ex?.type === "HOLD" ? (
-                        <>
-                          <Input
-                            type="number"
-                            min={1}
-                            placeholder="Sek."
-                            required
-                            value={row.durationSec}
-                            onChange={(e) => updateRow(row.key, { durationSec: e.target.value })}
-                            className="w-20"
-                          />
-                          <Input
-                            type="number"
-                            min={0}
-                            step={0.5}
-                            placeholder="+kg"
-                            title="Zusatzgewicht (optional)"
-                            value={row.weightKg}
-                            onChange={(e) => updateRow(row.key, { weightKg: e.target.value })}
-                            className="w-16"
-                          />
-                        </>
-                      ) : (
-                        <>
-                          <Input
-                            type="number"
-                            min={1}
-                            placeholder="Wdh"
-                            required
-                            value={row.reps}
-                            onChange={(e) => updateRow(row.key, { reps: e.target.value })}
-                            className="w-16"
-                          />
-                          <Input
-                            type="number"
-                            min={0}
-                            step={0.5}
-                            placeholder="kg"
-                            value={row.weightKg}
-                            onChange={(e) => updateRow(row.key, { weightKg: e.target.value })}
-                            className="w-16"
-                          />
-                        </>
+                      {last && (
+                        <p className="text-xs text-muted-foreground">
+                          Letztes Mal: {formatLastValue(last)}
+                        </p>
                       )}
-                      <Button
-                        type="button"
-                        variant={row.done ? "default" : "outline"}
-                        size="icon"
-                        className={cn("ml-auto", row.done && "bg-success text-success-foreground hover:bg-success/90")}
-                        onClick={() => markDone(row.key)}
-                        title="Satz fertig - startet die Pause"
-                      >
-                        <Check className="size-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-foreground"
-                        onClick={() => duplicateRow(row.key)}
-                        disabled={!row.exerciseId}
-                        title="Satz duplizieren"
-                      >
-                        <Copy className="size-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-destructive"
-                        onClick={() => removeRow(row.key)}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <ExerciseCombobox
+                          exercises={exercises}
+                          value={row.exerciseId}
+                          onChange={(id) => handleExerciseChange(row.key, id)}
+                        />
+
+                        {ex?.type === "HOLD" ? (
+                          <>
+                            <Input
+                              type="number"
+                              min={1}
+                              placeholder="Sek."
+                              required
+                              value={row.durationSec}
+                              onChange={(e) => updateRow(row.key, { durationSec: e.target.value })}
+                              className="w-20"
+                            />
+                            <Input
+                              type="number"
+                              min={0}
+                              step={0.5}
+                              placeholder="+kg"
+                              title="Zusatzgewicht (optional)"
+                              value={row.weightKg}
+                              onChange={(e) => updateRow(row.key, { weightKg: e.target.value })}
+                              className="w-16"
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <Input
+                              type="number"
+                              min={1}
+                              placeholder="Wdh"
+                              required
+                              value={row.reps}
+                              onChange={(e) => updateRow(row.key, { reps: e.target.value })}
+                              className="w-16"
+                            />
+                            <Input
+                              type="number"
+                              min={0}
+                              step={0.5}
+                              placeholder="kg"
+                              value={row.weightKg}
+                              onChange={(e) => updateRow(row.key, { weightKg: e.target.value })}
+                              className="w-16"
+                            />
+                            <PlateCalculatorPopover targetWeightKg={Number(row.weightKg) || 0} />
+                            <WarmupCalculatorDialog
+                              targetWeightKg={Number(row.weightKg) || 0}
+                              targetReps={Number(row.reps) || 8}
+                              onInsert={(sets) => insertWarmupSets(row.key, row.exerciseId, sets)}
+                            />
+                          </>
+                        )}
+
+                        <Select
+                          value={row.setType}
+                          onValueChange={(v) => updateRow(row.key, { setType: v as SetType })}
+                        >
+                          <SelectTrigger size="sm" className="w-[104px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(Object.keys(SET_TYPE_LABEL) as SetType[]).map((t) => (
+                              <SelectItem key={t} value={t}>
+                                {SET_TYPE_LABEL[t]}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className={cn(
+                            "text-muted-foreground hover:text-foreground",
+                            row.notesExpanded && "text-primary"
+                          )}
+                          onClick={() => updateRow(row.key, { notesExpanded: !row.notesExpanded })}
+                          title="Notiz zu diesem Satz"
+                        >
+                          <StickyNote className="size-4" />
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant={row.done ? "default" : "outline"}
+                          size="icon"
+                          className={cn("ml-auto", row.done && "bg-success text-success-foreground hover:bg-success/90")}
+                          onClick={() => markDone(row.key)}
+                          title="Satz fertig - startet die Pause"
+                        >
+                          <Check className="size-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-foreground"
+                          onClick={() => duplicateRow(row.key)}
+                          disabled={!row.exerciseId}
+                          title="Satz duplizieren"
+                        >
+                          <Copy className="size-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-destructive"
+                          onClick={() => removeRow(row.key)}
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </div>
+
+                      {row.notesExpanded && (
+                        <Input
+                          placeholder="Notiz zu diesem Satz (z.B. langsame Exzentrik)"
+                          value={row.notes}
+                          onChange={(e) => updateRow(row.key, { notes: e.target.value })}
+                          className="text-sm"
+                        />
+                      )}
                     </div>
                   </div>
                 );
