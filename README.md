@@ -143,6 +143,9 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   an (±10%/±5%/0%)
 - ✅ **Wetteinsatz**: optionaler Freitext beim Aktivieren einer Daily
   Challenge (z.B. "Verlierer macht 20 Liegestütze"), für alle sichtbar
+- ✅ **Challenge-Verlauf**: rückwirkend pro Mitglied sehen, an welchem Tag
+  eine Challenge geschafft, aufgegeben oder gar nicht versucht wurde,
+  inkl. Prozentanzeige bei nur teilweise geschafften Versuchen
 - ✅ **Kollaborative Gruppenziele**: Leader legt ein gemeinsames Ziel mit
   Ziel-Wert/Einheit (Enum: Wiederholungen/Sekunden/km/Custom, kein
   Freitext)/optionaler Frist an; Fortschrittsbalken zeigt die Summe der

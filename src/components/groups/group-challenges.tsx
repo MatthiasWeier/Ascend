@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Check, MessageCircleWarning, Play, Plus, X, Zap } from "lucide-react";
+import { Check, History, MessageCircleWarning, Play, Plus, X, XCircle, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -206,11 +206,14 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
                       </p>
                     )}
                   </div>
-                  {isLeader && (
-                    <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive" onClick={() => deactivate(dc.id)}>
-                      <X className="size-4" />
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-1">
+                    <HistoryButton groupId={groupId} dailyChallengeId={dc.id} title={dc.templateName} />
+                    {isLeader && (
+                      <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive" onClick={() => deactivate(dc.id)}>
+                        <X className="size-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -292,6 +295,90 @@ function GoalRow({ goal, onYammer, onStart }: { goal: GoalView; onYammer: () => 
         </Button>
       )}
     </div>
+  );
+}
+
+type HistoryEntry = {
+  dateKey: string;
+  status: "IN_PROGRESS" | "COMPLETED" | "ENDED_EARLY";
+  currentReps: number;
+  targetRepsSnapshot: number;
+  percent: number;
+};
+
+type HistoryMember = { userId: string; userName: string; history: HistoryEntry[] };
+
+function HistoryButton({
+  groupId,
+  dailyChallengeId,
+  title,
+}: {
+  groupId: string;
+  dailyChallengeId: string;
+  title: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [members, setMembers] = useState<HistoryMember[] | null>(null);
+
+  function load() {
+    setOpen(true);
+    fetch(`/api/groups/${groupId}/daily-challenges/${dailyChallengeId}/history`)
+      .then((r) => r.json())
+      .then((data: { members: HistoryMember[] }) => setMembers(data.members));
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={<Button variant="ghost" size="icon-sm" className="text-muted-foreground" onClick={load} />}>
+        <History className="size-4" />
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Verlauf: {title}</DialogTitle>
+          <DialogDescription>Wer hat wann geschafft, aufgegeben oder gar nicht erst versucht.</DialogDescription>
+        </DialogHeader>
+        {members == null ? (
+          <Skeleton className="h-40 w-full" />
+        ) : members.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Noch niemand hat ein Ziel für diese Challenge gesetzt.</p>
+        ) : (
+          <div className="flex max-h-96 flex-col gap-4 overflow-y-auto">
+            {members.map((m) => (
+              <div key={m.userId} className="flex flex-col gap-1.5">
+                <p className="text-sm font-medium">{m.userName}</p>
+                {m.history.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">Noch keine Versuche.</p>
+                ) : (
+                  <div className="flex flex-col gap-1">
+                    {m.history.map((h) => (
+                      <div
+                        key={h.dateKey}
+                        className="flex items-center gap-2 rounded-lg bg-secondary/40 px-3 py-1.5 text-xs"
+                      >
+                        <span className="w-20 shrink-0 text-muted-foreground">
+                          {new Date(h.dateKey).toLocaleDateString("de-DE", { day: "2-digit", month: "short" })}
+                        </span>
+                        {h.status === "COMPLETED" ? (
+                          <Check className="size-3.5 shrink-0 text-success" />
+                        ) : h.status === "ENDED_EARLY" ? (
+                          <XCircle className="size-3.5 shrink-0 text-destructive" />
+                        ) : (
+                          <Play className="size-3.5 shrink-0 text-primary" />
+                        )}
+                        <span className="flex-1">
+                          {h.currentReps}/{h.targetRepsSnapshot} Wdh
+                        </span>
+                        <span className="font-mono text-muted-foreground">{h.percent}%</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 

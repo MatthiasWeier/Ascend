@@ -5,6 +5,13 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.7.0] - 2026-09-18
+
+### Added
+- Challenge-Verlauf: pro Daily Challenge sehen, wer an welchem Tag
+  geschafft, aufgegeben oder es gar nicht versucht hat, inkl. Prozent bei
+  nur teilweise geschafften Versuchen
+
 ## [0.6.0] - 2026-09-18
 
 ### Added
