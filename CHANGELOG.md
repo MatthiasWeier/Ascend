@@ -5,13 +5,6 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
-## [0.12.1] - 2026-09-18
-
-### Added
-- Rest-Timer gibt jetzt einen doppelten Ton (Web Audio, kein Audio-Asset
-  nötig) und Vibration aus, wenn die Pause abgelaufen ist - nicht mehr nur
-  ein Toast, den man leicht verpasst
-
 ## [0.12.0] - 2026-09-18
 
 ### Added
