@@ -89,12 +89,18 @@ model WorkoutSession {
   date   DateTime @default(now())
   notes  String?
 
-  // 1 (easy) - 10 (max effort)
+  // 1 (easy) - 10 (max effort) - the average of focusFatigue when that was
+  // given, kept as its own column since overload detection and the
+  // activity calendar only need a single per-session number.
   perceivedExertion Int?
   // 1 (fine) - 10 (skin destroyed) - relevant for climbers
   skinCondition     Int?
 
   sets WorkoutSet[]
+  // Per-muscle-group fatigue (1-10), one row per focus actually trained in
+  // this session - lets Workout Brain deprioritize a focus that was just
+  // wrecked, not only one that was recently trained at all.
+  focusFatigue WorkoutFocusFatigue[]
 
   // Group posts created via the "share this workout" / "share all workouts"
   // actions, so re-sharing can be detected and skipped.
@@ -123,6 +129,20 @@ model WorkoutSet {
 
   @@index([sessionId])
   @@index([exerciseId])
+}
+
+// One row per muscle focus actually trained in a session - only those
+// focuses get asked about, and only those get a rating.
+model WorkoutFocusFatigue {
+  id        String         @id @default(cuid())
+  sessionId String
+  session   WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  focus     MuscleFocus
+  // 1 (frisch) - 10 (komplett erschöpft)
+  rating    Int
+
+  @@unique([sessionId, focus])
+  @@index([sessionId])
 }
 
 model WorkoutTemplate {

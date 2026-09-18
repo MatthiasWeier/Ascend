@@ -13,6 +13,17 @@ const GRIP_DEPENDENT_FOCUSES: MuscleFocus[] = ["PULL", "GRIP"];
 // that the user set a goal and isn't hitting it.
 const BALANCE_DEFICIT_THRESHOLD = 5;
 
+// How many days a focus needs before it's "ready" again, based on how
+// wrecked the last session that trained it was rated (1-10). A focus
+// trained lightly recovers immediately; one trained near-max effort needs
+// real time off even if the calendar alone would call it "overdue".
+function fatigueRecoveryDays(rating: number): number {
+  if (rating >= 9) return 3;
+  if (rating >= 7) return 2;
+  if (rating >= 5) return 1;
+  return 0;
+}
+
 function daysBetween(from: Date, to: Date) {
   return Math.floor((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
 }
@@ -39,7 +50,9 @@ export async function getBrainSuggestion(userId: string): Promise<BrainSuggestio
         reps: true,
         weightKg: true,
         durationSec: true,
-        session: { select: { date: true } },
+        session: {
+          select: { date: true, focusFatigue: { select: { focus: true, rating: true } } },
+        },
         exercise: { select: { focus: true } },
       },
       orderBy: { session: { date: "desc" } },
@@ -47,11 +60,17 @@ export async function getBrainSuggestion(userId: string): Promise<BrainSuggestio
     prisma.balanceGoal.findMany({ where: { userId } }),
   ]);
 
+  // Sets arrive newest-session-first, so the first time a focus is seen
+  // here is also the most recent session that trained it - same walk
+  // captures both "when" and "how fatigued that session left it".
   const lastTrainedByFocus = new Map<MuscleFocus, Date>();
+  const lastFatigueByFocus = new Map<MuscleFocus, number>();
   for (const set of sets) {
     const focus = set.exercise.focus;
     if (!lastTrainedByFocus.has(focus)) {
       lastTrainedByFocus.set(focus, set.session.date);
+      const fatigueRow = set.session.focusFatigue.find((f) => f.focus === focus);
+      if (fatigueRow) lastFatigueByFocus.set(focus, fatigueRow.rating);
     }
   }
 
@@ -75,14 +94,26 @@ export async function getBrainSuggestion(userId: string): Promise<BrainSuggestio
     return target == null ? null : target - actualByFocus[focus];
   }
 
+  function isFatigueRecovering(focus: MuscleFocus): boolean {
+    const rating = lastFatigueByFocus.get(focus);
+    if (rating == null) return false;
+    return gapDays(focus) < fatigueRecoveryDays(rating);
+  }
+
   // A focus meaningfully behind its own Balance-Ziel wins outright - that's
   // the whole point of setting one. Among focuses without that signal (or
   // when none qualify), the longest-overdue one wins, same as before
-  // Balance-Ziele existed.
+  // Balance-Ziele existed. Either way, a focus still recovering from a
+  // hard session is skipped first - training it again isn't smart just
+  // because it's "overdue" or behind a goal, unless skipping it would
+  // leave nothing to suggest at all.
   function pickBestFocus(candidates: MuscleFocus[]): MuscleFocus {
+    const recovered = candidates.filter((f) => !isFatigueRecovering(f));
+    const pool = recovered.length > 0 ? recovered : candidates;
+
     let bestDeficitFocus: MuscleFocus | null = null;
     let bestDeficit = BALANCE_DEFICIT_THRESHOLD;
-    for (const focus of candidates) {
+    for (const focus of pool) {
       const d = deficit(focus);
       if (d != null && d > bestDeficit) {
         bestDeficit = d;
@@ -91,9 +122,9 @@ export async function getBrainSuggestion(userId: string): Promise<BrainSuggestio
     }
     if (bestDeficitFocus) return bestDeficitFocus;
 
-    let best = candidates[0];
+    let best = pool[0];
     let bestGap = -1;
-    for (const focus of candidates) {
+    for (const focus of pool) {
       const gap = gapDays(focus);
       if (gap > bestGap) {
         bestGap = gap;

@@ -9,6 +9,17 @@ function repsValue(reps: number, loadKg: number): number {
   return reps;
 }
 
+// A hold with no load (bodyweight or added) is ranked by raw duration -
+// unchanged from before added weight on holds was trackable. With a load,
+// scale duration up the same way reps get scaled by load, so a weighted
+// hold (e.g. a dead hang with a dumbbell clipped on) actually counts for
+// more than an unweighted one of the same length - previously the weight
+// was silently dropped and every hold was ranked by duration alone.
+function holdValue(durationSec: number, loadKg: number): number {
+  if (loadKg > 0) return durationSec * (1 + loadKg / 50);
+  return durationSec;
+}
+
 // Walks a user's entire set history in chronological order and returns the
 // ids of sets that were a new personal record *at the time they were
 // logged* - i.e. strictly better than everything logged earlier for that
@@ -39,7 +50,11 @@ export async function computePrSetIds(userId: string): Promise<Set<string>> {
   for (const set of sets) {
     let value: number | null = null;
     if (set.exercise.type === "HOLD") {
-      value = set.durationSec;
+      if (set.durationSec != null) {
+        const bodyWeightKg = set.exercise.isBodyweight ? resolveBodyWeight(set.session.date) : null;
+        const loadKg = effectiveLoadKg(set.exercise.isBodyweight, bodyWeightKg, set.weightKg ?? 0);
+        value = holdValue(set.durationSec, loadKg);
+      }
     } else if (set.reps != null) {
       const bodyWeightKg = set.exercise.isBodyweight ? resolveBodyWeight(set.session.date) : null;
       const loadKg = effectiveLoadKg(set.exercise.isBodyweight, bodyWeightKg, set.weightKg ?? 0);
@@ -93,7 +108,11 @@ export async function getCurrentPRs(userId: string): Promise<CurrentPR[]> {
   for (const set of sets) {
     let value: number | null = null;
     if (set.exercise.type === "HOLD") {
-      value = set.durationSec;
+      if (set.durationSec != null) {
+        const bodyWeightKg = set.exercise.isBodyweight ? resolveBodyWeight(set.session.date) : null;
+        const loadKg = effectiveLoadKg(set.exercise.isBodyweight, bodyWeightKg, set.weightKg ?? 0);
+        value = holdValue(set.durationSec, loadKg);
+      }
     } else if (set.reps != null) {
       const bodyWeightKg = set.exercise.isBodyweight ? resolveBodyWeight(set.session.date) : null;
       const loadKg = effectiveLoadKg(set.exercise.isBodyweight, bodyWeightKg, set.weightKg ?? 0);

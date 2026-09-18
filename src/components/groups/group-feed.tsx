@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Dumbbell, Image as ImageIcon, MessageSquare, Trash2, X } from "lucide-react";
+import { Check, Dumbbell, Image as ImageIcon, MessageSquare, Pencil, Trash2, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { FeedList } from "@/components/feed-list";
 import { PullToRefresh } from "@/components/pull-to-refresh";
@@ -53,6 +54,9 @@ export function GroupFeed({
   const [togglingAutoShare, setTogglingAutoShare] = useState(false);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("ALL");
   const [authorFilter, setAuthorFilter] = useState<{ id: string; name: string } | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
 
   function refetch() {
     return fetch(`/api/groups/${groupId}/posts`)
@@ -190,6 +194,36 @@ export function GroupFeed({
     });
   }
 
+  function startEdit(post: Post) {
+    setEditingId(post.id);
+    setEditDraft(post.content ?? "");
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditDraft("");
+  }
+
+  async function saveEdit(postId: string) {
+    if (!editDraft.trim()) return;
+    setSavingEdit(true);
+    const res = await fetch(`/api/groups/${groupId}/posts/${postId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: editDraft.trim() }),
+    });
+    setSavingEdit(false);
+    if (!res.ok) {
+      toast.error("Konnte Beitrag nicht speichern.");
+      return;
+    }
+    setPosts((prev) =>
+      (prev ?? []).map((p) => (p.id === postId ? { ...p, content: editDraft.trim() } : p))
+    );
+    setEditingId(null);
+    setEditDraft("");
+  }
+
   async function handleToggleAutoShare(next: boolean) {
     setTogglingAutoShare(true);
     const res = await fetch(`/api/groups/${groupId}/auto-share`, {
@@ -273,9 +307,10 @@ export function GroupFeed({
       ) : (
         <FeedList>
           {visiblePosts.map((post) => {
-            const canDelete =
-              !post.pending &&
-              (post.user.id === authSession?.user?.id || (isLeader && post.type !== "WORKOUT_SHARE"));
+            const isOwn = post.user.id === authSession?.user?.id;
+            const canDelete = !post.pending && (isOwn || (isLeader && post.type !== "WORKOUT_SHARE"));
+            const canEdit = !post.pending && isOwn && post.type !== "WORKOUT_SHARE";
+            const isEditing = editingId === post.id;
             return (
             <Card key={post.id} className={cn(post.pending && "opacity-60")}>
               <CardContent className="flex flex-col gap-2 px-5">
@@ -293,6 +328,18 @@ export function GroupFeed({
                         ? "Wird gepostet…"
                         : new Date(post.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </span>
+                    {canEdit && !isEditing && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        className="size-5 text-muted-foreground"
+                        title="Bearbeiten"
+                        onClick={() => startEdit(post)}
+                      >
+                        <Pencil className="size-3" />
+                      </Button>
+                    )}
                     {canDelete && (
                       <Button
                         type="button"
@@ -323,8 +370,27 @@ export function GroupFeed({
                   </div>
                 )}
 
-                {post.content && post.type !== "WORKOUT_SHARE" && (
-                  <p className="text-sm">{post.content}</p>
+                {isEditing ? (
+                  <div className="flex flex-col gap-2">
+                    <Textarea
+                      value={editDraft}
+                      onChange={(e) => setEditDraft(e.target.value)}
+                      autoFocus
+                      className="text-sm"
+                    />
+                    <div className="flex items-center gap-2">
+                      <Button type="button" size="sm" disabled={savingEdit} onClick={() => saveEdit(post.id)}>
+                        <Check className="size-3.5" />
+                        {savingEdit ? "Speichern…" : "Speichern"}
+                      </Button>
+                      <Button type="button" size="sm" variant="ghost" onClick={cancelEdit}>
+                        Abbrechen
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  post.content &&
+                  post.type !== "WORKOUT_SHARE" && <p className="text-sm">{post.content}</p>
                 )}
 
                 <div className={cn("flex flex-wrap items-center gap-1", post.pending && "pointer-events-none")}>

@@ -33,7 +33,12 @@ const FOCUS_OPTIONS = [
   { value: "GRIP", label: "Grip" },
 ];
 
-type CreatedExercise = { id: string; name: string; type: "REPS" | "HOLD" };
+type CreatedExercise = {
+  id: string;
+  name: string;
+  type: "REPS" | "HOLD";
+  focus: "PUSH" | "PULL" | "LEGS" | "CORE" | "GRIP";
+};
 
 export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: CreatedExercise) => void }) {
   const [open, setOpen] = useState(false);

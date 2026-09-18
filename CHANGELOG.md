@@ -5,6 +5,22 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.23.0] - 2026-09-18
+
+### Added
+- **Fatigue pro Muskelgruppe**: statt einer einzigen "Anstrengung
+  insgesamt" fragt das Workout jetzt pro tatsächlich trainiertem Fokus,
+  wie ausgelastet er ist - Workout Brain nutzt das jetzt: ein Fokus, der
+  gerade hart getroffen wurde, wird nicht sofort wieder vorgeschlagen,
+  selbst wenn er laut Kalender "überfällig" wäre
+- Eigene Nachrichten (Text/Foto-Bildunterschrift) im Gruppen-Feed lassen
+  sich jetzt bearbeiten, nicht nur löschen
+
+### Fixed
+- Ein Hold mit Zusatzgewicht (z.B. Weighted Dead Hang) ließ sich bisher
+  gar nicht mit Gewicht eintragen - das Gewicht wurde stillschweigend
+  verworfen. Zählt jetzt korrekt in Rekorden und der Trainings-Balance.
+
 ## [0.22.0] - 2026-09-18
 
 ### Added

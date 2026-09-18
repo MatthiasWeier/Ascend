@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { computePrSetIds } from "@/lib/personal-records";
 import { autoShareToGroups } from "@/lib/workout-sharing";
 import { contributeWorkoutSetToGoals } from "@/lib/goal-contributions";
+import { focusFatigueSchema, deriveOverallExertion } from "@/lib/focus-fatigue";
 
 const setSchema = z.object({
   exerciseId: z.string(),
@@ -16,6 +17,7 @@ const setSchema = z.object({
 const workoutSchema = z.object({
   notes: z.string().max(1000).optional(),
   perceivedExertion: z.number().int().min(1).max(10).optional(),
+  focusFatigue: focusFatigueSchema,
   skinCondition: z.number().int().min(1).max(10).optional(),
   sets: z.array(setSchema).min(1),
 });
@@ -47,13 +49,13 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const { notes, perceivedExertion, skinCondition, sets } = parsed.data;
+  const { notes, perceivedExertion, focusFatigue, skinCondition, sets } = parsed.data;
 
   const created = await prisma.workoutSession.create({
     data: {
       userId: session.user.id,
       notes,
-      perceivedExertion,
+      perceivedExertion: deriveOverallExertion(focusFatigue, perceivedExertion),
       skinCondition,
       sets: {
         create: sets.map((set, index) => ({
@@ -64,6 +66,9 @@ export async function POST(request: Request) {
           order: index,
         })),
       },
+      focusFatigue: focusFatigue
+        ? { create: focusFatigue.map((f) => ({ focus: f.focus, rating: f.rating })) }
+        : undefined,
     },
     include: { sets: { include: { exercise: true } } },
   });

@@ -135,7 +135,9 @@ export function WorkoutSessionCard({
                 </span>
                 <span className="font-mono text-muted-foreground">
                   {set.durationSec != null
-                    ? `${set.durationSec}s`
+                    ? set.weightKg
+                      ? `${set.durationSec}s @ ${set.weightKg}kg`
+                      : `${set.durationSec}s`
                     : `${set.reps ?? "-"} × ${set.weightKg ?? 0}kg`}
                 </span>
               </li>

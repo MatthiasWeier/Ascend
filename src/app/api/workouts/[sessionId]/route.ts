@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { contributeWorkoutSetToGoals } from "@/lib/goal-contributions";
+import { focusFatigueSchema, deriveOverallExertion } from "@/lib/focus-fatigue";
 
 const setSchema = z.object({
   exerciseId: z.string(),
@@ -14,6 +15,7 @@ const setSchema = z.object({
 const updateSchema = z.object({
   notes: z.string().max(1000).optional(),
   perceivedExertion: z.number().int().min(1).max(10).optional(),
+  focusFatigue: focusFatigueSchema,
   skinCondition: z.number().int().min(1).max(10).optional(),
   sets: z.array(setSchema).min(1),
 });
@@ -36,7 +38,10 @@ export async function GET(
 
   const workoutSession = await prisma.workoutSession.findUnique({
     where: { id: sessionId },
-    include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
+    include: {
+      sets: { include: { exercise: true }, orderBy: { order: "asc" } },
+      focusFatigue: { select: { focus: true, rating: true } },
+    },
   });
   if (!workoutSession || workoutSession.userId !== session.user.id) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -80,11 +85,12 @@ export async function PATCH(
       where: { source: "WORKOUT", sourceId: { in: oldSetIds } },
     }),
     prisma.workoutSet.deleteMany({ where: { sessionId } }),
+    prisma.workoutFocusFatigue.deleteMany({ where: { sessionId } }),
     prisma.workoutSession.update({
       where: { id: sessionId },
       data: {
         notes: parsed.data.notes,
-        perceivedExertion: parsed.data.perceivedExertion,
+        perceivedExertion: deriveOverallExertion(parsed.data.focusFatigue, parsed.data.perceivedExertion),
         skinCondition: parsed.data.skinCondition,
         sets: {
           create: parsed.data.sets.map((set, index) => ({
@@ -95,6 +101,9 @@ export async function PATCH(
             order: index,
           })),
         },
+        focusFatigue: parsed.data.focusFatigue
+          ? { create: parsed.data.focusFatigue.map((f) => ({ focus: f.focus, rating: f.rating })) }
+          : undefined,
       },
     }),
   ]);

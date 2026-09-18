@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Trash2, Plus, Check, Timer, X, Copy, BookmarkPlus, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
@@ -37,11 +37,14 @@ import { ExerciseCombobox } from "@/components/exercise-combobox";
 import { CreateExerciseDialog } from "@/components/create-exercise-dialog";
 import { cn } from "@/lib/utils";
 import { undoableAction } from "@/lib/undo-toast";
+import { FOCUS_LABEL, ALL_FOCUSES } from "@/lib/muscle-focus";
+import type { MuscleFocus } from "@prisma/client";
 
 type Exercise = {
   id: string;
   name: string;
   type: "REPS" | "HOLD";
+  focus: MuscleFocus;
 };
 
 type LastValues = Record<
@@ -85,7 +88,7 @@ export default function NewWorkoutPage() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [lastValues, setLastValues] = useState<LastValues>({});
   const [rows, setRows] = useState<SetRow[]>([]);
-  const [perceivedExertion, setPerceivedExertion] = useState(5);
+  const [focusFatigue, setFocusFatigue] = useState<Partial<Record<MuscleFocus, number>>>({});
   const [skinCondition, setSkinCondition] = useState(1);
   const [trackSkin, setTrackSkin] = useState(false);
   const [notes, setNotes] = useState("");
@@ -117,6 +120,7 @@ export default function NewWorkoutPage() {
               perceivedExertion: number | null;
               skinCondition: number | null;
               sets: { exerciseId: string; reps: number | null; weightKg: number | null; durationSec: number | null }[];
+              focusFatigue: { focus: MuscleFocus; rating: number }[];
             };
           }>)
         : Promise.resolve(null),
@@ -129,7 +133,18 @@ export default function NewWorkoutPage() {
       if (editRes?.session) {
         const s = editRes.session;
         setNotes(s.notes ?? "");
-        if (s.perceivedExertion != null) setPerceivedExertion(s.perceivedExertion);
+        if (s.focusFatigue.length > 0) {
+          setFocusFatigue(Object.fromEntries(s.focusFatigue.map((f) => [f.focus, f.rating])));
+        } else if (s.perceivedExertion != null) {
+          // Pre-migration session with no per-focus data - seed every
+          // trained focus with the old single number as a starting point.
+          const focuses = new Set(
+            s.sets
+              .map((set) => exercisesRes.exercises.find((e) => e.id === set.exerciseId)?.focus)
+              .filter((f): f is MuscleFocus => f != null)
+          );
+          setFocusFatigue(Object.fromEntries(Array.from(focuses).map((f) => [f, s.perceivedExertion])));
+        }
         if (s.skinCondition != null) {
           setTrackSkin(true);
           setSkinCondition(s.skinCondition);
@@ -168,6 +183,24 @@ export default function NewWorkoutPage() {
 
   function exerciseFor(id: string) {
     return exercises.find((e) => e.id === id);
+  }
+
+  // Only the focuses actually present among the current rows get asked
+  // about - training just Push today shouldn't prompt for Leg fatigue.
+  const trainedFocuses = useMemo(() => {
+    const present = new Set(
+      rows.map((r) => exerciseFor(r.exerciseId)?.focus).filter((f): f is MuscleFocus => f != null)
+    );
+    return ALL_FOCUSES.filter((f) => present.has(f));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, exercises]);
+
+  function fatigueFor(focus: MuscleFocus) {
+    return focusFatigue[focus] ?? 5;
+  }
+
+  function setFatigue(focus: MuscleFocus, rating: number) {
+    setFocusFatigue((prev) => ({ ...prev, [focus]: rating }));
   }
 
   function updateRow(key: number, patch: Partial<SetRow>) {
@@ -311,12 +344,16 @@ export default function NewWorkoutPage() {
 
     const payload = {
       notes: notes || undefined,
-      perceivedExertion,
+      focusFatigue: trainedFocuses.map((focus) => ({ focus, rating: fatigueFor(focus) })),
       skinCondition: trackSkin ? skinCondition : undefined,
       sets: rows.map((r) => {
         const ex = exerciseFor(r.exerciseId);
         if (ex?.type === "HOLD") {
-          return { exerciseId: r.exerciseId, durationSec: Number(r.durationSec) };
+          return {
+            exerciseId: r.exerciseId,
+            durationSec: Number(r.durationSec),
+            weightKg: r.weightKg === "" ? undefined : Number(r.weightKg),
+          };
         }
         return {
           exerciseId: r.exerciseId,
@@ -535,15 +572,27 @@ export default function NewWorkoutPage() {
                       />
 
                       {ex?.type === "HOLD" ? (
-                        <Input
-                          type="number"
-                          min={1}
-                          placeholder="Sek."
-                          required
-                          value={row.durationSec}
-                          onChange={(e) => updateRow(row.key, { durationSec: e.target.value })}
-                          className="w-20"
-                        />
+                        <>
+                          <Input
+                            type="number"
+                            min={1}
+                            placeholder="Sek."
+                            required
+                            value={row.durationSec}
+                            onChange={(e) => updateRow(row.key, { durationSec: e.target.value })}
+                            className="w-20"
+                          />
+                          <Input
+                            type="number"
+                            min={0}
+                            step={0.5}
+                            placeholder="+kg"
+                            title="Zusatzgewicht (optional)"
+                            value={row.weightKg}
+                            onChange={(e) => updateRow(row.key, { weightKg: e.target.value })}
+                            className="w-16"
+                          />
+                        </>
                       ) : (
                         <>
                           <Input
@@ -613,19 +662,26 @@ export default function NewWorkoutPage() {
             <CardTitle className="text-base">Wie war's?</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-6">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <Label>Anstrengung insgesamt</Label>
-                <span className="text-sm font-medium text-primary">{perceivedExertion}/10</span>
+            {trainedFocuses.length > 0 && (
+              <div className="flex flex-col gap-4">
+                <Label>Wie ausgelastet ist die Muskelgruppe?</Label>
+                {trainedFocuses.map((focus) => (
+                  <div key={focus} className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">{FOCUS_LABEL[focus]}</span>
+                      <span className="text-sm font-medium text-primary">{fatigueFor(focus)}/10</span>
+                    </div>
+                    <Slider
+                      value={fatigueFor(focus)}
+                      onValueChange={(v) => setFatigue(focus, v as number)}
+                      min={1}
+                      max={10}
+                      step={1}
+                    />
+                  </div>
+                ))}
               </div>
-              <Slider
-                value={perceivedExertion}
-                onValueChange={(v) => setPerceivedExertion(v as number)}
-                min={1}
-                max={10}
-                step={1}
-              />
-            </div>
+            )}
 
             <div className="flex flex-col gap-2">
               <button
