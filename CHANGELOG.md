@@ -5,6 +5,31 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.25.0] - 2026-09-19
+
+### Added
+- **Automatische DB-Migrationen**: `docker compose up` führt jetzt einen
+  einmaligen `migrate`-Service (`prisma migrate deploy`) aus, bevor die
+  App startet - kein manuelles SSH+Migrations-Kommando mehr nötig
+- **Healthcheck**: `GET /api/health` prüft die echte DB-Erreichbarkeit,
+  eingebunden in Dockerfile-`HEALTHCHECK` und den `app`-Service
+- **Prometheus-Metriken**: `GET /api/metrics`, hinter `METRICS_TOKEN`
+  (per Default deaktiviert/404)
+- **Backup/Restore-Scripts** (`scripts/backup.sh`, `scripts/restore.sh`)
+  für DB-Dump + Uploads-Archiv, siehe `DEPLOYMENT.md`
+- **DEPLOYMENT.md**: Caddy/Traefik-Beispiele, Migrations-/Healthcheck-/
+  Backup-/Metriken-Doku an einem Ort
+- Login-/Registrierungs-Rate-Limits über Env-Vars konfigurierbar
+  (`LOGIN_RATE_LIMIT_*`, `REGISTER_RATE_LIMIT_*`)
+
+### Fixed
+- Docker setzt `HOSTNAME` automatisch auf die Container-ID, wodurch Next's
+  Standalone-Server nur auf die interne Bridge-IP statt auf alle
+  Interfaces gebunden hat - von außen unsichtbar (Port-Forwarding
+  funktionierte zufällig trotzdem), aber jede Verbindung von *innerhalb*
+  des Containers zu `localhost` (wie der neue Healthcheck) schlug fehl.
+  `HOSTNAME=0.0.0.0` im Dockerfile behebt das.
+
 ## [0.24.0] - 2026-09-18
 
 ### Added

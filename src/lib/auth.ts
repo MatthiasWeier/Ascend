@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit, envInt } from "@/lib/rate-limit";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
@@ -22,7 +22,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // brute-force protection. Doesn't distinguish "locked" from "wrong
         // password" in the response so it can't be used to enumerate which
         // usernames are close to locking.
-        const { allowed } = rateLimit(`login:${username.toLowerCase()}`, 10, 15 * 60 * 1000);
+        const { allowed } = rateLimit(
+          `login:${username.toLowerCase()}`,
+          envInt("LOGIN_RATE_LIMIT_MAX", 10),
+          envInt("LOGIN_RATE_LIMIT_WINDOW_MS", 15 * 60 * 1000)
+        );
         if (!allowed) return null;
 
         const user = await prisma.user.findUnique({ where: { username } });

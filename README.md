@@ -33,13 +33,17 @@ echo "AUTH_SECRET=$(openssl rand -base64 33)" >> .env
 # Optional but recommended before letting real people sign up - see "Legal
 # pages" below.
 docker compose up -d --build
-docker compose exec app pnpm prisma migrate deploy
 docker compose exec app pnpm prisma db seed
 ```
 
-The app is then on `http://localhost:3000` (or your server's address). Data
-lives in two named Docker volumes (`db-data`, `uploads-data`) that survive
-rebuilds/restarts.
+Database migrations run automatically on every `docker compose up` (a
+one-shot `migrate` service that `app` waits on) - no manual step needed
+there. The app is then on `http://localhost:3000` (or your server's
+address). Data lives in two named Docker volumes (`db-data`,
+`uploads-data`) that survive rebuilds/restarts.
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for reverse proxy / HTTPS setup,
+backups, the healthcheck, and Prometheus metrics.
 
 > On a small VM (2 vCPU / 2GB RAM or less), don't run `pnpm dev` and
 > `docker compose build` at the same time - both are memory-hungry and can
@@ -186,9 +190,16 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 
 ### Security & Ops
 - ✅ Rate Limiting (Registrierung, Login-Brute-Force-Lockout, Daily-Challenge-
-  Aktionen) - in-memory, passend für die Single-Container-Deployment
+  Aktionen) - in-memory, passend für die Single-Container-Deployment;
+  Login-/Registrierungs-Limits per Env-Var konfigurierbar
 - ✅ Strukturiertes JSON-Logging (`lib/logger.ts`, sichtbar via
   `docker compose logs app`) + eigene Error-Boundaries
+- ✅ Automatische DB-Migrationen beim Start (`migrate`-Service in
+  `docker-compose.yml`)
+- ✅ Healthcheck (`/api/health`) in Dockerfile + Compose eingebunden
+- ✅ Prometheus-Metriken (`/api/metrics`, hinter `METRICS_TOKEN`)
+- ✅ Backup/Restore-Scripts (`scripts/backup.sh`, `scripts/restore.sh`)
+- ✅ Non-root Container-User
 - ⏳ Externes Monitoring/Alerting (Sentry o.ä.) - braucht einen eigenen
   Account, nicht Teil des Projekts
 - ❓ Mobile/Cross-Browser-UI ist nicht in einem echten Browser getestet -

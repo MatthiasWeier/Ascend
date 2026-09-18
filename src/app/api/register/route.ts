@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { rateLimit, getClientIp, envInt } from "@/lib/rate-limit";
 
 const registerSchema = z.object({
   name: z.string().min(1).max(100),
@@ -16,7 +16,11 @@ const registerSchema = z.object({
 
 export async function POST(request: Request) {
   const ip = getClientIp(request);
-  const { allowed, retryAfterSec } = rateLimit(`register:${ip}`, 5, 60 * 60 * 1000);
+  const { allowed, retryAfterSec } = rateLimit(
+    `register:${ip}`,
+    envInt("REGISTER_RATE_LIMIT_MAX", 5),
+    envInt("REGISTER_RATE_LIMIT_WINDOW_MS", 60 * 60 * 1000)
+  );
   if (!allowed) {
     return NextResponse.json(
       { error: "Zu viele Registrierungen. Versuch's später nochmal." },

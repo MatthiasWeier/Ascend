@@ -50,3 +50,13 @@ export function getClientIp(request: Request): string {
   if (forwarded) return forwarded.split(",")[0].trim();
   return request.headers.get("x-real-ip") ?? "unknown";
 }
+
+// Reads a positive-integer env var, falling back to `fallback` if unset,
+// empty, or not a valid positive number - lets self-hosters tune the
+// login/registration limits without a code change, see .env.example.
+export function envInt(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (!raw) return fallback;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}

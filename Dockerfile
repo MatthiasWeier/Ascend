@@ -17,6 +17,14 @@ ENV DATABASE_URL="postgresql://user:password@localhost:5432/db"
 RUN pnpm prisma generate
 RUN pnpm build
 
+# Runs `prisma migrate deploy` against a real DATABASE_URL at container
+# start, before the app comes up - reuses the builder stage since that
+# already has the full node_modules (the `prisma` CLI is a devDependency,
+# not something the standalone runner image below carries).
+FROM builder AS migrator
+WORKDIR /app
+CMD ["pnpm", "prisma", "migrate", "deploy"]
+
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
@@ -45,4 +53,15 @@ RUN mkdir -p /app/uploads && chown nextjs:nodejs /app/uploads
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
+# Docker sets HOSTNAME to the container ID for every container by default,
+# and Next's standalone server.js binds to $HOSTNAME if set - without this
+# override it silently binds to the container's bridge IP instead of all
+# interfaces, which happens to still work from outside (port-forwarding
+# doesn't care what interface it's on) but breaks any in-container
+# connection to localhost, like the healthcheck below.
+ENV HOSTNAME="0.0.0.0"
+# Node's built-in fetch, not curl/wget - alpine doesn't ship either by
+# default and this avoids adding them just for a healthcheck.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD node -e "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "server.js"]
