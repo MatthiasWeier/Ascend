@@ -70,6 +70,7 @@ model Exercise {
   sets              WorkoutSet[]
   templateEntries   WorkoutTemplateEntry[]
   challengeTemplate ChallengeTemplate?
+  groupGoals        GroupGoal[]
 
   @@index([groupId])
 }
@@ -345,14 +346,32 @@ model DailyChallengeAttempt {
 // A shared group target everyone contributes to, e.g. "10.000 Liegestütze
 // im September" - progress is the sum of every member's logged
 // contributions, not tied to any single exercise or workout.
+enum GoalUnit {
+  REPS
+  DURATION_SEC
+  KM
+  CUSTOM
+}
+
 model GroupGoal {
   id          String    @id @default(cuid())
   groupId     String
   group       Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
   title       String
-  unit        String
+  unit        GoalUnit
+  // Only meaningful (and required) when unit = CUSTOM, e.g. "Bahnen".
+  customUnitLabel String?
   targetValue Float
   deadline    DateTime?
+
+  // Optional link to an Exercise: when set, matching WorkoutSets and
+  // completed DailyChallengeAttempts auto-contribute (see
+  // lib/goal-contributions.ts) instead of requiring manual entry. Must
+  // agree with `unit` (REPS exercise <-> REPS goal, HOLD <-> DURATION_SEC) -
+  // enforced in the API, not here.
+  exerciseId String?
+  exercise   Exercise? @relation(fields: [exerciseId], references: [id])
+
   createdById String
   createdBy   User      @relation("GroupGoalCreator", fields: [createdById], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())
@@ -360,20 +379,33 @@ model GroupGoal {
   contributions GroupGoalContribution[]
 
   @@index([groupId])
+  @@index([exerciseId])
 }
 
-// One member's logged contribution toward a GroupGoal. Manually entered
-// (not derived from workouts) - keeps this simple and lets a goal track
-// anything (reps, km, minutes), not just what's in the exercise database.
-model GroupGoalContribution {
-  id        String    @id @default(cuid())
-  goalId    String
-  goal      GroupGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount    Float
-  createdAt DateTime  @default(now())
+enum ContributionSource {
+  MANUAL
+  WORKOUT
+  CHALLENGE
+}
 
+// One member's contribution toward a GroupGoal - either typed in by hand
+// (MANUAL) or derived automatically from a WorkoutSet/DailyChallengeAttempt
+// once the goal is linked to an exercise. `sourceId` + the unique
+// constraint below make auto-contributions idempotent: the same workout
+// set or challenge attempt can never double-count toward the same goal,
+// even if the triggering request is retried.
+model GroupGoalContribution {
+  id        String             @id @default(cuid())
+  goalId    String
+  goal      GroupGoal          @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Float
+  source    ContributionSource @default(MANUAL)
+  sourceId  String?
+  createdAt DateTime           @default(now())
+
+  @@unique([goalId, source, sourceId])
   @@index([goalId])
   @@index([userId])
 }

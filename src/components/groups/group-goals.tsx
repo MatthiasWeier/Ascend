@@ -1,14 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Target, Trophy, X } from "lucide-react";
+import { Plus, Target, Trophy, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -18,22 +25,29 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ExerciseCombobox } from "@/components/exercise-combobox";
 import { FeedList } from "@/components/feed-list";
 import { cn } from "@/lib/utils";
+import { GOAL_UNITS, GOAL_UNIT_LABEL, type GoalUnitValue } from "@/lib/goal-units";
 
 type Contributor = { userId: string; userName: string; amount: number; isMe: boolean };
 
 type GroupGoal = {
   id: string;
   title: string;
-  unit: string;
+  unit: GoalUnitValue;
+  unitLabel: string;
   targetValue: number;
   deadline: string | null;
+  exerciseId: string | null;
+  exerciseName: string | null;
   total: number;
   progress: number;
   isComplete: boolean;
   contributors: Contributor[];
 };
+
+type Exercise = { id: string; name: string; type: "REPS" | "HOLD" };
 
 function formatAmount(n: number) {
   return n.toLocaleString("de-DE", { maximumFractionDigits: 1 });
@@ -41,9 +55,12 @@ function formatAmount(n: number) {
 
 export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: boolean }) {
   const [goals, setGoals] = useState<GroupGoal[] | null>(null);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [unit, setUnit] = useState("");
+  const [unit, setUnit] = useState<GoalUnitValue>("REPS");
+  const [customUnitLabel, setCustomUnitLabel] = useState("");
+  const [exerciseId, setExerciseId] = useState("");
   const [targetValue, setTargetValue] = useState("");
   const [deadline, setDeadline] = useState("");
   const [saving, setSaving] = useState(false);
@@ -56,19 +73,43 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
 
   useEffect(refetch, [groupId]);
 
+  function openCreateDialog() {
+    setCreateOpen(true);
+    if (exercises.length === 0) {
+      fetch("/api/exercises")
+        .then((r) => r.json())
+        .then((data: { exercises: Exercise[] }) => setExercises(data.exercises));
+    }
+  }
+
+  // Only exercises whose type matches the chosen unit can be linked -
+  // REPS goals track rep-based exercises, DURATION_SEC goals track timed
+  // holds. KM/CUSTOM goals can't be auto-tracked at all (nothing in the
+  // app measures distance yet), so no linking UI shows for those.
+  const linkableExercises = useMemo(() => {
+    const wantType = unit === "DURATION_SEC" ? "HOLD" : "REPS";
+    return exercises.filter((e) => e.type === wantType);
+  }, [exercises, unit]);
+
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     const target = Number(targetValue);
-    if (!title.trim() || !unit.trim() || !target || target <= 0) return;
+    if (!title.trim() || !target || target <= 0) return;
+    if (unit === "CUSTOM" && !customUnitLabel.trim()) {
+      toast.error("Bitte eine Einheit angeben.");
+      return;
+    }
     setSaving(true);
     const res = await fetch(`/api/groups/${groupId}/goals`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         title: title.trim(),
-        unit: unit.trim(),
+        unit,
+        customUnitLabel: unit === "CUSTOM" ? customUnitLabel.trim() : undefined,
         targetValue: target,
         deadline: deadline ? new Date(deadline).toISOString() : undefined,
+        exerciseId: exerciseId || undefined,
       }),
     });
     setSaving(false);
@@ -77,10 +118,17 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
       toast.error(data.error ?? "Fehlgeschlagen.");
       return;
     }
-    toast.success("Ziel erstellt!");
+    const data: { backfilledCount: number } = await res.json();
+    toast.success(
+      data.backfilledCount > 0
+        ? `Ziel erstellt - ${data.backfilledCount} Beitrag${data.backfilledCount === 1 ? "" : "e"} aus der Vergangenheit nachgetragen!`
+        : "Ziel erstellt!"
+    );
     setCreateOpen(false);
     setTitle("");
-    setUnit("");
+    setUnit("REPS");
+    setCustomUnitLabel("");
+    setExerciseId("");
     setTargetValue("");
     setDeadline("");
     refetch();
@@ -113,7 +161,7 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
     <div className="flex flex-col gap-4">
       {isLeader && (
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger render={<Button size="sm" className="self-end" />}>
+          <DialogTrigger render={<Button size="sm" className="self-end" onClick={openCreateDialog} />}>
             <Plus className="size-4" />
             Neues Ziel
           </DialogTrigger>
@@ -132,7 +180,7 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
                     id="goal-title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="z.B. 10.000 Liegestütze im September"
+                    placeholder="z.B. 1000 Klimmzüge im September"
                     required
                   />
                 </div>
@@ -150,16 +198,53 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
                     />
                   </div>
                   <div className="flex flex-1 flex-col gap-1.5">
-                    <Label htmlFor="goal-unit">Einheit</Label>
-                    <Input
-                      id="goal-unit"
+                    <Label>Einheit</Label>
+                    <Select
                       value={unit}
-                      onChange={(e) => setUnit(e.target.value)}
-                      placeholder="Wdh, km, Min…"
+                      onValueChange={(v) => {
+                        setUnit(v as GoalUnitValue);
+                        setExerciseId("");
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {GOAL_UNITS.map((u) => (
+                          <SelectItem key={u} value={u}>
+                            {GOAL_UNIT_LABEL[u]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                {unit === "CUSTOM" && (
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="goal-custom-unit">Einheit-Bezeichnung</Label>
+                    <Input
+                      id="goal-custom-unit"
+                      value={customUnitLabel}
+                      onChange={(e) => setCustomUnitLabel(e.target.value)}
+                      placeholder="z.B. Bahnen, Höhenmeter…"
                       required
                     />
                   </div>
-                </div>
+                )}
+                {(unit === "REPS" || unit === "DURATION_SEC") && (
+                  <div className="flex flex-col gap-1.5">
+                    <Label>Übung verknüpfen (optional)</Label>
+                    <ExerciseCombobox
+                      exercises={linkableExercises}
+                      value={exerciseId}
+                      onChange={setExerciseId}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Verknüpft: Workouts und geschaffte Challenges mit dieser Übung tragen
+                      automatisch bei - kein manuelles Eintragen mehr nötig.
+                    </p>
+                  </div>
+                )}
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="goal-deadline">Frist (optional)</Label>
                   <Input
@@ -253,7 +338,7 @@ function GoalCard({
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium tabular-nums">
-              {formatAmount(goal.total)} / {formatAmount(goal.targetValue)} {goal.unit}
+              {formatAmount(goal.total)} / {formatAmount(goal.targetValue)} {goal.unitLabel}
             </span>
             <span className="text-xs text-muted-foreground">{Math.round(goal.progress * 100)}%</span>
           </div>
@@ -277,20 +362,27 @@ function GoalCard({
           </div>
         )}
 
-        <form onSubmit={submitContribution} className="flex items-center gap-2">
-          <Input
-            type="number"
-            min={0}
-            step="any"
-            placeholder={`Beitrag (${goal.unit})`}
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="h-8 flex-1"
-          />
-          <Button type="submit" size="sm">
-            Hinzufügen
-          </Button>
-        </form>
+        {goal.exerciseId ? (
+          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Zap className="size-3 text-primary" />
+            Trackt automatisch: {goal.exerciseName} (Workouts + Challenges)
+          </p>
+        ) : (
+          <form onSubmit={submitContribution} className="flex items-center gap-2">
+            <Input
+              type="number"
+              min={0}
+              step="any"
+              placeholder={`Beitrag (${goal.unitLabel})`}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="h-8 flex-1"
+            />
+            <Button type="submit" size="sm">
+              Hinzufügen
+            </Button>
+          </form>
+        )}
       </CardContent>
     </Card>
   );

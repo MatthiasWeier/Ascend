@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
+import { contributeChallengeAttemptToGoals } from "@/lib/goal-contributions";
 
 const incrementSchema = z.object({ amount: z.number().int().refine((n) => [1, 2, 5, 10].includes(n)) });
 
@@ -24,7 +25,16 @@ export async function POST(
 
   const attempt = await prisma.dailyChallengeAttempt.findUnique({
     where: { id: attemptId },
-    include: { userChallengeGoal: { select: { userId: true } } },
+    include: {
+      userChallengeGoal: {
+        select: {
+          userId: true,
+          groupDailyChallenge: {
+            select: { groupId: true, challengeTemplate: { select: { exerciseId: true } } },
+          },
+        },
+      },
+    },
   });
   if (!attempt) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -52,6 +62,16 @@ export async function POST(
       ...(justCompleted ? { status: "COMPLETED", completedAt: new Date() } : {}),
     },
   });
+
+  if (justCompleted) {
+    await contributeChallengeAttemptToGoals({
+      attemptId,
+      userId: attempt.userChallengeGoal.userId,
+      groupId: attempt.userChallengeGoal.groupDailyChallenge.groupId,
+      exerciseId: attempt.userChallengeGoal.groupDailyChallenge.challengeTemplate.exerciseId,
+      finalReps: newReps,
+    });
+  }
 
   return NextResponse.json({ attempt: updated });
 }

@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { formatGoalUnit } from "@/lib/goal-units";
 
 export async function buildGroupGoalsView(groupId: string, viewerId: string) {
   const goals = await prisma.groupGoal.findMany({
     where: { groupId },
     include: {
+      exercise: { select: { id: true, name: true } },
       contributions: {
         include: { user: { select: { id: true, name: true } } },
       },
@@ -31,8 +33,11 @@ export async function buildGroupGoalsView(groupId: string, viewerId: string) {
       id: goal.id,
       title: goal.title,
       unit: goal.unit,
+      unitLabel: formatGoalUnit(goal.unit, goal.customUnitLabel),
       targetValue: goal.targetValue,
       deadline: goal.deadline,
+      exerciseId: goal.exerciseId,
+      exerciseName: goal.exercise?.name ?? null,
       total,
       progress: goal.targetValue > 0 ? Math.min(1, total / goal.targetValue) : 0,
       isComplete: total >= goal.targetValue,

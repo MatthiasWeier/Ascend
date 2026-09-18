@@ -5,6 +5,24 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.5.0] - 2026-09-18
+
+### Added
+- PWA-Icons (App-Icon/Home-Screen, Favicon) aus dem Ascend-Logo generiert
+- **Gruppenziele als echte Objekte statt Strings**: Einheit ist jetzt ein
+  Enum (Wiederholungen / Sekunden / km / Custom) statt Freitext
+- **Automatisches Auffüllen von Gruppenzielen**: ein Ziel kann optional mit
+  einer Übung verknüpft werden - danach tragen sowohl normale Workouts als
+  auch abgeschlossene/abgebrochene Daily Challenges mit dieser Übung
+  automatisch bei, kein manuelles Eintragen mehr nötig. Beim Verknüpfen
+  wird die komplette Vergangenheit rückwirkend nachgetragen. Tägliche
+  Challenges selbst bleiben davon unberührt - die entstehen weiterhin nur
+  über den separaten Challenge-Flow
+
+### Fixed
+- Migration der bestehenden Gruppenziele (Freitext-Einheit -> Enum) ohne
+  Datenverlust durchgeführt
+
 ## [0.4.0] - 2026-09-18
 
 ### Added

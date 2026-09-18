@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { contributeChallengeAttemptToGoals } from "@/lib/goal-contributions";
 
 export async function POST(
   request: Request,
@@ -14,7 +15,16 @@ export async function POST(
 
   const attempt = await prisma.dailyChallengeAttempt.findUnique({
     where: { id: attemptId },
-    include: { userChallengeGoal: { select: { userId: true } } },
+    include: {
+      userChallengeGoal: {
+        select: {
+          userId: true,
+          groupDailyChallenge: {
+            select: { groupId: true, challengeTemplate: { select: { exerciseId: true } } },
+          },
+        },
+      },
+    },
   });
   if (!attempt) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -29,6 +39,14 @@ export async function POST(
   const updated = await prisma.dailyChallengeAttempt.update({
     where: { id: attemptId },
     data: { status: "ENDED_EARLY", completedAt: new Date() },
+  });
+
+  await contributeChallengeAttemptToGoals({
+    attemptId,
+    userId: attempt.userChallengeGoal.userId,
+    groupId: attempt.userChallengeGoal.groupDailyChallenge.groupId,
+    exerciseId: attempt.userChallengeGoal.groupDailyChallenge.challengeTemplate.exerciseId,
+    finalReps: attempt.currentReps,
   });
 
   return NextResponse.json({ attempt: updated });

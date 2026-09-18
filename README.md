@@ -142,9 +142,17 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 - ✅ **Wetteinsatz**: optionaler Freitext beim Aktivieren einer Daily
   Challenge (z.B. "Verlierer macht 20 Liegestütze"), für alle sichtbar
 - ✅ **Kollaborative Gruppenziele**: Leader legt ein gemeinsames Ziel mit
-  Ziel-Wert/Einheit/optionaler Frist an, jedes Mitglied trägt Beiträge bei -
-  Fortschrittsbalken zeigt die Summe der ganzen Gruppe plus Beitrag pro
-  Person
+  Ziel-Wert/Einheit (Enum: Wiederholungen/Sekunden/km/Custom, kein
+  Freitext)/optionaler Frist an; Fortschrittsbalken zeigt die Summe der
+  ganzen Gruppe plus Beitrag pro Person
+- ✅ **Automatisches Auffüllen von Gruppenzielen**: ein Ziel kann optional
+  mit einer Übung verknüpft werden (`Exercise`-Objekt, kein String) -
+  danach tragen normale Workouts *und* abgeschlossene/abgebrochene Daily
+  Challenges mit dieser Übung automatisch bei (inkl. rückwirkendem
+  Nachtragen der Vergangenheit beim Verknüpfen); manuelles Eintragen bleibt
+  nur für nicht verknüpfte Ziele (z.B. km) möglich. Daily Challenges selbst
+  bleiben davon komplett unberührt - die sind weiterhin ein separater,
+  manueller Flow
 
 ### Bedienung & Design
 - ✅ Dark-first Theme mit Light-Mode-Toggle (next-themes)

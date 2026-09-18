@@ -31,9 +31,15 @@ export async function POST(
   if (!goal || goal.groupId !== groupId) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  if (goal.exerciseId) {
+    return NextResponse.json(
+      { error: "Dieses Ziel wird automatisch aus Workouts/Challenges getrackt" },
+      { status: 400 }
+    );
+  }
 
   await prisma.groupGoalContribution.create({
-    data: { goalId, userId: session.user.id, amount: parsed.data.amount },
+    data: { goalId, userId: session.user.id, amount: parsed.data.amount, source: "MANUAL" },
   });
 
   const goals = await buildGroupGoalsView(groupId, session.user.id);

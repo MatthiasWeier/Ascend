@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { computePrSetIds } from "@/lib/personal-records";
 import { autoShareToGroups } from "@/lib/workout-sharing";
+import { contributeWorkoutSetToGoals } from "@/lib/goal-contributions";
 
 const setSchema = z.object({
   exerciseId: z.string(),
@@ -78,6 +79,21 @@ export async function POST(request: Request) {
   );
 
   const autoSharedGroupNames = await autoShareToGroups(session.user.id, created);
+
+  // Group Goals linked to one of these exercises auto-fill from the raw
+  // logged value - this never touches daily challenges, which stay a
+  // separate, manual flow.
+  await Promise.all(
+    created.sets.map((set) =>
+      contributeWorkoutSetToGoals({
+        userId: session.user.id,
+        exerciseId: set.exerciseId,
+        reps: set.reps,
+        durationSec: set.durationSec,
+        workoutSetId: set.id,
+      })
+    )
+  );
 
   return NextResponse.json(
     { session: created, newPrExerciseNames, autoSharedGroupNames },
