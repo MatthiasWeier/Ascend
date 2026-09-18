@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Trash2, Plus, Check, Timer, X, Copy, BookmarkPlus, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -79,6 +79,8 @@ function formatMmSs(totalSeconds: number) {
 
 export default function NewWorkoutPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editSessionId = searchParams.get("edit");
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [lastValues, setLastValues] = useState<LastValues>({});
   const [rows, setRows] = useState<SetRow[]>([]);
@@ -96,19 +98,55 @@ export default function NewWorkoutPage() {
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [savingTemplate, setSavingTemplate] = useState(false);
+  const [mostUsedExerciseIds, setMostUsedExerciseIds] = useState<string[]>([]);
 
   useEffect(() => {
     Promise.all([
       fetch("/api/exercises").then((r) => r.json()) as Promise<{ exercises: Exercise[] }>,
-      fetch("/api/exercises/last-values").then((r) => r.json()) as Promise<{ lastValues: LastValues }>,
+      fetch("/api/exercises/last-values").then((r) => r.json()) as Promise<{
+        lastValues: LastValues;
+        mostUsedExerciseIds: string[];
+      }>,
       fetch("/api/workout-templates").then((r) => r.json()) as Promise<{ templates: Template[] }>,
-    ]).then(([exercisesRes, lastValuesRes, templatesRes]) => {
+      editSessionId
+        ? (fetch(`/api/workouts/${editSessionId}`).then((r) => r.json()) as Promise<{
+            session?: {
+              notes: string | null;
+              perceivedExertion: number | null;
+              skinCondition: number | null;
+              sets: { exerciseId: string; reps: number | null; weightKg: number | null; durationSec: number | null }[];
+            };
+          }>)
+        : Promise.resolve(null),
+    ]).then(([exercisesRes, lastValuesRes, templatesRes, editRes]) => {
       setExercises(exercisesRes.exercises);
       setLastValues(lastValuesRes.lastValues);
+      setMostUsedExerciseIds(lastValuesRes.mostUsedExerciseIds);
       setTemplates(templatesRes.templates);
-      setRows([emptyRow()]);
+
+      if (editRes?.session) {
+        const s = editRes.session;
+        setNotes(s.notes ?? "");
+        if (s.perceivedExertion != null) setPerceivedExertion(s.perceivedExertion);
+        if (s.skinCondition != null) {
+          setTrackSkin(true);
+          setSkinCondition(s.skinCondition);
+        }
+        setRows(
+          s.sets.map((set) => ({
+            key: rowKey++,
+            exerciseId: set.exerciseId,
+            reps: set.reps != null ? String(set.reps) : "",
+            weightKg: set.weightKg != null ? String(set.weightKg) : "",
+            durationSec: set.durationSec != null ? String(set.durationSec) : "",
+            done: false,
+          }))
+        );
+      } else {
+        setRows([emptyRow()]);
+      }
     });
-  }, []);
+  }, [editSessionId]);
 
   useEffect(() => {
     if (restSecondsLeft === null) return;
@@ -151,6 +189,20 @@ export default function NewWorkoutPage() {
         return { ...r, ...patch };
       })
     );
+  }
+
+  // One tap adds a new set for this exercise, pre-filled from the last time
+  // it was logged - same auto-fill as picking it from the combobox, just
+  // without opening the combobox at all.
+  function quickAddExercise(exerciseId: string) {
+    const row = emptyRow(exerciseId);
+    const last = lastValues[exerciseId];
+    if (last) {
+      if (last.reps != null) row.reps = String(last.reps);
+      if (last.weightKg != null) row.weightKg = String(last.weightKg);
+      if (last.durationSec != null) row.durationSec = String(last.durationSec);
+    }
+    setRows((prev) => [...prev, row]);
   }
 
   function addRow() {
@@ -252,8 +304,8 @@ export default function NewWorkoutPage() {
       }),
     };
 
-    const res = await fetch("/api/workouts", {
-      method: "POST",
+    const res = await fetch(editSessionId ? `/api/workouts/${editSessionId}` : "/api/workouts", {
+      method: editSessionId ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
@@ -261,7 +313,14 @@ export default function NewWorkoutPage() {
     setLoading(false);
     submittingRef.current = false;
     if (!res.ok) {
-      toast.error("Konnte Workout nicht speichern.");
+      toast.error(editSessionId ? "Konnte Workout nicht aktualisieren." : "Konnte Workout nicht speichern.");
+      return;
+    }
+
+    if (editSessionId) {
+      toast.success("Workout aktualisiert!");
+      router.push("/dashboard");
+      router.refresh();
       return;
     }
 
@@ -280,7 +339,9 @@ export default function NewWorkoutPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
-      <h1 className="mb-6 text-2xl font-bold tracking-tight">Workout eintragen</h1>
+      <h1 className="mb-6 text-2xl font-bold tracking-tight">
+        {editSessionId ? "Workout bearbeiten" : "Workout eintragen"}
+      </h1>
 
       {restSecondsLeft !== null && (
         <div className="sticky top-2 z-30 mb-4 flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2 shadow-sm animate-in fade-in slide-in-from-top-2">
@@ -383,6 +444,25 @@ export default function NewWorkoutPage() {
                 </button>
               ))}
             </div>
+            {mostUsedExerciseIds.length > 0 && (
+              <div className="-mx-1 flex items-center gap-1.5 overflow-x-auto px-1 pb-1 text-xs">
+                <span className="shrink-0 text-muted-foreground">Häufig:</span>
+                {mostUsedExerciseIds.map((id) => {
+                  const ex = exerciseFor(id);
+                  if (!ex) return null;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => quickAddExercise(id)}
+                      className="shrink-0 rounded-full border border-border bg-secondary/40 px-2.5 py-1 font-medium transition-colors hover:bg-secondary"
+                    >
+                      + {ex.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             <>
               {rows.map((row) => {
                 const ex = exerciseFor(row.exerciseId);
@@ -531,7 +611,7 @@ export default function NewWorkoutPage() {
         </Card>
 
         <Button type="submit" size="lg" disabled={loading || rows.length === 0}>
-          {loading ? "Speichern…" : "Workout speichern"}
+          {loading ? "Speichern…" : editSessionId ? "Änderungen speichern" : "Workout speichern"}
         </Button>
       </form>
     </div>

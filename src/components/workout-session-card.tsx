@@ -1,6 +1,29 @@
-import { Trophy } from "lucide-react";
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { MoreVertical, Pencil, Trash2, Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { FOCUS_LABEL } from "@/lib/muscle-focus";
 import type { MuscleFocus } from "@prisma/client";
 
@@ -13,6 +36,7 @@ type SetWithExercise = {
 };
 
 export function WorkoutSessionCard({
+  sessionId,
   date,
   notes,
   perceivedExertion,
@@ -20,7 +44,9 @@ export function WorkoutSessionCard({
   sets,
   authorName,
   prSetIds,
+  onDeleted,
 }: {
+  sessionId?: string;
   date: Date | string;
   notes?: string | null;
   perceivedExertion?: number | null;
@@ -28,8 +54,27 @@ export function WorkoutSessionCard({
   sets: SetWithExercise[];
   authorName?: string;
   prSetIds?: Set<string>;
+  onDeleted?: () => void;
 }) {
+  const router = useRouter();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const focuses = Array.from(new Set(sets.map((s) => s.exercise.focus)));
+
+  async function handleDelete() {
+    if (!sessionId) return;
+    setDeleting(true);
+    const res = await fetch(`/api/workouts/${sessionId}`, { method: "DELETE" });
+    setDeleting(false);
+    if (!res.ok) {
+      toast.error("Konnte Workout nicht löschen.");
+      return;
+    }
+    toast.success("Workout gelöscht.");
+    setConfirmOpen(false);
+    onDeleted?.();
+    router.refresh();
+  }
 
   return (
     <Card>
@@ -41,12 +86,33 @@ export function WorkoutSessionCard({
               {new Date(date).toLocaleDateString("de-DE", { day: "2-digit", month: "short" })}
             </span>
           </div>
-          <div className="flex gap-1.5">
+          <div className="flex items-center gap-1.5">
             {focuses.map((f) => (
               <Badge key={f} variant="secondary" className="text-[10px]">
                 {FOCUS_LABEL[f]}
               </Badge>
             ))}
+            {sessionId && (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button variant="ghost" size="icon-sm" className="text-muted-foreground" />
+                  }
+                >
+                  <MoreVertical className="size-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem render={<Link href={`/dashboard/workouts/new?edit=${sessionId}`} />}>
+                    <Pencil className="size-4" />
+                    Bearbeiten
+                  </DropdownMenuItem>
+                  <DropdownMenuItem variant="destructive" onClick={() => setConfirmOpen(true)}>
+                    <Trash2 className="size-4" />
+                    Löschen
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
 
@@ -86,6 +152,26 @@ export function WorkoutSessionCard({
 
         {notes && <p className="text-sm italic text-muted-foreground">{notes}</p>}
       </CardContent>
+
+      {sessionId && (
+        <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Workout löschen?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Das kann nicht rückgängig gemacht werden. Bereits geteilte Gruppen-Posts bleiben
+                erhalten, verlieren aber den Bezug zu diesem Workout.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+              <AlertDialogAction disabled={deleting} onClick={handleDelete}>
+                {deleting ? "Löschen…" : "Löschen"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </Card>
   );
 }

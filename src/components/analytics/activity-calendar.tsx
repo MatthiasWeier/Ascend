@@ -181,11 +181,13 @@ export function ActivityCalendar() {
               {daySessions.map((s) => (
                 <WorkoutSessionCard
                   key={s.id}
+                  sessionId={s.id}
                   date={s.date}
                   notes={s.notes}
                   perceivedExertion={s.perceivedExertion}
                   skinCondition={s.skinCondition}
                   sets={s.sets}
+                  onDeleted={() => selectedDate && openDay(selectedDate)}
                 />
               ))}
             </div>

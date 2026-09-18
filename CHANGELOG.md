@@ -5,6 +5,18 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.13.0] - 2026-09-18
+
+### Added
+- "Häufig"-Chips über der Übungsliste beim Workout-Eintragen: die 8 am
+  häufigsten geloggten Übungen mit einem Klick als neuen Satz hinzufügen,
+  ohne die Suche zu öffnen
+- **Workout bearbeiten und löschen** - bisher nicht möglich. Bearbeiten
+  öffnet dieselbe Eintragen-Seite mit den bestehenden Sätzen vorausgefüllt;
+  beides über ein Menü an jeder Workout-Karte (Feed + Kalender-Ansicht).
+  Verknüpfte Gruppenziel-Beiträge werden beim Bearbeiten/Löschen korrekt
+  nachgezogen, nie doppelt gezählt
+
 ## [0.12.0] - 2026-09-18
 
 ### Added

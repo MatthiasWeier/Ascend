@@ -96,6 +96,10 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 - ✅ Integrierter Pause-Timer (60/90/120/180s, startet per ✓-Button am Satz)
 - ✅ Trainingsvorlagen: aktuelle Satz-Reihenfolge speichern, per Dropdown
   wieder laden
+- ✅ "Häufig"-Chips: die 8 meistgenutzten Übungen mit einem Klick als Satz
+  hinzufügen
+- ✅ **Workout bearbeiten & löschen** - inkl. korrekter Nachführung
+  verknüpfter Gruppenziel-Beiträge
 
 ### Workout Brain
 - ✅ Muskel-Fokus-Vorschlag (längste Pause seit dem letzten Training)

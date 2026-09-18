@@ -69,6 +69,7 @@ export default async function DashboardPage() {
             {sessions.map((s) => (
               <WorkoutSessionCard
                 key={s.id}
+                sessionId={s.id}
                 date={s.date}
                 notes={s.notes}
                 perceivedExertion={s.perceivedExertion}

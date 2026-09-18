@@ -23,7 +23,9 @@ export async function GET() {
     string,
     { reps: number | null; weightKg: number | null; durationSec: number | null }
   > = {};
+  const useCount = new Map<string, number>();
   for (const set of sets) {
+    useCount.set(set.exerciseId, (useCount.get(set.exerciseId) ?? 0) + 1);
     if (set.exerciseId in lastValues) continue;
     lastValues[set.exerciseId] = {
       reps: set.reps,
@@ -32,5 +34,12 @@ export async function GET() {
     };
   }
 
-  return NextResponse.json({ lastValues });
+  // Most-used exercises (by set count within the same 1000-set window),
+  // for the quick-add chips on the workout entry page.
+  const mostUsedExerciseIds = Array.from(useCount.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([exerciseId]) => exerciseId);
+
+  return NextResponse.json({ lastValues, mostUsedExerciseIds });
 }
