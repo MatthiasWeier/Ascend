@@ -5,6 +5,15 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.12.0] - 2026-09-18
+
+### Added
+- Push-Benachrichtigungen (Web Push, ohne Drittanbieter): Toggle in den
+  Einstellungen, Benachrichtigung an alle anderen Gruppenmitglieder wenn
+  jemand ein Workout postet oder eine Daily Challenge schafft. Komplett
+  optional für Selbsthoster - ohne gesetzte `VAPID_*`-Umgebungsvariablen
+  bleibt der Toggle einfach ausgeblendet
+
 ## [0.11.0] - 2026-09-18
 
 ### Added

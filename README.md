@@ -168,7 +168,11 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 - ✅ Dark-first Theme mit Light-Mode-Toggle (next-themes)
 - ✅ shadcn/ui, CSS-only Enter-Animationen (bewusst kein JS-Animation-Lauf,
   siehe Design-Entscheidungen unten)
-- 🚧 PWA-Grundgerüst (manifest.json vorhanden, Icons + Service Worker fehlen)
+- ✅ PWA: installierbar ("Zum Homescreen hinzufügen") mit eigenem Icon
+- ✅ **Push-Benachrichtigungen** (Web Push, kein Drittanbieter/Firebase):
+  Toggle in den Einstellungen, benachrichtigt andere Gruppenmitglieder bei
+  neuem Workout-Post oder geschaffter Daily Challenge - optional, siehe
+  `.env.example` (`VAPID_*`); ohne die ist der Toggle einfach ausgeblendet
 
 ### Security & Ops
 - ✅ Rate Limiting (Registrierung, Login-Brute-Force-Lockout, Daily-Challenge-

@@ -32,6 +32,11 @@ services:
       OPERATOR_ADDRESS: ${OPERATOR_ADDRESS:-}
       OPERATOR_EMAIL: ${OPERATOR_EMAIL:-}
       OPERATOR_PHONE: ${OPERATOR_PHONE:-}
+      # Web Push - see .env.example. Unset is fine, the "push
+      # notifications" toggle in Settings just stays disabled/hidden.
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-}
     ports:
       - "3000:3000"
     volumes:

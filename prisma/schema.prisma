@@ -46,6 +46,7 @@ model User {
   yammerVotes       YammerVote[]
   createdGroupGoals GroupGoal[]             @relation("GroupGoalCreator")
   goalContributions GroupGoalContribution[]
+  pushSubscriptions PushSubscription[]
 }
 
 // Catalog of exercises. Seeded with defaults; users/groups can add their own.
@@ -407,5 +408,19 @@ model GroupGoalContribution {
 
   @@unique([goalId, source, sourceId])
   @@index([goalId])
+  @@index([userId])
+}
+
+// One browser/device's Web Push subscription. A user can have several
+// (phone, laptop, ...) - each gets notified independently.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
   @@index([userId])
 }

@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { getGroupMembership } from "@/lib/group-auth";
 import { UPLOADS_DIR, extensionForImageType } from "@/lib/uploads";
 import { summarizeWorkoutSession } from "@/lib/workout-summary";
+import { sendPushToUsers } from "@/lib/push";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
@@ -131,5 +132,18 @@ export async function POST(
     },
     include: { user: { select: { id: true, name: true } } },
   });
+
+  const otherMembers = await prisma.groupMember.findMany({
+    where: { groupId, userId: { not: session.user.id } },
+    select: { userId: true },
+  });
+  if (otherMembers.length > 0) {
+    const group = await prisma.group.findUnique({ where: { id: groupId }, select: { name: true } });
+    sendPushToUsers(
+      otherMembers.map((m) => m.userId),
+      { title: group?.name ?? "Ascend", body: `${post.user.name} hat ein Workout gepostet`, url: "/dashboard" }
+    ).catch(() => {});
+  }
+
   return NextResponse.json({ post }, { status: 201 });
 }

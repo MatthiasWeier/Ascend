@@ -19,6 +19,7 @@ import { FOCUS_LABEL, ALL_FOCUSES } from "@/lib/muscle-focus";
 import type { MuscleFocus } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteAccountDialog } from "@/components/delete-account-dialog";
+import { PushNotificationToggle } from "@/components/push-notification-toggle";
 import { APP_VERSION } from "@/lib/version";
 
 type SettingsData = {
@@ -197,6 +198,15 @@ export default function SettingsPage() {
           <Button onClick={handleSaveGoals} disabled={savingGoals} size="lg">
             {savingGoals ? "Speichern…" : "Ziele speichern"}
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Benachrichtigungen</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PushNotificationToggle />
         </CardContent>
       </Card>
 

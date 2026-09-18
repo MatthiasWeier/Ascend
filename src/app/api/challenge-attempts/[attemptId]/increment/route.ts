@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { contributeChallengeAttemptToGoals } from "@/lib/goal-contributions";
+import { sendPushToUsers } from "@/lib/push";
 
 const incrementSchema = z.object({ amount: z.number().int().refine((n) => [1, 2, 5, 10].includes(n)) });
 
@@ -29,8 +30,12 @@ export async function POST(
       userChallengeGoal: {
         select: {
           userId: true,
+          user: { select: { name: true } },
           groupDailyChallenge: {
-            select: { groupId: true, challengeTemplate: { select: { exerciseId: true } } },
+            select: {
+              groupId: true,
+              challengeTemplate: { select: { name: true, exerciseId: true } },
+            },
           },
         },
       },
@@ -64,13 +69,30 @@ export async function POST(
   });
 
   if (justCompleted) {
+    const groupId = attempt.userChallengeGoal.groupDailyChallenge.groupId;
     await contributeChallengeAttemptToGoals({
       attemptId,
       userId: attempt.userChallengeGoal.userId,
-      groupId: attempt.userChallengeGoal.groupDailyChallenge.groupId,
+      groupId,
       exerciseId: attempt.userChallengeGoal.groupDailyChallenge.challengeTemplate.exerciseId,
       finalReps: newReps,
     });
+
+    const otherMembers = await prisma.groupMember.findMany({
+      where: { groupId, userId: { not: session.user.id } },
+      select: { userId: true },
+    });
+    if (otherMembers.length > 0) {
+      const templateName = attempt.userChallengeGoal.groupDailyChallenge.challengeTemplate.name;
+      sendPushToUsers(
+        otherMembers.map((m) => m.userId),
+        {
+          title: "Challenge geschafft!",
+          body: `${attempt.userChallengeGoal.user.name} hat "${templateName}" geschafft`,
+          url: "/dashboard",
+        }
+      ).catch(() => {});
+    }
   }
 
   return NextResponse.json({ attempt: updated });
