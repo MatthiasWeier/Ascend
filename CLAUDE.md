@@ -159,6 +159,31 @@ shipped a feature as 0.3.0, reworked it minutes later and called that
 in doubt, ask "is this fixing/adjusting what I just shipped, or is it a
 new thing a user would notice as separate" - the former is patch.
 
+## Notable patterns added since the initial release
+
+- **Optional self-hosted infra via env-var presence, not feature flags.**
+  Push notifications (`lib/push.ts`, VAPID keys) follow the same pattern as
+  the Impressum/Datenschutz operator fields: if the relevant env vars
+  aren't set, the feature's functions no-op and its UI just doesn't
+  render - never a crash, never a half-broken state. Follow this pattern
+  for any future optional integration rather than adding a separate
+  enabled/disabled config flag.
+- **Fire-and-forget for non-critical side effects.** Push sends
+  (`sendPushToUsers`) are called without `await` and with `.catch(() => {})`
+  from request handlers - a slow or failing push must never delay or fail
+  the actual user action (saving a workout, completing a challenge).
+  `sendPushToUsers` itself is also internally resilient per-subscription
+  (one dead subscription never blocks the others, and a 404/410 response
+  deletes it).
+- **Auto-contribution idempotency pattern.** Group Goals linked to an
+  Exercise (`lib/goal-contributions.ts`) and the group-goal
+  `GroupGoalContribution` model use a `source` + `sourceId` pair with a
+  unique constraint (`@@unique([goalId, source, sourceId])`) so the same
+  workout set or challenge attempt can never double-count even under a
+  retried or genuinely concurrent request - reuse this shape (not a
+  client-side disable-button guard alone) for any future auto-derived
+  aggregate.
+
 ## Testing conventions
 
 No automated test suite exists yet - verification is manual, over the
