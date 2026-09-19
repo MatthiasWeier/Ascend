@@ -128,7 +128,7 @@ export function ActivityCalendar({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="overflow-x-auto pb-2">
+      <div className="max-w-full overflow-x-auto pb-2">
         <div className="relative w-fit">
           <div className="mb-1 flex text-[10px] text-muted-foreground" style={{ paddingLeft: 20 }}>
             {monthMarkers.map((m, i) => (

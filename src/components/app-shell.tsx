@@ -119,7 +119,7 @@ export function AppShell({
         <LegalFooter className="mt-4 px-3" />
       </aside>
 
-      <div className="flex min-h-screen flex-1 flex-col">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         {/* Top bar */}
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-md md:justify-end">
           <Link href="/" className="flex items-center gap-2 md:hidden">
@@ -165,7 +165,7 @@ export function AppShell({
           </div>
         </header>
 
-        <main className="flex-1 pb-20 md:pb-0">{children}</main>
+        <main className="min-w-0 flex-1 pb-20 md:pb-0">{children}</main>
       </div>
 
       {/* Mobile bottom nav */}

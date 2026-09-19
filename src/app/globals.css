@@ -136,3 +136,9 @@
     @apply font-sans;
   }
 }
+
+/* Safety net: one over-wide element must never widen the whole page on phones. */
+html,
+body {
+  overflow-x: clip;
+}
