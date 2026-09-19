@@ -35,6 +35,7 @@ type GoalView = {
   todayAttempt: {
     id: string;
     currentReps: number;
+    workoutReps: number;
     targetRepsSnapshot: number;
     status: "IN_PROGRESS" | "COMPLETED" | "ENDED_EARLY";
     completedAt: string | null;

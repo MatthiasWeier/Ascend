@@ -64,6 +64,7 @@ export async function POST(
     where: { id: attemptId },
     data: {
       currentReps: newReps,
+      manualReps: { increment: parsed.data.amount },
       ...(justCompleted ? { status: "COMPLETED", completedAt: new Date() } : {}),
     },
   });
@@ -75,7 +76,7 @@ export async function POST(
       userId: attempt.userChallengeGoal.userId,
       groupId,
       exerciseId: attempt.userChallengeGoal.groupDailyChallenge.challengeTemplate.exerciseId,
-      finalReps: newReps,
+      finalReps: updated.manualReps,
     });
 
     const otherMembers = await prisma.groupMember.findMany({

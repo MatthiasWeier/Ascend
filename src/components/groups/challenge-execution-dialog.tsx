@@ -11,6 +11,7 @@ import { useT } from "@/components/locale-provider";
 type Attempt = {
   id: string;
   currentReps: number;
+  workoutReps?: number;
   targetRepsSnapshot: number;
   status: "IN_PROGRESS" | "COMPLETED" | "ENDED_EARLY";
   completedAt: string | null;
@@ -161,6 +162,9 @@ export function ChallengeExecutionDialog({
             <div className="flex flex-col items-center gap-1">
               <span className="text-5xl font-bold tabular-nums">{attempt.currentReps}</span>
               <span className="text-sm text-muted-foreground">{t("von {target} Wdh", { target: attempt.targetRepsSnapshot })}</span>
+              {(attempt.workoutReps ?? 0) > 0 && (
+                <span className="text-xs text-muted-foreground">{t("davon {n} aus deinen Workouts heute", { n: attempt.workoutReps ?? 0 })}</span>
+              )}
             </div>
 
             <Progress value={progressPct} className="w-full" />

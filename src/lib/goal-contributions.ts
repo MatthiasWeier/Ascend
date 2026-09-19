@@ -14,7 +14,8 @@ export function goalUnitMatchesExerciseType(unit: GoalUnit, type: ExerciseType):
 // Called right after a WorkoutSet is created. Finds every GroupGoal - in
 // any group the set's owner belongs to - linked to this exact exercise
 // (and not past its deadline), and records one auto-contribution each.
-// Never touches daily challenges - those stay a separate, manual flow.
+// Daily challenges pick the same workout reps up separately
+// (challenge-workout-sync.ts).
 export async function contributeWorkoutSetToGoals(params: {
   userId: string;
   exerciseId: string;
@@ -133,14 +134,15 @@ export async function backfillGoalFromHistory(goal: {
           groupDailyChallenge: { groupId: goal.groupId, challengeTemplate: { exerciseId: goal.exerciseId } },
         },
       },
-      select: { id: true, currentReps: true, userChallengeGoal: { select: { userId: true } } },
+      select: { id: true, manualReps: true, userChallengeGoal: { select: { userId: true } } },
     });
     for (const attempt of attempts) {
-      if (attempt.currentReps <= 0) continue;
+      // Only the reps tapped in the challenge - workout reps arrive via the sets above.
+      if (attempt.manualReps <= 0) continue;
       rows.push({
         goalId: goal.id,
         userId: attempt.userChallengeGoal.userId,
-        amount: attempt.currentReps,
+        amount: attempt.manualReps,
         source: "CHALLENGE",
         sourceId: attempt.id,
       });

@@ -5,6 +5,21 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.39.0] - 2026-09-19
+
+### Added
+- **Daily Challenges zählen mit Workouts**: Wiederholungen der Challenge-Übung, die du
+  heute in einem Workout einträgst (Aufwärmsätze zählen nicht), laufen automatisch in den
+  Tagesversuch der Challenge - 100 Liegestütze im Workout erfüllen die Challenge, inkl.
+  Benachrichtigung an die Gruppe. Funktioniert beim Eintragen, Bearbeiten und Löschen von
+  Workouts (sinkt der Stand unter das Ziel und ist noch nicht bewertet, wird die Challenge
+  wieder geöffnet), sowie beim nachträglichen Setzen eines Ziels. Der Challenge-Dialog zeigt
+  "davon X aus deinen Workouts heute".
+
+### Changed
+- Ein Challenge-Versuch trägt zu Gruppenzielen nur noch die im Dialog getippten Wiederholungen
+  bei (`manualReps`); Workout-Wiederholungen kommen über die Sätze - so wird nichts doppelt gezählt.
+
 ## [0.38.0] - 2026-09-19
 
 ### Added

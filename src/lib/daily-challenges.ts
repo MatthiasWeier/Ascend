@@ -49,6 +49,7 @@ export async function buildDailyChallengesView(groupId: string, viewerId: string
         ? {
             id: g.attempts[0].id,
             currentReps: g.attempts[0].currentReps,
+            workoutReps: g.attempts[0].workoutReps,
             targetRepsSnapshot: g.attempts[0].targetRepsSnapshot,
             status: g.attempts[0].status,
             completedAt: g.attempts[0].completedAt,

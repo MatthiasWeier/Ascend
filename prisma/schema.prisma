@@ -420,7 +420,11 @@ model DailyChallengeAttempt {
   userChallengeGoal   UserChallengeGoal      @relation(fields: [userChallengeGoalId], references: [id], onDelete: Cascade)
   dateKey             String
   targetRepsSnapshot  Int
+  // currentReps = manualReps (tapped in the challenge dialog) + workoutReps
+  // (auto-counted from the day's logged workout sets of the same exercise).
   currentReps         Int                    @default(0)
+  manualReps          Int                    @default(0)
+  workoutReps         Int                    @default(0)
   status              ChallengeAttemptStatus @default(IN_PROGRESS)
   startedAt           DateTime               @default(now())
   completedAt         DateTime?

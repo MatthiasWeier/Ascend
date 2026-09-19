@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getGroupMembership } from "@/lib/group-auth";
+import { syncWorkoutRepsToChallenges } from "@/lib/challenge-workout-sync";
 
 const goalSchema = z.object({ targetReps: z.number().int().positive().max(10000) });
 
@@ -39,6 +40,9 @@ export async function POST(
 
   // A changed target makes prior yammer votes stale - they were about the old number.
   await prisma.yammerVote.deleteMany({ where: { userChallengeGoalId: goal.id } });
+
+  // Reps already logged in today's workouts count right away.
+  await syncWorkoutRepsToChallenges(session.user.id);
 
   return NextResponse.json({ goal }, { status: 201 });
 }

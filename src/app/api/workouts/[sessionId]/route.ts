@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { syncWorkoutRepsToChallenges } from "@/lib/challenge-workout-sync";
 import { contributeWorkoutSetToGoals } from "@/lib/goal-contributions";
 import { focusFatigueSchema, deriveOverallExertion } from "@/lib/focus-fatigue";
 import { summarizeWorkoutSession } from "@/lib/workout-summary";
@@ -149,6 +150,8 @@ export async function PATCH(
       )
   );
 
+  await syncWorkoutRepsToChallenges(session.user.id, existing.date);
+
   return NextResponse.json({ session: updated });
 }
 
@@ -180,6 +183,7 @@ export async function DELETE(
     prisma.workoutSession.delete({ where: { id: sessionId } }),
   ]);
   await deletePhotoFiles(photos);
+  await syncWorkoutRepsToChallenges(session.user.id, existing.date);
 
   return NextResponse.json({ ok: true });
 }

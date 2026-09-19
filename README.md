@@ -197,9 +197,11 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   danach tragen normale Workouts *und* abgeschlossene/abgebrochene Daily
   Challenges mit dieser Übung automatisch bei (inkl. rückwirkendem
   Nachtragen der Vergangenheit beim Verknüpfen); manuelles Eintragen bleibt
-  nur für nicht verknüpfte Ziele (z.B. km) möglich. Daily Challenges selbst
-  bleiben davon komplett unberührt - die sind weiterhin ein separater,
-  manueller Flow
+  nur für nicht verknüpfte Ziele (z.B. km) möglich
+- ✅ **Daily Challenges zählen mit Workouts**: Wiederholungen der Challenge-Übung
+  aus heutigen Workouts (ohne Aufwärmsätze) zählen automatisch zum Tagesversuch -
+  100 Liegestütze im Workout schließen die 100-Liegestütze-Challenge ab. Bearbeiten
+  oder Löschen des Workouts rechnet nach; Gruppenziele zählen nichts doppelt
 
 ### Bedienung & Design
 - ✅ Dark-first Theme mit Light-Mode-Toggle (next-themes)

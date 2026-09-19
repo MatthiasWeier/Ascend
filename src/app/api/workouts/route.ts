@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { syncWorkoutRepsToChallenges } from "@/lib/challenge-workout-sync";
 import { computePrSetIds } from "@/lib/personal-records";
 import { autoShareToGroups } from "@/lib/workout-sharing";
 import { contributeWorkoutSetToGoals } from "@/lib/goal-contributions";
@@ -110,6 +111,9 @@ export async function POST(request: Request) {
         })
       )
   );
+
+  // Reps of a challenge's exercise logged today count toward that challenge.
+  await syncWorkoutRepsToChallenges(session.user.id, created.date);
 
   return NextResponse.json(
     { session: created, newPrExerciseNames, autoSharedGroupNames },

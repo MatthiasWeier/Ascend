@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { todayGermanDateKey } from "@/lib/german-time";
+import { syncWorkoutRepsToChallenges } from "@/lib/challenge-workout-sync";
 
 export async function POST(
   request: Request,
@@ -26,6 +27,9 @@ export async function POST(
       { status: 400 }
     );
   }
+
+  // Picks up reps from today's workouts, creating the attempt if there are any.
+  await syncWorkoutRepsToChallenges(session.user.id);
 
   const dateKey = todayGermanDateKey();
 

@@ -152,4 +152,5 @@ export const groups: Record<string, string> = {
   "Genau richtig": "Just right",
   "Eher schwer": "Rather hard",
   "Sehr schwer": "Very hard",
+  "davon {n} aus deinen Workouts heute": "{n} of those from your workouts today",
 };

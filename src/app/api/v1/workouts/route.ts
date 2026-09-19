@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { authenticateApiKey } from "@/lib/api-key-auth";
 import { prisma } from "@/lib/prisma";
+import { syncWorkoutRepsToChallenges } from "@/lib/challenge-workout-sync";
 
 const setSchema = z.object({
   exerciseId: z.string(),
@@ -72,6 +73,8 @@ export async function POST(request: Request) {
     },
     include: { sets: { include: { exercise: { select: { name: true } } } } },
   });
+
+  await syncWorkoutRepsToChallenges(auth.userId, created.date);
 
   return NextResponse.json({ session: created }, { status: 201 });
 }

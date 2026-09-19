@@ -46,7 +46,7 @@ export async function POST(
     userId: attempt.userChallengeGoal.userId,
     groupId: attempt.userChallengeGoal.groupDailyChallenge.groupId,
     exerciseId: attempt.userChallengeGoal.groupDailyChallenge.challengeTemplate.exerciseId,
-    finalReps: attempt.currentReps,
+    finalReps: attempt.manualReps,
   });
 
   return NextResponse.json({ attempt: updated });
