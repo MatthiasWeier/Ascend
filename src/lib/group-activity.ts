@@ -4,14 +4,18 @@ export type ActivityItem =
   | {
       kind: "WORKOUT_SHARE" | "CHAT_TEXT" | "CHAT_PHOTO";
       timestamp: Date;
+      userId: string;
       userName: string;
       groupId: string;
       groupName: string;
       content: string | null;
+      imageUrl: string | null;
+      workoutSessionId: string | null;
     }
   | {
       kind: "CHALLENGE_COMPLETED" | "CHALLENGE_ENDED_EARLY";
       timestamp: Date;
+      userId: string;
       userName: string;
       groupId: string;
       groupName: string;
@@ -66,10 +70,13 @@ export async function getRecentGroupActivity(userId: string, limit = 20): Promis
       return {
         kind,
         timestamp: p.createdAt,
+        userId: p.userId,
         userName: p.user.name,
         groupId: p.group.id,
         groupName: p.group.name,
         content: p.content,
+        imageUrl: p.imageUrl,
+        workoutSessionId: p.workoutSessionId,
       };
     }),
     ...attempts.map((a): ActivityItem => {
@@ -78,6 +85,7 @@ export async function getRecentGroupActivity(userId: string, limit = 20): Promis
       return {
         kind,
         timestamp: a.completedAt ?? a.startedAt,
+        userId: a.userChallengeGoal.userId,
         userName: a.userChallengeGoal.user.name,
         groupId: a.userChallengeGoal.groupDailyChallenge.group.id,
         groupName: a.userChallengeGoal.groupDailyChallenge.group.name,

@@ -10,9 +10,7 @@ import { computeCurrentStreak } from "@/lib/streak";
 import { Button } from "@/components/ui/button";
 import { BrainCard } from "@/components/brain-card";
 import { DailyChallengeReminder } from "@/components/daily-challenge-reminder";
-import { GroupActivityFeed } from "@/components/group-activity-feed";
-import { WorkoutSessionCard } from "@/components/workout-session-card";
-import { FeedList } from "@/components/feed-list";
+import { HomeFeed } from "@/components/home-feed";
 import { DashboardRefresh } from "@/components/dashboard-refresh";
 import { OnboardingChecklist } from "@/components/onboarding-checklist";
 
@@ -20,22 +18,50 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user.id;
 
-  const [suggestion, sessions, prSetIds, pendingChallenges, groupActivity, streak, user, groupCount] =
+  const [suggestion, sessions, prSetIds, pendingChallenges, groupActivity, streak, user, memberships] =
     await Promise.all([
       getBrainSuggestion(userId),
       prisma.workoutSession.findMany({
         where: { userId },
         orderBy: { date: "desc" },
-        take: 15,
+        take: 40,
         include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
       }),
       computePrSetIds(userId),
       getPendingDailyChallenges(userId),
-      getRecentGroupActivity(userId),
+      getRecentGroupActivity(userId, 60),
       computeCurrentStreak(userId),
       prisma.user.findUnique({ where: { id: userId }, select: { bodyWeightKg: true } }),
-      prisma.groupMember.count({ where: { userId } }),
+      prisma.groupMember.findMany({
+        where: { userId },
+        select: { group: { select: { id: true, name: true } } },
+        orderBy: { joinedAt: "asc" },
+      }),
     ]);
+
+  const groups = memberships.map((m) => m.group);
+
+  // Which groups each own workout was shared into - lets the group filter
+  // chips also match your own workouts that you posted there.
+  const shares = await prisma.groupPost.findMany({
+    where: { userId, type: "WORKOUT_SHARE", workoutSessionId: { in: sessions.map((s) => s.id) } },
+    select: { workoutSessionId: true, groupId: true },
+  });
+  const sharedGroupsBySession = new Map<string, string[]>();
+  for (const s of shares) {
+    if (!s.workoutSessionId) continue;
+    sharedGroupsBySession.set(s.workoutSessionId, [...(sharedGroupsBySession.get(s.workoutSessionId) ?? []), s.groupId]);
+  }
+
+  const ownWorkouts = sessions.map((s) => ({
+    id: s.id,
+    date: s.date,
+    notes: s.notes,
+    perceivedExertion: s.perceivedExertion,
+    skinCondition: s.skinCondition,
+    sets: s.sets,
+    sharedGroupIds: sharedGroupsBySession.get(s.id) ?? [],
+  }));
 
   return (
     <DashboardRefresh>
@@ -62,8 +88,6 @@ export default async function DashboardPage() {
 
       <BrainCard suggestion={suggestion} />
 
-      <GroupActivityFeed items={groupActivity} />
-
       <Button
         render={<Link href="/dashboard/workouts/new" />}
         size="lg"
@@ -74,24 +98,17 @@ export default async function DashboardPage() {
       </Button>
 
       <div className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-muted-foreground">Letzte Workouts</h2>
-        {sessions.length === 0 ? (
-          <OnboardingChecklist hasBodyWeight={user?.bodyWeightKg != null} hasGroup={groupCount > 0} />
+        <h2 className="text-sm font-semibold text-muted-foreground">Feed</h2>
+        {sessions.length === 0 && groupActivity.length === 0 ? (
+          <OnboardingChecklist hasBodyWeight={user?.bodyWeightKg != null} hasGroup={groups.length > 0} />
         ) : (
-          <FeedList>
-            {sessions.map((s) => (
-              <WorkoutSessionCard
-                key={s.id}
-                sessionId={s.id}
-                date={s.date}
-                notes={s.notes}
-                perceivedExertion={s.perceivedExertion}
-                skinCondition={s.skinCondition}
-                sets={s.sets}
-                prSetIds={prSetIds}
-              />
-            ))}
-          </FeedList>
+          <HomeFeed
+            me={userId}
+            ownWorkouts={ownWorkouts}
+            activity={groupActivity}
+            groups={groups}
+            prSetIds={prSetIds}
+          />
         )}
       </div>
     </div>

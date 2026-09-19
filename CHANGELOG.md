@@ -5,6 +5,19 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.33.0] - 2026-09-19
+
+### Changed
+- **Startseite: ein gemeinsamer Feed statt zwei getrennter Bereiche.** Eigene
+  Workouts, Gruppen-Nachrichten, Fotos, geteilte Workouts und Challenges
+  stehen jetzt in einer Zeitleiste. Filter (bleiben gespeichert):
+  Quelle (Ich / einzelne Gruppen, mehrfach wählbar) und Typ (Workouts /
+  Nachrichten / Bilder / Challenges). Fotos werden direkt als Vorschau
+  angezeigt, "Mehr anzeigen" lädt weiter zurück.
+- **Workout bearbeiten/löschen direkt an der Karte** als sichtbare Buttons
+  statt hinter einem kleinen ⋮-Menü - der Umweg über Analytics → Kalender
+  ist nicht mehr nötig.
+
 ## [0.32.0] - 2026-09-19
 
 ### Added

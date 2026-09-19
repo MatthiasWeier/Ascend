@@ -4,16 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { MoreVertical, Pencil, Trash2, Trophy } from "lucide-react";
+import { Pencil, Trash2, Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -111,25 +105,26 @@ export function WorkoutSessionCard({
               </Badge>
             ))}
             {sessionId && (
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <Button variant="ghost" size="icon-sm" className="text-muted-foreground" />
-                  }
+              <>
+                <Button
+                  render={<Link href={`/dashboard/workouts/new?edit=${sessionId}`} />}
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1 px-2 text-xs text-muted-foreground"
                 >
-                  <MoreVertical className="size-4" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem render={<Link href={`/dashboard/workouts/new?edit=${sessionId}`} />}>
-                    <Pencil className="size-4" />
-                    Bearbeiten
-                  </DropdownMenuItem>
-                  <DropdownMenuItem variant="destructive" onClick={() => setConfirmOpen(true)}>
-                    <Trash2 className="size-4" />
-                    Löschen
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  <Pencil className="size-3.5" />
+                  Bearbeiten
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground hover:text-destructive"
+                  title="Löschen"
+                  onClick={() => setConfirmOpen(true)}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </>
             )}
           </div>
         </div>
