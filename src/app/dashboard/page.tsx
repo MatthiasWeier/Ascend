@@ -40,7 +40,7 @@ export default async function DashboardPage() {
       prisma.user.findUnique({ where: { id: userId }, select: { bodyWeightKg: true } }),
       prisma.groupMember.findMany({
         where: { userId },
-        select: { group: { select: { id: true, name: true } } },
+        select: { role: true, group: { select: { id: true, name: true } } },
         orderBy: { joinedAt: "asc" },
       }),
       prisma.workoutSession.findMany({
@@ -50,13 +50,39 @@ export default async function DashboardPage() {
     ]);
 
   const groups = memberships.map((m) => m.group);
+  const leaderGroupIds = memberships.filter((m) => m.role === "LEADER").map((m) => m.group.id);
 
   // Which groups each own workout was shared into - lets the group filter
   // chips also match your own workouts that you posted there.
   const shares = await prisma.groupPost.findMany({
     where: { userId, type: "WORKOUT_SHARE", workoutSessionId: { in: sessions.map((s) => s.id) } },
-    select: { workoutSessionId: true, groupId: true },
+    select: { id: true, workoutSessionId: true, groupId: true },
   });
+  const shareCommentRows = shares.length
+    ? await prisma.postComment.groupBy({
+        by: ["postId"],
+        where: { postId: { in: shares.map((s) => s.id) }, deletedAt: null },
+        _count: { _all: true },
+      })
+    : [];
+  const shareCommentCounts = new Map(shareCommentRows.map((r) => [r.postId, r._count._all]));
+  const groupNameById = new Map(groups.map((g) => [g.id, g.name]));
+  const sharedPostsBySession = new Map<
+    string,
+    { postId: string; groupId: string; groupName: string; commentCount: number }[]
+  >();
+  for (const s of shares) {
+    if (!s.workoutSessionId) continue;
+    sharedPostsBySession.set(s.workoutSessionId, [
+      ...(sharedPostsBySession.get(s.workoutSessionId) ?? []),
+      {
+        postId: s.id,
+        groupId: s.groupId,
+        groupName: groupNameById.get(s.groupId) ?? "",
+        commentCount: shareCommentCounts.get(s.id) ?? 0,
+      },
+    ]);
+  }
   const sharedGroupsBySession = new Map<string, string[]>();
   for (const s of shares) {
     if (!s.workoutSessionId) continue;
@@ -71,6 +97,7 @@ export default async function DashboardPage() {
     skinCondition: s.skinCondition,
     sets: s.sets,
     sharedGroupIds: sharedGroupsBySession.get(s.id) ?? [],
+    sharedPosts: sharedPostsBySession.get(s.id) ?? [],
   }));
 
   return (
@@ -119,6 +146,7 @@ export default async function DashboardPage() {
                   ownWorkouts={ownWorkouts}
                   activity={groupActivity}
                   groups={groups}
+                  leaderGroupIds={leaderGroupIds}
                   prSetIds={prSetIds}
                 />
               )}

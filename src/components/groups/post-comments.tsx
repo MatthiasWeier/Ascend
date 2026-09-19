@@ -29,11 +29,13 @@ export function PostComments({
   postId,
   initialCount,
   isLeader,
+  label,
 }: {
   groupId: string;
   postId: string;
   initialCount: number;
   isLeader: boolean;
+  label?: string;
 }) {
   const { t, dateLocale } = useLocale();
   const { data: authSession } = useSession();
@@ -251,6 +253,7 @@ export function PostComments({
         className="flex w-fit items-center gap-1.5 rounded-full px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
       >
         <MessageCircle className="size-4" />
+        {label && <span className="text-foreground">{label} ·</span>}
         {count === 0 ? t("Kommentieren") : count === 1 ? t("1 Kommentar") : t("{n} Kommentare", { n: count })}
       </button>
 

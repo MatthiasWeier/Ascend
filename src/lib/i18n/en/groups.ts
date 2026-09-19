@@ -69,6 +69,8 @@ export const groups: Record<string, string> = {
   "{n} Sätze": "{n} sets",
   "Bildunterschrift (optional)…": "Caption (optional)…",
   "Posten": "Post",
+  "Bild vergrößern": "Enlarge image",
+  "Original in neuem Tab öffnen": "Open original in new tab",
   "Kommentieren": "Comment",
   "1 Kommentar": "1 comment",
   "{n} Kommentare": "{n} comments",

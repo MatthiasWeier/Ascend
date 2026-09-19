@@ -13,6 +13,8 @@ export type ActivityItem =
       imageUrl: string | null;
       workoutSessionId: string | null;
       focuses: MuscleFocus[];
+      postId: string;
+      commentCount: number;
     }
   | {
       kind: "CHALLENGE_COMPLETED" | "CHALLENGE_ENDED_EARLY";
@@ -65,6 +67,15 @@ export async function getRecentGroupActivity(userId: string, limit = 20): Promis
     }),
   ]);
 
+  const commentRows = posts.length
+    ? await prisma.postComment.groupBy({
+        by: ["postId"],
+        where: { postId: { in: posts.map((p) => p.id) }, deletedAt: null },
+        _count: { _all: true },
+      })
+    : [];
+  const commentCounts = new Map(commentRows.map((r) => [r.postId, r._count._all]));
+
   const shareIds = posts.map((p) => p.workoutSessionId).filter((id): id is string => id != null);
   const focusRows = shareIds.length
     ? await prisma.workoutSet.findMany({
@@ -94,6 +105,8 @@ export async function getRecentGroupActivity(userId: string, limit = 20): Promis
         imageUrl: p.imageUrl,
         workoutSessionId: p.workoutSessionId,
         focuses: Array.from(focusesBySession.get(p.workoutSessionId ?? "") ?? []),
+        postId: p.id,
+        commentCount: commentCounts.get(p.id) ?? 0,
       };
     }),
     ...attempts.map((a): ActivityItem => {

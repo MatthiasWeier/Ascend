@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Check, ChevronDown, Dumbbell, Image as ImageIcon, MessageSquare, Trophy, XCircle } from "lucide-react";
 import { FOCUS_LABEL } from "@/lib/muscle-focus";
+import { ImageLightbox } from "@/components/image-lightbox";
+import { PostComments } from "@/components/groups/post-comments";
 import { WorkoutSessionCard } from "@/components/workout-session-card";
 import { FeedList } from "@/components/feed-list";
 import { cn } from "@/lib/utils";
@@ -19,6 +21,7 @@ export type OwnWorkout = {
   perceivedExertion: number | null;
   skinCondition: number | null;
   sharedGroupIds: string[];
+  sharedPosts: { postId: string; groupId: string; groupName: string; commentCount: number }[];
   sets: {
     id: string;
     reps: number | null;
@@ -161,11 +164,18 @@ function GroupItemRow({ item }: { item: ActivityItem }) {
           ? "border-l-destructive bg-destructive/5"
           : "border-l-muted-foreground/40 bg-card";
 
+  // Whole row links to the group (stretched link underneath); the photo sits
+  // above it and opens the lightbox instead.
   return (
-    <Link
-      href={`/dashboard/groups/${item.groupId}`}
-      className={`flex items-start gap-3 rounded-lg border border-l-4 border-border px-3 py-3 text-sm transition-colors hover:bg-accent ${accent}`}
+    <div
+      className={`relative rounded-lg border border-l-4 border-border px-3 py-3 text-sm transition-colors hover:bg-accent ${accent}`}
     >
+      <Link
+        href={`/dashboard/groups/${item.groupId}`}
+        aria-label={item.groupName}
+        className="absolute inset-0 rounded-lg"
+      />
+      <div className="pointer-events-none relative flex items-start gap-3">
       <span className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-background/60 ${iconColor}`}>
         <Icon className="size-4" />
       </span>
@@ -174,19 +184,14 @@ function GroupItemRow({ item }: { item: ActivityItem }) {
           <span className="font-medium">{item.userName}</span> {text}
         </p>
         {item.kind === "CHAT_PHOTO" && item.imageUrl && (
-          // eslint-disable-next-line @next/next/no-img-element -- auth-gated proxy route, not optimizable
-          <img
-            src={item.imageUrl}
-            alt={t("Gruppen-Foto")}
-            loading="lazy"
-            className="mt-1.5 max-h-48 rounded-md border border-border object-cover"
-          />
+          <ImageLightbox className="mt-1.5" thumbClassName="max-h-64" src={item.imageUrl} alt={t("Gruppen-Foto")} />
         )}
         <p className="mt-0.5 text-xs text-muted-foreground">
           {item.groupName} · {formatTimeAgo(item.timestamp, t, dateLocale)}
         </p>
       </div>
-    </Link>
+      </div>
+    </div>
   );
 }
 
@@ -195,12 +200,14 @@ export function HomeFeed({
   ownWorkouts,
   activity,
   groups,
+  leaderGroupIds,
   prSetIds,
 }: {
   me: string;
   ownWorkouts: OwnWorkout[];
   activity: ActivityItem[];
   groups: { id: string; name: string }[];
+  leaderGroupIds: string[];
   prSetIds: Set<string>;
 }) {
   const { t } = useLocale();
@@ -320,8 +327,8 @@ export function HomeFeed({
           <FeedList>
             {shown.map((e) =>
               e.kind === "own" ? (
+                <div key={`w-${e.data.id}`} className="flex flex-col gap-2">
                 <WorkoutSessionCard
-                  key={`w-${e.data.id}`}
                   sessionId={e.data.id}
                   date={e.data.date}
                   notes={e.data.notes}
@@ -331,8 +338,32 @@ export function HomeFeed({
                   prSetIds={prSetIds}
                   collapsible
                 />
+                {e.data.sharedPosts.map((sp) => (
+                  <div key={sp.postId} className="px-1">
+                    <PostComments
+                      groupId={sp.groupId}
+                      postId={sp.postId}
+                      initialCount={sp.commentCount}
+                      isLeader={leaderGroupIds.includes(sp.groupId)}
+                      label={e.data.sharedPosts.length > 1 ? sp.groupName : undefined}
+                    />
+                  </div>
+                ))}
+                </div>
               ) : (
-                <GroupItemRow key={`g-${e.data.groupId}-${e.ts}-${e.data.userId}`} item={e.data} />
+                <div key={`g-${e.data.groupId}-${e.ts}-${e.data.userId}`} className="flex flex-col gap-1">
+                  <GroupItemRow item={e.data} />
+                  {"postId" in e.data && (
+                    <div className="px-1">
+                      <PostComments
+                        groupId={e.data.groupId}
+                        postId={e.data.postId}
+                        initialCount={e.data.commentCount}
+                        isLeader={leaderGroupIds.includes(e.data.groupId)}
+                      />
+                    </div>
+                  )}
+                </div>
               )
             )}
           </FeedList>

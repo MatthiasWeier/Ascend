@@ -19,6 +19,7 @@ import { REACTION_EMOJIS } from "@/lib/post-reactions";
 import { useLocale } from "@/components/locale-provider";
 import { FOCUS_LABEL } from "@/lib/muscle-focus";
 import { PostComments } from "@/components/groups/post-comments";
+import { ImageLightbox } from "@/components/image-lightbox";
 
 const TYPE_FILTERS = [
   { value: "ALL" as const, label: "Alle", icon: null },
@@ -407,11 +408,7 @@ export function GroupFeed({
                 </div>
 
                 {post.type === "PHOTO" && post.imageUrl && (
-                  <img
-                    src={post.imageUrl}
-                    alt={post.content ?? t("Foto")}
-                    className="max-h-96 w-full rounded-lg object-cover"
-                  />
+                  <ImageLightbox src={post.imageUrl} alt={post.content ?? t("Foto")} />
                 )}
 
                 {post.type === "WORKOUT_SHARE" && (

@@ -5,6 +5,15 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.36.1] - 2026-09-19
+
+### Fixed
+- **Fotos werden nie mehr beschnitten**: Bilder im Gruppen-Feed und auf der Startseite
+  erscheinen vollständig (kleiner statt abgeschnitten) und lassen sich per Klick
+  groß öffnen (Lightbox, mit Link zum Original).
+- **Kommentare auf der Startseite**: unter Gruppen-Posts (Text, Foto, Workout) und
+  unter den eigenen, in Gruppen geteilten Workouts sind Kommentare jetzt auch im
+  Startseiten-Feed les- und schreibbar.
 ## [0.36.0] - 2026-09-19
 
 ### Added
