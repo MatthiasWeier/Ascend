@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { summarizeWorkoutSession } from "@/lib/workout-summary";
-import { sendPushToUsers } from "@/lib/push";
+import { notifyUsers } from "@/lib/notify";
 
 type SummarizableSession = Parameters<typeof summarizeWorkoutSession>[0] & { id: string };
 
@@ -44,10 +44,14 @@ export async function autoShareToGroups(
   for (const m of memberships) {
     const otherUserIds = m.group.members.map((mem) => mem.userId);
     if (otherUserIds.length === 0) continue;
-    sendPushToUsers(otherUserIds, {
-      title: m.group.name,
-      body: `${actor?.name ?? "Jemand"} hat ein Workout gepostet`,
-      url: "/dashboard",
+    notifyUsers(otherUserIds, {
+      type: "WORKOUT_POST",
+      actorId: userId,
+      actorName: actor?.name ?? "Jemand",
+      groupName: m.group.name,
+      url: `/dashboard/groups/${m.groupId}`,
+      pushTitle: m.group.name,
+      pushBody: `${actor?.name ?? "Jemand"} hat ein Workout gepostet`,
     }).catch(() => {});
   }
 

@@ -86,6 +86,7 @@ model User {
   pushSubscriptions PushSubscription[]
   postReactions     PostReaction[]
   apiKeys           ApiKey[]
+  notifications     Notification[]
   postComments      PostComment[]
 }
 
@@ -583,4 +584,21 @@ model PostComment {
 
   @@index([postId, createdAt])
   @@index([parentId])
+}
+
+// One entry in a user's in-app notification list (the bell). Text is not
+// stored - only who/what/where - so it renders in the viewer's language.
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  actorName String
+  groupName String
+  snippet   String?
+  url       String
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  @@index([userId, createdAt])
 }

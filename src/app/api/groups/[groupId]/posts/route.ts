@@ -7,7 +7,7 @@ import { getGroupMembership } from "@/lib/group-auth";
 import { extensionForImageType } from "@/lib/uploads";
 import { storageWriteFile } from "@/lib/storage";
 import { summarizeWorkoutSession } from "@/lib/workout-summary";
-import { sendPushToUsers } from "@/lib/push";
+import { notifyUsers } from "@/lib/notify";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
@@ -180,10 +180,15 @@ export async function POST(
   });
   if (otherMembers.length > 0) {
     const group = await prisma.group.findUnique({ where: { id: groupId }, select: { name: true } });
-    sendPushToUsers(
-      otherMembers.map((m) => m.userId),
-      { title: group?.name ?? "Ascend", body: `${post.user.name} hat ein Workout gepostet`, url: "/dashboard" }
-    ).catch(() => {});
+    notifyUsers(otherMembers.map((m) => m.userId), {
+      type: "WORKOUT_POST",
+      actorId: session.user.id,
+      actorName: post.user.name,
+      groupName: group?.name ?? "",
+      url: `/dashboard/groups/${groupId}`,
+      pushTitle: group?.name ?? "Ascend",
+      pushBody: `${post.user.name} hat ein Workout gepostet`,
+    }).catch(() => {});
   }
 
   return NextResponse.json({ post }, { status: 201 });

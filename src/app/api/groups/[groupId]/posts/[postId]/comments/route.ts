@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getGroupMembership } from "@/lib/group-auth";
 import { rateLimit } from "@/lib/rate-limit";
-import { sendPushToUsers } from "@/lib/push";
+import { notifyUsers } from "@/lib/notify";
 
 const createSchema = z.object({
   content: z.string().trim().min(1).max(2000),
@@ -100,18 +100,31 @@ export async function POST(
     include: { user: { select: { id: true, name: true } } },
   });
 
-  // Notify the post author and, for replies, the parent comment's author -
-  // fire-and-forget, never blocks or fails the comment itself.
-  const recipients = Array.from(new Set([post.userId, parentAuthorId].filter((id): id is string => !!id))).filter(
-    (id) => id !== session.user.id
-  );
-  if (recipients.length > 0) {
-    const group = await prisma.group.findUnique({ where: { id: groupId }, select: { name: true } });
-    sendPushToUsers(recipients, {
-      title: group?.name ?? "Ascend",
-      body: `${comment.user.name}: ${comment.content.slice(0, 80)}`,
-      url: `/dashboard/groups/${groupId}`,
-    }).catch(() => {});
+  // A reply notifies the parent comment's author; the post author gets a
+  // "commented" entry unless they already got the reply one. Never blocks
+  // or fails the comment itself.
+  const group = await prisma.group.findUnique({ where: { id: groupId }, select: { name: true } });
+  const shared = {
+    actorId: session.user.id,
+    actorName: comment.user.name,
+    groupName: group?.name ?? "",
+    snippet: comment.content.slice(0, 120),
+    url: `/dashboard/groups/${groupId}`,
+    pushTitle: group?.name ?? "Ascend",
+  };
+  if (parentAuthorId) {
+    await notifyUsers([parentAuthorId], {
+      ...shared,
+      type: "REPLY",
+      pushBody: `${comment.user.name} hat geantwortet: ${comment.content.slice(0, 80)}`,
+    });
+  }
+  if (post.userId !== parentAuthorId) {
+    await notifyUsers([post.userId], {
+      ...shared,
+      type: "COMMENT",
+      pushBody: `${comment.user.name}: ${comment.content.slice(0, 80)}`,
+    });
   }
 
   return NextResponse.json(

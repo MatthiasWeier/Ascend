@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getGroupMembership } from "@/lib/group-auth";
 import { rateLimit } from "@/lib/rate-limit";
-import { sendPushToUsers } from "@/lib/push";
+import { notifyUsers } from "@/lib/notify";
 
 // Any member can nudge any other member in a shared group - rate-limited
 // per (from, to) pair so it stays a friendly poke, not spam.
@@ -40,10 +40,14 @@ export async function POST(
   const actor = await prisma.user.findUnique({ where: { id: session.user.id }, select: { name: true } });
   const group = await prisma.group.findUnique({ where: { id: groupId }, select: { name: true } });
 
-  await sendPushToUsers([userId], {
-    title: group?.name ?? "Ascend",
-    body: `${actor?.name ?? "Jemand"} hat dich angestupst - zieh dein Workout durch!`,
-    url: "/dashboard",
+  await notifyUsers([userId], {
+    type: "NUDGE",
+    actorId: session.user.id,
+    actorName: actor?.name ?? "Jemand",
+    groupName: group?.name ?? "",
+    url: "/dashboard/workouts/new",
+    pushTitle: group?.name ?? "Ascend",
+    pushBody: `${actor?.name ?? "Jemand"} hat dich angestupst - zieh dein Workout durch!`,
   });
 
   return NextResponse.json({ ok: true });

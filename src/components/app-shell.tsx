@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
+import { NotificationBell } from "@/components/notification-bell";
 import { useT } from "@/components/locale-provider";
 import { LegalFooter } from "@/components/legal-footer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -127,6 +128,7 @@ export function AppShell({
             <span className="font-bold">Ascend</span>
           </Link>
           <div className="flex items-center gap-2">
+            <NotificationBell />
             <LanguageToggle />
             <ThemeToggle />
             <DropdownMenu>

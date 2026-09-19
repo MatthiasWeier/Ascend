@@ -60,6 +60,15 @@ export const shell: Record<string, string> = {
   "Nichts gefunden - Filter anpassen?": "Nothing found - adjust the filters?",
   "Noch nichts los.": "Nothing going on yet.",
 
+  "{name} hat deinen Beitrag kommentiert": "{name} commented on your post",
+  "{name} hat auf deinen Kommentar geantwortet": "{name} replied to your comment",
+  "{name} hat dich angestupst - zieh dein Workout durch!": "{name} nudged you - get your workout done!",
+  "{name} hat ein Workout gepostet": "{name} posted a workout",
+  "{name} hat \"{challenge}\" geschafft": "{name} completed \"{challenge}\"",
+  "{n} ungelesene Benachrichtigungen": "{n} unread notifications",
+  "Alle gelesen": "Mark all read",
+  "Noch keine Benachrichtigungen.": "No notifications yet.",
+
   // workout brain
   "Bei {focus} liegst du bei {actual}% deines Trainingsvolumens - Ziel sind {target}%. Zeit, das auszugleichen.":
     "For {focus} you're at {actual}% of your training volume - your target is {target}%. Time to balance that out.",

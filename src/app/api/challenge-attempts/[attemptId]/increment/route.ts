@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { contributeChallengeAttemptToGoals } from "@/lib/goal-contributions";
-import { sendPushToUsers } from "@/lib/push";
+import { notifyUsers } from "@/lib/notify";
 
 const incrementSchema = z.object({ amount: z.number().int().refine((n) => [1, 2, 5, 10].includes(n)) });
 
@@ -84,14 +84,20 @@ export async function POST(
     });
     if (otherMembers.length > 0) {
       const templateName = attempt.userChallengeGoal.groupDailyChallenge.challengeTemplate.name;
-      sendPushToUsers(
+      const groupRow = await prisma.group.findUnique({ where: { id: groupId }, select: { name: true } });
+      await notifyUsers(
         otherMembers.map((m) => m.userId),
         {
-          title: "Challenge geschafft!",
-          body: `${attempt.userChallengeGoal.user.name} hat "${templateName}" geschafft`,
-          url: "/dashboard",
+          type: "CHALLENGE_DONE",
+          actorId: session.user.id,
+          actorName: attempt.userChallengeGoal.user.name,
+          groupName: groupRow?.name ?? "",
+          snippet: templateName,
+          url: `/dashboard/groups/${groupId}?tab=challenges`,
+          pushTitle: "Challenge geschafft!",
+          pushBody: `${attempt.userChallengeGoal.user.name} hat "${templateName}" geschafft`,
         }
-      ).catch(() => {});
+      );
     }
   }
 

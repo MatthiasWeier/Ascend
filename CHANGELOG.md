@@ -5,6 +5,14 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.37.0] - 2026-09-19
+
+### Added
+- **Benachrichtigungs-Zentrale (Glocke)** in der Kopfleiste: Zähler für Ungelesenes und eine
+  Liste mit Kommentaren auf eigene Beiträge, Antworten auf eigene Kommentare, Anstupsern,
+  neuen Workouts aus der Gruppe und geschafften Challenges. Funktioniert unabhängig von Web
+  Push (nutzt den Push aber zusätzlich, wenn er eingerichtet ist). Einträge sind sprachneutral
+  gespeichert und erscheinen in der gewählten Sprache; alte werden nach 60 Tagen entfernt.
 ## [0.36.3] - 2026-09-19
 
 ### Added
