@@ -92,6 +92,22 @@ rather than trusting a summary here to stay in sync with every detail.
   "wrong password" vs. "needs a code" from `authorize()` itself. Follow
   this pattern for any future multi-step credentials flow instead of
   fighting the error-type plumbing.
+- **Database session strategy is unreachable with a credentials-only
+  setup.** `@auth/core`'s config validation (`assert.ts`) throws
+  `UnsupportedStrategy` if `session.strategy === "database"` and every
+  configured provider is `type: "credentials"` - "Signing in with
+  credentials only supported if JWT strategy is enabled" is not a
+  suggestion, it's enforced. A real Auth.js database-session migration
+  would need a second, non-credentials provider (e.g. the official
+  `webauthn` provider, which also needs a full Adapter). Session
+  management (`lib/auth.ts` jwt/session callbacks, `UserSession` model)
+  is instead a revocation list layered on top of the existing JWT: each
+  sign-in gets a `UserSession` row and a `sid` claim; every session read
+  re-checks that row exists and 404s the session (`token.revoked`) if it
+  doesn't. A token from before this existed (no `sid`) gets adopted
+  lazily on its next read rather than treated as invalid - don't remove
+  that branch, it's what avoided forcing every real user to log in again
+  when this shipped.
 - **Tailwind v4**, dark-first, CSS-only animations (`tw-animate-css`) -
   deliberately no JS animation library (Framer Motion caused an
   unreproducible stuck-invisible bug early on and was ripped out).

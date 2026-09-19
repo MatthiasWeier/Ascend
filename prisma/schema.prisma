@@ -56,6 +56,7 @@ model User {
   totpSecret      String?
   totpEnabled     Boolean          @default(false)
   totpBackupCodes TotpBackupCode[]
+  sessions        UserSession[]
   // Instance-wide admin (not a per-group role): can manage all users from
   // /dashboard/admin. Not derived from anything - explicitly set.
   isAdmin      Boolean  @default(false)
@@ -521,6 +522,23 @@ model TotpBackupCode {
   codeHash  String
   usedAt    DateTime?
   createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// Tracks one active JWT ("Sitzung") so it can be individually revoked -
+// see the jwt() callback in lib/auth.ts for how a JWT that's otherwise
+// self-contained gets checked against this table on every request.
+// Deleting a row (Settings -> Sitzungen, or an admin action) signs that
+// device out on its very next request, without waiting for the JWT to
+// naturally expire.
+model UserSession {
+  id         String   @id
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
 
   @@index([userId])
 }

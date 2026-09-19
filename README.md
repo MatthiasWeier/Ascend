@@ -98,6 +98,9 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 - ✅ **Zwei-Faktor-Authentifizierung (TOTP)**: optional pro Konto,
   selbst implementiertes RFC 6238 (jede Standard-Authenticator-App),
   QR-Code-Setup, 10 Einmal-Backup-Codes
+- ✅ **Sitzungsverwaltung** (Settings): aktive Geräte einsehen, einzeln
+  oder alle außer dem aktuellen sofort abmelden - wirkt beim nächsten
+  Zugriff des Geräts, nicht erst nach JWT-Ablauf
 - ✅ Invite-only-Modus (`INVITE_ONLY`): Registrierung nur mit gültigem
   Gruppen-Invite-Link, siehe `.env.example`
 - ✅ Vollständiger JSON-Datenexport, CSV-Import (Strong/Hevy-kompatibel,

@@ -5,6 +5,26 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.32.0] - 2026-09-19
+
+### Added
+- **Sitzungsverwaltung** (Settings → Sitzungen): zeigt alle Geräte, die
+  aktuell angemeldet sind, mit "zuletzt aktiv"; einzelne Sitzungen oder
+  alle außer der aktuellen lassen sich sofort beenden - das Gerät wird
+  beim nächsten Zugriff automatisch abgemeldet, ganz ohne auf den
+  natürlichen JWT-Ablauf zu warten. Bestehende Logins bleiben beim Update
+  gültig (kein erzwungenes Neu-Anmelden).
+
+### Changed
+- Technischer Hinweis für zukünftige Arbeit an Auth: ein echter Wechsel
+  von JWT- auf Datenbank-Sessions (wie ursprünglich für dieses Feature
+  angedacht) ist mit dieser App nicht möglich, solange nur der
+  Credentials-Provider konfiguriert ist - Auth.js lehnt
+  `session.strategy = "database"` in dem Fall aktiv ab. Sitzungsverwaltung
+  ist stattdessen als Widerrufs-Liste über dem bestehenden JWT gebaut
+  (siehe CLAUDE.md), was praktisch das gleiche Ergebnis liefert, ohne
+  gegen diese Einschränkung anzukämpfen.
+
 ## [0.31.0] - 2026-09-19
 
 ### Added

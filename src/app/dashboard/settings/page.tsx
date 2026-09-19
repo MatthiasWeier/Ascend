@@ -36,6 +36,7 @@ import { useWeightUnit } from "@/components/weight-unit-context";
 import { roundForDisplay } from "@/lib/weight-units";
 import type { WeightUnit } from "@/lib/weight-units";
 import { TwoFactorSetup } from "@/components/two-factor-setup";
+import { SessionManager } from "@/components/session-manager";
 
 type SettingsData = {
   user: {
@@ -356,6 +357,18 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <TwoFactorSetup enabled={data.user.totpEnabled} onChanged={refetch} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Sitzungen</CardTitle>
+          <CardDescription>
+            Geräte, die aktuell bei deinem Konto angemeldet sind.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SessionManager />
         </CardContent>
       </Card>
 
