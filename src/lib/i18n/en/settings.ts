@@ -73,6 +73,19 @@ export const settings: Record<string, string> = {
   "Erhalte eine Benachrichtigung, wenn jemand in deinen Gruppen ein Workout postet oder eine Challenge schafft.":
     "Get a notification when someone in your groups posts a workout or completes a challenge.",
 
+  "Test-Benachrichtigung an dieses Konto senden": "Send test notification to this account",
+  "Für dein Konto ist kein Gerät angemeldet.": "No device is registered for your account.",
+  "gesendet - kommt es an?": "sent - did it arrive?",
+  "Fehler": "Error",
+  "Diagnose": "Diagnostics",
+  "Erlaubnis": "Permission",
+  "Push-Dienst": "Push service",
+  "Abo aktiv": "Subscription active",
+  "ja": "yes",
+  "nein": "no",
+  "Letzter Fehler": "Last error",
+  "Blockiert: in den Website-Einstellungen des Browsers (Schloss-Symbol neben der Adresse) Benachrichtigungen auf 'Zulassen' stellen und die Seite neu laden.": "Blocked: in the browser's site settings (lock icon next to the address) set notifications to 'Allow' and reload the page.",
+
   // sessions
   "Unbekanntes Gerät": "Unknown device",
   "Konnte Sitzung nicht beenden.": "Couldn't end the session.",

@@ -5,6 +5,13 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.36.3] - 2026-09-19
+
+### Added
+- **Push-Diagnose** (Einstellungen → Benachrichtigungen): zeigt Erlaubnis-Status, Push-Dienst,
+  Abo-Status und den exakten Fehler beim Aktivieren; "Test-Benachrichtigung" schickt eine
+  Push an die eigenen Geräte und meldet, was der Push-Dienst geantwortet hat.
+  Pushes gehen jetzt mit TTL und hoher Dringlichkeit raus.
 ## [0.36.1] - 2026-09-19
 
 ### Fixed
