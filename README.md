@@ -198,6 +198,8 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   Challenges mit dieser Übung automatisch bei (inkl. rückwirkendem
   Nachtragen der Vergangenheit beim Verknüpfen); manuelles Eintragen bleibt
   nur für nicht verknüpfte Ziele (z.B. km) möglich
+- ✅ **Einführungs-Tutorial**: 12-schrittige Tour direkt nach der Registrierung
+  (einmalig, mit Überspringen; in den Einstellungen wiederholbar)
 - ✅ **Daily Challenges zählen mit Workouts**: Wiederholungen der Challenge-Übung
   aus heutigen Workouts (ohne Aufwärmsätze) zählen automatisch zum Tagesversuch -
   100 Liegestütze im Workout schließen die 100-Liegestütze-Challenge ab. Bearbeiten

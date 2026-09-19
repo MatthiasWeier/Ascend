@@ -47,6 +47,8 @@ model User {
   // group posts); this only controls what unit the UI shows/accepts.
   weightUnit   WeightUnit @default(KG)
   avatarUrl    String?
+  // Set when the first-run tutorial was finished or skipped; null = show it.
+  tutorialCompletedAt DateTime?
   // TOTP (RFC 6238) two-factor auth. totpSecret is set as soon as setup
   // starts but totpEnabled only flips to true once the user proves they
   // can generate a valid code with it - an unconfirmed secret has zero

@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
 import { Heartbeat } from "@/components/heartbeat";
+import { OnboardingTutorial } from "@/components/onboarding-tutorial";
 import { WeightUnitProvider } from "@/components/weight-unit-context";
 
 export default async function DashboardLayout({
@@ -12,7 +13,7 @@ export default async function DashboardLayout({
   const session = await auth();
   const user = await prisma.user.findUnique({
     where: { id: session!.user.id },
-    select: { avatarUrl: true, isAdmin: true, weightUnit: true },
+    select: { avatarUrl: true, isAdmin: true, weightUnit: true, tutorialCompletedAt: true },
   });
 
   return (
@@ -23,6 +24,7 @@ export default async function DashboardLayout({
     >
       <WeightUnitProvider initialUnit={user?.weightUnit ?? "KG"}>
         <Heartbeat />
+        <OnboardingTutorial initialOpen={!user?.tutorialCompletedAt} />
         {children}
       </WeightUnitProvider>
     </AppShell>

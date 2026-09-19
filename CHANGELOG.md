@@ -5,6 +5,16 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.40.0] - 2026-09-19
+
+### Added
+- **Einführungs-Tutorial**: direkt nach der Registrierung öffnet sich einmalig eine
+  12-schrittige Tour (Workout eintragen, Pump Pics, Feed, Kalender & Streak, Analytics,
+  Workout Brain, Gruppen, Challenges & Gruppenziele, Benachrichtigungen, Einstellungen).
+  Mit "Überspringen" jederzeit abbrechbar; erscheint danach nie wieder (serverseitig pro
+  Account gemerkt, `User.tutorialCompletedAt`). Bestehende Accounts sehen es nicht.
+  In den Einstellungen gibt es "Tutorial erneut ansehen".
+
 ## [0.39.0] - 2026-09-19
 
 ### Added

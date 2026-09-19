@@ -27,6 +27,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } f
 import { FOCUS_LABEL, ALL_FOCUSES } from "@/lib/muscle-focus";
 import type { MuscleFocus } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ReplayTutorialButton } from "@/components/onboarding-tutorial";
 import { DeleteAccountDialog } from "@/components/delete-account-dialog";
 import { PushNotificationToggle } from "@/components/push-notification-toggle";
 import { DataExport, DataImport, CalendarFeed } from "@/components/data-portability";
@@ -360,6 +361,16 @@ export default function SettingsPage() {
               <SelectItem value="en">English</SelectItem>
             </SelectContent>
           </Select>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("Tutorial")}</CardTitle>
+          <CardDescription>{t("Die Kurz-Tour durch Ascend noch einmal ansehen.")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ReplayTutorialButton />
         </CardContent>
       </Card>
 
