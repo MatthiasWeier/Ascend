@@ -5,6 +5,14 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.36.0] - 2026-09-19
+
+### Added
+- **Kommentare mit verschachtelten Antworten (Reddit-Stil)** unter jedem Gruppen-Post
+  (Text, Workout, Foto): Antworten auf Antworten, einzelne Threads einklappbar,
+  eigene Kommentare bearbeiten/löschen, Leader kann moderieren. Ein gelöschter
+  Kommentar mit Antworten bleibt als "[gelöscht]" stehen, damit der Thread lesbar
+  bleibt. Kommentar-Zähler im Feed; Push an Post- bzw. Kommentar-Autor.
 ## [0.35.0] - 2026-09-19
 
 ### Changed

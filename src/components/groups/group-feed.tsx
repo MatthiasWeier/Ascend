@@ -18,6 +18,7 @@ import { undoableAction } from "@/lib/undo-toast";
 import { REACTION_EMOJIS } from "@/lib/post-reactions";
 import { useLocale } from "@/components/locale-provider";
 import { FOCUS_LABEL } from "@/lib/muscle-focus";
+import { PostComments } from "@/components/groups/post-comments";
 
 const TYPE_FILTERS = [
   { value: "ALL" as const, label: "Alle", icon: null },
@@ -40,6 +41,7 @@ type Post = {
   myReaction: string | null;
   pending?: boolean;
   focuses?: string[];
+  commentCount?: number;
 };
 
 // Shared workouts are stored as a text summary ("Workout vom ...", then one
@@ -472,6 +474,14 @@ export function GroupFeed({
                     );
                   })}
                 </div>
+                {!post.pending && (
+                  <PostComments
+                    groupId={groupId}
+                    postId={post.id}
+                    initialCount={post.commentCount ?? 0}
+                    isLeader={isLeader}
+                  />
+                )}
               </CardContent>
             </Card>
             );

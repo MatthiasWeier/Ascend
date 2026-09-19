@@ -55,6 +55,13 @@ export async function GET(
     focusesBySession.set(row.sessionId, set);
   }
 
+  const commentCountRows = await prisma.postComment.groupBy({
+    by: ["postId"],
+    where: { postId: { in: posts.map((p) => p.id) }, deletedAt: null },
+    _count: { _all: true },
+  });
+  const commentCounts = new Map(commentCountRows.map((r) => [r.postId, r._count._all]));
+
   const shaped = posts.map((post) => {
     const counts: Record<string, number> = {};
     const users: Record<string, string[]> = {};
@@ -71,6 +78,7 @@ export async function GET(
       reactionUsers: users,
       myReaction: myEmoji,
       focuses: Array.from(focusesBySession.get(post.workoutSessionId ?? "") ?? []),
+      commentCount: commentCounts.get(post.id) ?? 0,
     };
   });
 

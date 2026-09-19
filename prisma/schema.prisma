@@ -86,6 +86,7 @@ model User {
   pushSubscriptions PushSubscription[]
   postReactions     PostReaction[]
   apiKeys           ApiKey[]
+  postComments      PostComment[]
 }
 
 // Catalog of exercises. Seeded with defaults; users/groups can add their own.
@@ -312,6 +313,7 @@ model GroupPost {
   workoutSession   WorkoutSession? @relation(fields: [workoutSessionId], references: [id], onDelete: SetNull)
 
   reactions PostReaction[]
+  comments  PostComment[]
 
   @@unique([groupId, workoutSessionId])
   @@index([groupId, createdAt])
@@ -560,4 +562,25 @@ model ApiKey {
   lastUsedAt DateTime?
 
   @@index([userId])
+}
+
+// A comment (or reply, via parentId) under a group post - Reddit-style
+// threads. A deleted comment that still has replies is kept as a stub
+// (deletedAt set, content cleared) so the thread stays readable.
+model PostComment {
+  id        String        @id @default(cuid())
+  postId    String
+  post      GroupPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    PostComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   PostComment[] @relation("CommentReplies")
+  content   String
+  createdAt DateTime      @default(now())
+  editedAt  DateTime?
+  deletedAt DateTime?
+
+  @@index([postId, createdAt])
+  @@index([parentId])
 }
