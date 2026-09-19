@@ -37,7 +37,7 @@ export default async function DatenschutzPage() {
           {t("Beschreibt, welche Daten die Ascend-Software verarbeitet - unabhängig davon, wer diese konkrete Instanz betreibt.")}
         </p>
         {t("__legal_note__") !== "__legal_note__" && (
-          <p className="mt-1 text-xs text-muted-foreground/70">{t("__legal_note__")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("__legal_note__")}</p>
         )}
       </div>
 

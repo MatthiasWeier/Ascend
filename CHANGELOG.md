@@ -21,6 +21,12 @@ nothing is guaranteed stable yet.
   "Kraft" listet nur Übungen mit mindestens 2 Trainingstagen (Graph möglich)
   und wählt die meisttrainierte vor.
 - Hellere Nebentexte im Dark Mode (Kontrast).
+- **Nachgezogen**: Gruppenziele in der Desktop-Spalte; geteilte Workouts zeigen den
+  Muskelfokus ("Core-Fokus") und lassen sich auch auf der Startseite aufklappen;
+  Gruppen, Gruppendetail, Einstellungen (zweispaltig) und Workout-Eintragen nutzen
+  große Bildschirme besser; größere Aktions-Icons in den Satz-Zeilen; der
+  Aktivitäts-Kalender liegt jetzt prominent über den Analytics-Tabs; Kontrast im
+  Light Mode erhöht (5,8:1 auf 7,5:1), sehr blasse Nebentexte entfernt.
 ## [0.34.0] - 2026-09-19
 
 ### Added

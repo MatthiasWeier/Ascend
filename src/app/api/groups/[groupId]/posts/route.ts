@@ -41,6 +41,20 @@ export async function GET(
     },
   });
 
+  const shareIds = posts.map((p) => p.workoutSessionId).filter((id): id is string => id != null);
+  const focusRows = shareIds.length
+    ? await prisma.workoutSet.findMany({
+        where: { sessionId: { in: shareIds }, setType: { not: "WARMUP" } },
+        select: { sessionId: true, exercise: { select: { focus: true } } },
+      })
+    : [];
+  const focusesBySession = new Map<string, Set<string>>();
+  for (const row of focusRows) {
+    const set = focusesBySession.get(row.sessionId) ?? new Set<string>();
+    set.add(row.exercise.focus);
+    focusesBySession.set(row.sessionId, set);
+  }
+
   const shaped = posts.map((post) => {
     const counts: Record<string, number> = {};
     const users: Record<string, string[]> = {};
@@ -51,7 +65,13 @@ export async function GET(
       if (r.userId === session.user.id) myEmoji = r.emoji;
     }
     const { reactions: _reactions, ...rest } = post;
-    return { ...rest, reactionCounts: counts, reactionUsers: users, myReaction: myEmoji };
+    return {
+      ...rest,
+      reactionCounts: counts,
+      reactionUsers: users,
+      myReaction: myEmoji,
+      focuses: Array.from(focusesBySession.get(post.workoutSessionId ?? "") ?? []),
+    };
   });
 
   return NextResponse.json({ posts: shaped });

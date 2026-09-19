@@ -12,6 +12,7 @@ import { BrainCard } from "@/components/brain-card";
 import { DailyChallengeReminder } from "@/components/daily-challenge-reminder";
 import { HomeFeed } from "@/components/home-feed";
 import { MiniActivity } from "@/components/mini-activity";
+import { SideGoals } from "@/components/side-goals";
 import { DashboardRefresh } from "@/components/dashboard-refresh";
 import { OnboardingChecklist } from "@/components/onboarding-checklist";
 import { getT } from "@/lib/i18n/server";
@@ -129,6 +130,7 @@ export default async function DashboardPage() {
             <BrainCard suggestion={suggestion} />
             <DailyChallengeReminder pending={pendingChallenges} />
             <MiniActivity sessions={recentDays.map((d) => ({ date: d.date, sets: d._count.sets }))} />
+            <SideGoals userId={userId} groups={groups} />
           </aside>
         </div>
       </div>

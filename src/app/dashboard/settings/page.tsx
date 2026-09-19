@@ -179,8 +179,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">
-      <div className="flex items-center gap-4">
+    <div className="mx-auto grid max-w-2xl gap-6 px-4 py-6 lg:max-w-5xl lg:grid-cols-2 lg:items-start">
+      <div className="flex items-center gap-4 lg:col-span-2">
         <button
           type="button"
           onClick={() => avatarInputRef.current?.click()}
@@ -207,7 +207,7 @@ export default function SettingsPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("Einstellungen")}</h1>
           <p className="text-sm text-muted-foreground">{data.user.name} · @{data.user.username}</p>
-          <p className="mt-1 text-xs text-muted-foreground/60">Ascend v{APP_VERSION}</p>
+          <p className="mt-1 text-xs text-muted-foreground">Ascend v{APP_VERSION}</p>
         </div>
       </div>
 

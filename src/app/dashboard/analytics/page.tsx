@@ -27,13 +27,22 @@ export default function AnalyticsPage() {
         <p className="text-sm text-muted-foreground">{t("Deine Fortschritte in Zahlen.")}</p>
       </div>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("Aktivitäts-Kalender")}</CardTitle>
+          <CardDescription>{t("Je dunkler, desto intensiver war dein Training an dem Tag.")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ActivityCalendar />
+        </CardContent>
+      </Card>
+
       <Tabs defaultValue="strength">
         <TabsList className="w-full flex-wrap">
           <TabsTrigger value="strength">{t("Kraft")}</TabsTrigger>
           <TabsTrigger value="records">{t("Rekorde")}</TabsTrigger>
           <TabsTrigger value="volume">{t("Volumen")}</TabsTrigger>
           <TabsTrigger value="balance">{t("Balance")}</TabsTrigger>
-          <TabsTrigger value="calendar">{t("Kalender")}</TabsTrigger>
           <TabsTrigger value="climbing">{t("Klettern")}</TabsTrigger>
         </TabsList>
 
@@ -94,17 +103,7 @@ export default function AnalyticsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="calendar">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{t("Aktivitäts-Kalender")}</CardTitle>
-              <CardDescription>{t("Je dunkler, desto intensiver war dein Training an dem Tag.")}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ActivityCalendar />
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {/* The year calendar sits above the tabs, always visible. */}
 
         <TabsContent value="climbing" className="flex flex-col gap-4">
           <Card>

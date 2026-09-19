@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { undoableAction } from "@/lib/undo-toast";
 import { REACTION_EMOJIS } from "@/lib/post-reactions";
 import { useLocale } from "@/components/locale-provider";
+import { FOCUS_LABEL } from "@/lib/muscle-focus";
 
 const TYPE_FILTERS = [
   { value: "ALL" as const, label: "Alle", icon: null },
@@ -38,12 +39,13 @@ type Post = {
   reactionUsers: Record<string, string[]>;
   myReaction: string | null;
   pending?: boolean;
+  focuses?: string[];
 };
 
 // Shared workouts are stored as a text summary ("Workout vom ...", then one
 // "Exercise: reps×weight" line per set). Show a one-line summary first and
 // the full set list only on demand - long workouts otherwise dominate the feed.
-function SharedWorkoutBody({ content }: { content: string }) {
+function SharedWorkoutBody({ content, focuses = [] }: { content: string; focuses?: string[] }) {
   const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const [header, ...lines] = content.split("\n");
@@ -66,6 +68,10 @@ function SharedWorkoutBody({ content }: { content: string }) {
               {exercises === 1 ? t("1 Übung") : t("{n} Übungen", { n: exercises })}
               {" · "}
               {lines.length === 1 ? t("1 Satz") : t("{n} Sätze", { n: lines.length })}
+              {focuses.length > 0 &&
+                ` · ${focuses
+                  .map((f) => t("{focus}-Fokus", { focus: t((FOCUS_LABEL as Record<string, string>)[f] ?? f) }))
+                  .join(", ")}`}
             </span>
           )}
         </span>
@@ -409,7 +415,7 @@ export function GroupFeed({
                 {post.type === "WORKOUT_SHARE" && (
                   <div className="flex items-start gap-2 rounded-lg bg-secondary/50 p-3">
                     <Dumbbell className="mt-0.5 size-4 shrink-0 text-primary" />
-                    <SharedWorkoutBody content={post.content ?? ""} />
+                    <SharedWorkoutBody content={post.content ?? ""} focuses={post.focuses} />
                   </div>
                 )}
 

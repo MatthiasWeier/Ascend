@@ -85,7 +85,7 @@ export default async function ImpressumPage() {
       )}
 
       {t("__legal_note__") !== "__legal_note__" && (
-        <p className="text-xs text-muted-foreground/70">{t("__legal_note__")}</p>
+        <p className="text-xs text-muted-foreground">{t("__legal_note__")}</p>
       )}
     </main>
   );

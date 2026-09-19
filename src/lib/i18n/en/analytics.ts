@@ -67,6 +67,9 @@ export const analytics: Record<string, string> = {
   "1 Satz": "1 set",
   "Details einblenden": "Show details",
   "Details ausblenden": "Hide details",
+  "{focus}-Fokus": "{focus} focus",
+  "Gruppenziele": "Group goals",
+  "In Gruppe öffnen": "Open in group",
   "Noch keine Reps-Workouts in den letzten 90 Tagen.": "No rep-based workouts in the last 90 days.",
 
   "Sätze (Gruppe)": "Sets (group)",

@@ -223,7 +223,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
 
   if (group == null) {
     return (
-      <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">
+      <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6 lg:max-w-4xl">
         <Skeleton className="h-10 w-64" />
         <Skeleton className="h-64 w-full" />
       </div>
@@ -233,7 +233,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
   const isLeader = group.myRole === "LEADER";
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">
+    <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6 lg:max-w-4xl">
       <div className="flex items-center justify-between gap-2">
         <div>
           <div className="flex items-center gap-1.5">

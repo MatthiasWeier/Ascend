@@ -16,7 +16,7 @@ export function LegalFooter({ className }: { className?: string }) {
           {t("Datenschutz")}
         </Link>
       </nav>
-      <p className="mt-1 text-center text-[10px] text-muted-foreground/60">Ascend v{APP_VERSION}</p>
+      <p className="mt-1 text-center text-[10px] text-muted-foreground">Ascend v{APP_VERSION}</p>
     </footer>
   );
 }

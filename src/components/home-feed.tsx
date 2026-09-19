@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Check, Dumbbell, Image as ImageIcon, MessageSquare, Trophy, XCircle } from "lucide-react";
+import { Check, ChevronDown, Dumbbell, Image as ImageIcon, MessageSquare, Trophy, XCircle } from "lucide-react";
+import { FOCUS_LABEL } from "@/lib/muscle-focus";
 import { WorkoutSessionCard } from "@/components/workout-session-card";
 import { FeedList } from "@/components/feed-list";
 import { cn } from "@/lib/utils";
@@ -72,8 +73,66 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
   );
 }
 
+// A workout somebody shared into a group: one summary line first, the full
+// set list only on demand.
+function SharedWorkoutRow({ item }: { item: Extract<ActivityItem, { workoutSessionId: string | null }> }) {
+  const { t, dateLocale } = useLocale();
+  const [open, setOpen] = useState(false);
+  const lines = (item.content ?? "").split("\n").slice(1).filter(Boolean);
+  const exercises = new Set(lines.map((l) => l.split(":")[0].trim())).size;
+  const focusText = item.focuses
+    .map((f) => t("{focus}-Fokus", { focus: t(FOCUS_LABEL[f]) }))
+    .join(", ");
+
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-l-4 border-border border-l-primary bg-primary/5 px-3 py-3 text-sm">
+      <div className="flex items-start gap-3">
+        <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-background/60 text-primary">
+          <Dumbbell className="size-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p>
+            <span className="font-medium">{item.userName}</span> {t("hat ein Workout gepostet")}
+          </p>
+          {exercises > 0 && (
+            <p className="text-muted-foreground">
+              {exercises === 1 ? t("1 Übung") : t("{n} Übungen", { n: exercises })}
+              {" · "}
+              {lines.length === 1 ? t("1 Satz") : t("{n} Sätze", { n: lines.length })}
+              {focusText && ` · ${focusText}`}
+            </p>
+          )}
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {item.groupName} · {formatTimeAgo(item.timestamp, t, dateLocale)}
+          </p>
+        </div>
+        {lines.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-secondary"
+          >
+            {open ? t("Details ausblenden") : t("Details einblenden")}
+            <ChevronDown className={`size-4 transition-transform ${open ? "rotate-180" : ""}`} />
+          </button>
+        )}
+      </div>
+      {open && (
+        <div className="flex flex-col gap-2 pl-11">
+          <pre className="whitespace-pre-wrap font-sans text-sm">{lines.join("\n")}</pre>
+          <Link href={`/dashboard/groups/${item.groupId}`} className="w-fit text-xs font-medium text-primary hover:underline">
+            {t("In Gruppe öffnen")}
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function GroupItemRow({ item }: { item: ActivityItem }) {
   const { t, dateLocale } = useLocale();
+  if (item.kind === "WORKOUT_SHARE") return <SharedWorkoutRow item={item} />;
   let Icon = Dumbbell;
   let text: React.ReactNode = t("hat ein Workout gepostet");
   let iconColor = "text-primary";
@@ -94,25 +153,13 @@ function GroupItemRow({ item }: { item: ActivityItem }) {
   }
 
   const accent =
-    item.kind === "WORKOUT_SHARE"
-      ? "border-l-primary bg-primary/5"
-      : item.kind === "CHAT_PHOTO"
-        ? "border-l-sky-500 bg-sky-500/5"
-        : item.kind === "CHALLENGE_COMPLETED"
-          ? "border-l-success bg-success/5"
-          : item.kind === "CHALLENGE_ENDED_EARLY"
-            ? "border-l-destructive bg-destructive/5"
-            : "border-l-muted-foreground/40 bg-card";
-  const exerciseCount =
-    item.kind === "WORKOUT_SHARE"
-      ? new Set(
-          (item.content ?? "")
-            .split("\n")
-            .slice(1)
-            .map((l) => l.split(":")[0].trim())
-            .filter(Boolean)
-        ).size
-      : 0;
+    item.kind === "CHAT_PHOTO"
+      ? "border-l-sky-500 bg-sky-500/5"
+      : item.kind === "CHALLENGE_COMPLETED"
+        ? "border-l-success bg-success/5"
+        : item.kind === "CHALLENGE_ENDED_EARLY"
+          ? "border-l-destructive bg-destructive/5"
+          : "border-l-muted-foreground/40 bg-card";
 
   return (
     <Link
@@ -125,12 +172,6 @@ function GroupItemRow({ item }: { item: ActivityItem }) {
       <div className="min-w-0 flex-1">
         <p className={item.kind === "CHAT_TEXT" ? "line-clamp-3" : "truncate"}>
           <span className="font-medium">{item.userName}</span> {text}
-          {exerciseCount > 0 && (
-            <span className="text-muted-foreground">
-              {" · "}
-              {exerciseCount === 1 ? t("1 Übung") : t("{n} Übungen", { n: exerciseCount })}
-            </span>
-          )}
         </p>
         {item.kind === "CHAT_PHOTO" && item.imageUrl && (
           // eslint-disable-next-line @next/next/no-img-element -- auth-gated proxy route, not optimizable

@@ -23,7 +23,7 @@ export function PlateCalculatorPopover({ targetWeightKg }: { targetWeightKg: num
     <Popover>
       <PopoverTrigger
         render={
-          <Button type="button" variant="ghost" size="icon" className="text-muted-foreground" title={t("Hantelscheiben-Rechner")} />
+          <Button type="button" variant="ghost" size="icon" className="size-10 text-muted-foreground" title={t("Hantelscheiben-Rechner")} />
         }
       >
         <Disc3 className="size-4" />

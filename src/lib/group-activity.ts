@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { MuscleFocus } from "@prisma/client";
 
 export type ActivityItem =
   | {
@@ -11,6 +12,7 @@ export type ActivityItem =
       content: string | null;
       imageUrl: string | null;
       workoutSessionId: string | null;
+      focuses: MuscleFocus[];
     }
   | {
       kind: "CHALLENGE_COMPLETED" | "CHALLENGE_ENDED_EARLY";
@@ -63,6 +65,20 @@ export async function getRecentGroupActivity(userId: string, limit = 20): Promis
     }),
   ]);
 
+  const shareIds = posts.map((p) => p.workoutSessionId).filter((id): id is string => id != null);
+  const focusRows = shareIds.length
+    ? await prisma.workoutSet.findMany({
+        where: { sessionId: { in: shareIds }, setType: { not: "WARMUP" } },
+        select: { sessionId: true, exercise: { select: { focus: true } } },
+      })
+    : [];
+  const focusesBySession = new Map<string, Set<MuscleFocus>>();
+  for (const row of focusRows) {
+    const set = focusesBySession.get(row.sessionId) ?? new Set<MuscleFocus>();
+    set.add(row.exercise.focus);
+    focusesBySession.set(row.sessionId, set);
+  }
+
   const items: ActivityItem[] = [
     ...posts.map((p) => {
       const kind: "WORKOUT_SHARE" | "CHAT_TEXT" | "CHAT_PHOTO" =
@@ -77,6 +93,7 @@ export async function getRecentGroupActivity(userId: string, limit = 20): Promis
         content: p.content,
         imageUrl: p.imageUrl,
         workoutSessionId: p.workoutSessionId,
+        focuses: Array.from(focusesBySession.get(p.workoutSessionId ?? "") ?? []),
       };
     }),
     ...attempts.map((a): ActivityItem => {

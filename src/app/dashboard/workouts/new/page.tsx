@@ -474,7 +474,7 @@ export default function NewWorkoutPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6">
+    <div className="mx-auto max-w-2xl px-4 py-6 lg:max-w-3xl">
       <h1 className="mb-6 text-2xl font-bold tracking-tight">
         {editSessionId ? t("Workout bearbeiten") : t("Workout eintragen")}
       </h1>
@@ -727,7 +727,7 @@ export default function NewWorkoutPage() {
                           variant="ghost"
                           size="icon"
                           className={cn(
-                            "text-muted-foreground hover:text-foreground",
+                            "size-10 text-muted-foreground hover:text-foreground",
                             row.notesExpanded && "text-primary"
                           )}
                           onClick={() => updateRow(row.key, { notesExpanded: !row.notesExpanded })}
@@ -740,7 +740,7 @@ export default function NewWorkoutPage() {
                           type="button"
                           variant={row.done ? "default" : "outline"}
                           size="icon"
-                          className={cn("ml-auto", row.done && "bg-success text-success-foreground hover:bg-success/90")}
+                          className={cn("ml-auto size-10", row.done && "bg-success text-success-foreground hover:bg-success/90")}
                           onClick={() => markDone(row.key)}
                           title={t("Satz fertig - startet die Pause")}
                         >
@@ -750,7 +750,7 @@ export default function NewWorkoutPage() {
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="text-muted-foreground hover:text-foreground"
+                          className="size-10 text-muted-foreground hover:text-foreground"
                           onClick={() => duplicateRow(row.key)}
                           disabled={!row.exerciseId}
                           title={t("Satz duplizieren")}
@@ -761,7 +761,7 @@ export default function NewWorkoutPage() {
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="text-muted-foreground hover:text-destructive"
+                          className="size-10 text-muted-foreground hover:text-destructive"
                           onClick={() => removeRow(row.key)}
                         >
                           <Trash2 className="size-4" />

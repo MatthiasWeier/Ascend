@@ -36,7 +36,7 @@ export function WarmupCalculatorDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button type="button" variant="ghost" size="icon" className="text-muted-foreground" title={t("Aufwärm-Rechner")} />
+          <Button type="button" variant="ghost" size="icon" className="size-10 text-muted-foreground" title={t("Aufwärm-Rechner")} />
         }
       >
         <Layers className="size-4" />
