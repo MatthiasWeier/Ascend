@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { withErrorLogging } from "@/lib/api-handler";
+import { deletePhotoFiles } from "@/lib/workout-photos";
 
 const deleteSchema = z.object({ password: z.string().min(1) });
 
@@ -37,7 +38,9 @@ export const DELETE = withErrorLogging("DELETE /api/account", async (request) =>
     return NextResponse.json({ error: "Falsches Passwort" }, { status: 403 });
   }
 
+  const photos = await prisma.workoutPhoto.findMany({ where: { userId: session.user.id } });
   await prisma.user.delete({ where: { id: session.user.id } });
+  await deletePhotoFiles(photos);
 
   logger.info("Account deleted", { userId: session.user.id, username: user.username });
 

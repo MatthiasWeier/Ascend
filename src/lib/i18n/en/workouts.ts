@@ -1,5 +1,18 @@
 // Workout entry, workout cards, calculators, exercises.
 export const workouts: Record<string, string> = {
+  "Pump Pics": "Pump pics",
+  "Pump Pic": "Pump pic",
+  "Fotos zu diesem Workout - sichtbar für dich und die Gruppen, in denen du es teilst.": "Photos for this workout - visible to you and to the groups you share it in.",
+  "Foto hinzufügen": "Add photo",
+  "Foto entfernen": "Remove photo",
+  "Wird hochgeladen…": "Uploading…",
+  "Konnte Foto nicht hochladen.": "Couldn't upload the photo.",
+  "Maximal 10 Fotos pro Workout.": "Maximum 10 photos per workout.",
+  "Entwurf wiederhergestellt ({time})": "Draft restored ({time})",
+  "Verwerfen": "Discard",
+  "Foto nicht gefunden": "Photo not found",
+  "Zu viele Fotos": "Too many photos",
+  "Entwurf zu groß": "Draft too large",
   "Pause vorbei - weiter geht's!": "Rest over - let's go!",
   "Vorlage \"{name}\" geladen.": "Template \"{name}\" loaded.",
   "Konnte Vorlage nicht speichern.": "Couldn't save the template.",

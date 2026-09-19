@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { contributeWorkoutSetToGoals } from "@/lib/goal-contributions";
 import { focusFatigueSchema, deriveOverallExertion } from "@/lib/focus-fatigue";
 import { summarizeWorkoutSession } from "@/lib/workout-summary";
+import { attachPhotos, deletePhotoFiles } from "@/lib/workout-photos";
 
 const setSchema = z.object({
   exerciseId: z.string(),
@@ -21,6 +22,7 @@ const updateSchema = z.object({
   focusFatigue: focusFatigueSchema,
   skinCondition: z.number().int().min(1).max(10).optional(),
   sets: z.array(setSchema).min(1),
+  photoIds: z.array(z.string()).max(10).optional(),
 });
 
 async function findOwnedSession(sessionId: string, userId: string) {
@@ -44,6 +46,7 @@ export async function GET(
     include: {
       sets: { include: { exercise: true }, orderBy: { order: "asc" } },
       focusFatigue: { select: { focus: true, rating: true } },
+      photos: { select: { id: true }, orderBy: { createdAt: "asc" } },
     },
   });
   if (!workoutSession || workoutSession.userId !== session.user.id) {
@@ -113,6 +116,8 @@ export async function PATCH(
     }),
   ]);
 
+  await attachPhotos(session.user.id, sessionId, parsed.data.photoIds);
+
   const updated = await prisma.workoutSession.findUnique({
     where: { id: sessionId },
     include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
@@ -166,12 +171,15 @@ export async function DELETE(
     await prisma.workoutSet.findMany({ where: { sessionId }, select: { id: true } })
   ).map((s) => s.id);
 
+  const photos = await prisma.workoutPhoto.findMany({ where: { sessionId } });
+
   await prisma.$transaction([
     prisma.groupGoalContribution.deleteMany({
       where: { source: "WORKOUT", sourceId: { in: setIds } },
     }),
     prisma.workoutSession.delete({ where: { id: sessionId } }),
   ]);
+  await deletePhotoFiles(photos);
 
   return NextResponse.json({ ok: true });
 }

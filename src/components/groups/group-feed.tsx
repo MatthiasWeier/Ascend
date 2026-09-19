@@ -43,12 +43,21 @@ type Post = {
   pending?: boolean;
   focuses?: string[];
   commentCount?: number;
+  photoIds?: string[];
 };
 
 // Shared workouts are stored as a text summary ("Workout vom ...", then one
 // "Exercise: reps×weight" line per set). Show a one-line summary first and
 // the full set list only on demand - long workouts otherwise dominate the feed.
-function SharedWorkoutBody({ content, focuses = [] }: { content: string; focuses?: string[] }) {
+function SharedWorkoutBody({
+  content,
+  focuses = [],
+  photoIds = [],
+}: {
+  content: string;
+  focuses?: string[];
+  photoIds?: string[];
+}) {
   const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const [header, ...lines] = content.split("\n");
@@ -82,6 +91,13 @@ function SharedWorkoutBody({ content, focuses = [] }: { content: string; focuses
           {open ? t("Details ausblenden") : t("Details einblenden")}
         </span>
       </button>
+      {photoIds.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {photoIds.map((id) => (
+            <ImageLightbox key={id} src={`/api/workout-photos/${id}`} alt={t("Pump Pic")} thumbClassName="max-h-40 max-w-56" />
+          ))}
+        </div>
+      )}
       {open && <pre className="whitespace-pre-wrap font-sans text-sm">{lines.join("\n")}</pre>}
     </div>
   );
@@ -414,7 +430,7 @@ export function GroupFeed({
                 {post.type === "WORKOUT_SHARE" && (
                   <div className="flex items-start gap-2 rounded-lg bg-secondary/50 p-3">
                     <Dumbbell className="mt-0.5 size-4 shrink-0 text-primary" />
-                    <SharedWorkoutBody content={post.content ?? ""} focuses={post.focuses} />
+                    <SharedWorkoutBody content={post.content ?? ""} focuses={post.focuses} photoIds={post.photoIds} />
                   </div>
                 )}
 

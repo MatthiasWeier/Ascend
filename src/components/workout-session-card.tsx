@@ -22,6 +22,7 @@ import { FOCUS_LABEL } from "@/lib/muscle-focus";
 import { cn } from "@/lib/utils";
 import { useWeightUnit } from "@/components/weight-unit-context";
 import { useLocale } from "@/components/locale-provider";
+import { ImageLightbox } from "@/components/image-lightbox";
 import type { MuscleFocus, SetType } from "@prisma/client";
 
 type SetWithExercise = {
@@ -58,6 +59,7 @@ export function WorkoutSessionCard({
   prSetIds,
   onDeleted,
   collapsible = false,
+  photos,
 }: {
   sessionId?: string;
   date: Date | string;
@@ -69,6 +71,7 @@ export function WorkoutSessionCard({
   prSetIds?: Set<string>;
   onDeleted?: () => void;
   collapsible?: boolean;
+  photos?: { id: string }[];
 }) {
   const [expanded, setExpanded] = useState(false);
   const router = useRouter();
@@ -202,6 +205,19 @@ export function WorkoutSessionCard({
             );
           })}
         </ul>
+
+        {photos && photos.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {photos.map((p) => (
+              <ImageLightbox
+                key={p.id}
+                src={`/api/workout-photos/${p.id}`}
+                alt={t("Pump Pic")}
+                thumbClassName="max-h-32 max-w-40"
+              />
+            ))}
+          </div>
+        )}
 
         {(perceivedExertion != null || skinCondition != null) && (
           <div className="flex gap-4 text-xs text-muted-foreground">

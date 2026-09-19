@@ -15,6 +15,7 @@ export type ActivityItem =
       focuses: MuscleFocus[];
       postId: string;
       commentCount: number;
+      photoIds: string[];
     }
   | {
       kind: "CHALLENGE_COMPLETED" | "CHALLENGE_ENDED_EARLY";
@@ -90,6 +91,19 @@ export async function getRecentGroupActivity(userId: string, limit = 20): Promis
     focusesBySession.set(row.sessionId, set);
   }
 
+  const photoRows = shareIds.length
+    ? await prisma.workoutPhoto.findMany({
+        where: { sessionId: { in: shareIds } },
+        orderBy: { createdAt: "asc" },
+        select: { id: true, sessionId: true },
+      })
+    : [];
+  const photosBySession = new Map<string, string[]>();
+  for (const row of photoRows) {
+    if (!row.sessionId) continue;
+    photosBySession.set(row.sessionId, [...(photosBySession.get(row.sessionId) ?? []), row.id]);
+  }
+
   const items: ActivityItem[] = [
     ...posts.map((p) => {
       const kind: "WORKOUT_SHARE" | "CHAT_TEXT" | "CHAT_PHOTO" =
@@ -106,6 +120,7 @@ export async function getRecentGroupActivity(userId: string, limit = 20): Promis
         workoutSessionId: p.workoutSessionId,
         focuses: Array.from(focusesBySession.get(p.workoutSessionId ?? "") ?? []),
         postId: p.id,
+        photoIds: photosBySession.get(p.workoutSessionId ?? "") ?? [],
         commentCount: commentCounts.get(p.id) ?? 0,
       };
     }),

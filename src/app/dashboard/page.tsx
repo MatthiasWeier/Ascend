@@ -31,7 +31,10 @@ export default async function DashboardPage() {
         where: { userId },
         orderBy: { date: "desc" },
         take: 40,
-        include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
+        include: {
+          sets: { include: { exercise: true }, orderBy: { order: "asc" } },
+          photos: { select: { id: true }, orderBy: { createdAt: "asc" } },
+        },
       }),
       computePrSetIds(userId),
       getPendingDailyChallenges(userId),
@@ -96,6 +99,7 @@ export default async function DashboardPage() {
     perceivedExertion: s.perceivedExertion,
     skinCondition: s.skinCondition,
     sets: s.sets,
+    photos: s.photos,
     sharedGroupIds: sharedGroupsBySession.get(s.id) ?? [],
     sharedPosts: sharedPostsBySession.get(s.id) ?? [],
   }));

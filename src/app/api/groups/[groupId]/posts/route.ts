@@ -55,6 +55,19 @@ export async function GET(
     focusesBySession.set(row.sessionId, set);
   }
 
+  const photoRows = shareIds.length
+    ? await prisma.workoutPhoto.findMany({
+        where: { sessionId: { in: shareIds } },
+        orderBy: { createdAt: "asc" },
+        select: { id: true, sessionId: true },
+      })
+    : [];
+  const photosBySession = new Map<string, string[]>();
+  for (const row of photoRows) {
+    if (!row.sessionId) continue;
+    photosBySession.set(row.sessionId, [...(photosBySession.get(row.sessionId) ?? []), row.id]);
+  }
+
   const commentCountRows = await prisma.postComment.groupBy({
     by: ["postId"],
     where: { postId: { in: posts.map((p) => p.id) }, deletedAt: null },
@@ -79,6 +92,7 @@ export async function GET(
       myReaction: myEmoji,
       focuses: Array.from(focusesBySession.get(post.workoutSessionId ?? "") ?? []),
       commentCount: commentCounts.get(post.id) ?? 0,
+      photoIds: photosBySession.get(post.workoutSessionId ?? "") ?? [],
     };
   });
 

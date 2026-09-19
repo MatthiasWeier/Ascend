@@ -6,6 +6,7 @@ import { computePrSetIds } from "@/lib/personal-records";
 import { autoShareToGroups } from "@/lib/workout-sharing";
 import { contributeWorkoutSetToGoals } from "@/lib/goal-contributions";
 import { focusFatigueSchema, deriveOverallExertion } from "@/lib/focus-fatigue";
+import { attachPhotos } from "@/lib/workout-photos";
 
 const setSchema = z.object({
   exerciseId: z.string(),
@@ -22,6 +23,7 @@ const workoutSchema = z.object({
   focusFatigue: focusFatigueSchema,
   skinCondition: z.number().int().min(1).max(10).optional(),
   sets: z.array(setSchema).min(1),
+  photoIds: z.array(z.string()).max(10).optional(),
 });
 
 export async function GET() {
@@ -51,7 +53,7 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const { notes, perceivedExertion, focusFatigue, skinCondition, sets } = parsed.data;
+  const { notes, perceivedExertion, focusFatigue, skinCondition, sets, photoIds } = parsed.data;
 
   const created = await prisma.workoutSession.create({
     data: {
@@ -76,6 +78,8 @@ export async function POST(request: Request) {
     },
     include: { sets: { include: { exercise: true } } },
   });
+
+  await attachPhotos(session.user.id, created.id, photoIds);
 
   // Recompute PRs across full history now that this session is in the DB,
   // then report which of *this* session's sets came out as a new PR - lets

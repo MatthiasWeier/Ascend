@@ -24,7 +24,10 @@ export async function GET(request: Request) {
   const sessions = await prisma.workoutSession.findMany({
     where: { userId: session.user.id, date: { gte: start, lt: end } },
     orderBy: { date: "asc" },
-    include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
+    include: {
+      sets: { include: { exercise: true }, orderBy: { order: "asc" } },
+      photos: { select: { id: true }, orderBy: { createdAt: "asc" } },
+    },
   });
 
   return NextResponse.json({ sessions });

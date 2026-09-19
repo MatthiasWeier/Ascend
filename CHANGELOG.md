@@ -5,6 +5,17 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.38.0] - 2026-09-19
+
+### Added
+- **Workout-Entwurf serverseitig**: das "Workout eintragen"-Formular wird automatisch
+  gespeichert (kurz nach jeder Änderung und sofort, wenn der Tab in den Hintergrund geht),
+  z.B. beim Wechsel zu WhatsApp. Beim Zurückkommen wird es wiederhergestellt, mit Hinweis
+  und "Verwerfen". Entwürfe und nie angehängte Fotos verfallen nach 7 Tagen.
+- **Pump Pics**: bis zu 10 Fotos pro Workout (beim Eintragen und Bearbeiten). Sichtbar
+  für dich und für Mitglieder der Gruppen, in denen das Workout geteilt ist - an der
+  Workout-Karte, im Gruppen-Feed, auf der Startseite und im Kalender. Klick vergrößert;
+  Fotos werden nie beschnitten. Löschen von Workout oder Account entfernt auch die Dateien.
 ## [0.37.0] - 2026-09-19
 
 ### Added

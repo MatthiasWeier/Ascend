@@ -20,6 +20,7 @@ export type OwnWorkout = {
   notes: string | null;
   perceivedExertion: number | null;
   skinCondition: number | null;
+  photos: { id: string }[];
   sharedGroupIds: string[];
   sharedPosts: { postId: string; groupId: string; groupName: string; commentCount: number }[];
   sets: {
@@ -104,6 +105,13 @@ function SharedWorkoutRow({ item }: { item: Extract<ActivityItem, { workoutSessi
               {lines.length === 1 ? t("1 Satz") : t("{n} Sätze", { n: lines.length })}
               {focusText && ` · ${focusText}`}
             </p>
+          )}
+          {item.photoIds.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-2">
+              {item.photoIds.map((id) => (
+                <ImageLightbox key={id} src={`/api/workout-photos/${id}`} alt={t("Pump Pic")} thumbClassName="max-h-32 max-w-40" />
+              ))}
+            </div>
           )}
           <p className="mt-0.5 text-xs text-muted-foreground">
             {item.groupName} · {formatTimeAgo(item.timestamp, t, dateLocale)}
@@ -336,6 +344,7 @@ export function HomeFeed({
                   skinCondition={e.data.skinCondition}
                   sets={e.data.sets}
                   prSetIds={prSetIds}
+                  photos={e.data.photos}
                   collapsible
                 />
                 {e.data.sharedPosts.map((sp) => (

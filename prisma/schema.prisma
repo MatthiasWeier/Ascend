@@ -87,6 +87,8 @@ model User {
   postReactions     PostReaction[]
   apiKeys           ApiKey[]
   notifications     Notification[]
+  workoutDraft      WorkoutDraft?
+  workoutPhotos     WorkoutPhoto[]
   postComments      PostComment[]
 }
 
@@ -140,6 +142,7 @@ model WorkoutSession {
   // Group posts created via the "share this workout" / "share all workouts"
   // actions, so re-sharing can be detected and skipped.
   sharedPosts GroupPost[]
+  photos      WorkoutPhoto[]
 
   createdAt DateTime @default(now())
 
@@ -601,4 +604,30 @@ model Notification {
   readAt    DateTime?
 
   @@index([userId, createdAt])
+}
+
+// The in-progress "log workout" form, saved server-side (one per user) so a
+// phone killing the browser tab in the background doesn't lose the entry.
+// `data` is the client's own form snapshot - opaque to the server.
+model WorkoutDraft {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  data      Json
+  updatedAt DateTime @updatedAt
+}
+
+// A "pump pic" attached to a workout. sessionId is null while the photo is
+// only part of an unsaved draft; it's attached when the workout is saved.
+model WorkoutPhoto {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String?
+  session   WorkoutSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  filename  String
+  createdAt DateTime        @default(now())
+
+  @@index([sessionId])
+  @@index([userId, sessionId])
 }

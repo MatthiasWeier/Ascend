@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Trash2, Plus, Check, Timer, X, Copy, BookmarkPlus, FolderOpen, StickyNote } from "lucide-react";
+import { Trash2, Plus, Check, Timer, X, Copy, BookmarkPlus, FolderOpen, StickyNote, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,8 +42,8 @@ import type { MuscleFocus, SetType } from "@prisma/client";
 import { PlateCalculatorPopover } from "@/components/plate-calculator-popover";
 import { WarmupCalculatorDialog } from "@/components/warmup-calculator-dialog";
 import { useWeightUnit } from "@/components/weight-unit-context";
-import { useT } from "@/components/locale-provider";
-import { roundForDisplay } from "@/lib/weight-units";
+import { useLocale } from "@/components/locale-provider";
+import { roundForDisplay, displayToKg, type WeightUnit } from "@/lib/weight-units";
 
 type Exercise = {
   id: string;
@@ -98,6 +98,29 @@ const emptyRow = (exerciseId: string = ""): SetRow => ({
 });
 
 const REST_PRESETS = [60, 90, 120, 180];
+const MAX_PHOTOS = 10;
+
+// Snapshot of the whole form, saved server-side as the "draft" so the entry
+// survives the phone killing the tab while another app is in front. Weights
+// in `rows` are in `unit` (the raw typed values), converted on restore if
+// the unit changed in the meantime.
+type DraftData = {
+  unit: WeightUnit;
+  rows: SetRow[];
+  focusFatigue: Partial<Record<MuscleFocus, number>>;
+  skinCondition: number;
+  trackSkin: boolean;
+  notes: string;
+  photoIds: string[];
+};
+
+function isMeaningfulDraft(d: DraftData) {
+  return (
+    d.rows.some((r) => r.exerciseId || r.reps || r.weightKg || r.durationSec || r.notes) ||
+    d.notes.trim() !== "" ||
+    d.photoIds.length > 0
+  );
+}
 
 function formatMmSs(totalSeconds: number) {
   const m = Math.floor(totalSeconds / 60);
@@ -121,7 +144,7 @@ export default function NewWorkoutPage() {
   const searchParams = useSearchParams();
   const editSessionId = searchParams.get("edit");
   const weightUnit = useWeightUnit();
-  const t = useT();
+  const { t, dateLocale } = useLocale();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [lastValues, setLastValues] = useState<LastValues>({});
   const [rows, setRows] = useState<SetRow[]>([]);
@@ -131,6 +154,15 @@ export default function NewWorkoutPage() {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const submittingRef = useRef(false);
+  const submittedRef = useRef(false);
+  const hasDraftRef = useRef(false);
+  const draftReadyRef = useRef(false);
+  const latestDraftRef = useRef<DraftData | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [photos, setPhotos] = useState<{ id: string }[]>([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [draftReady, setDraftReady] = useState(false);
+  const [draftRestoredAt, setDraftRestoredAt] = useState<string | null>(null);
 
   const [restSecondsLeft, setRestSecondsLeft] = useState<number | null>(null);
   const [restPreset, setRestPreset] = useState(90);
@@ -165,10 +197,16 @@ export default function NewWorkoutPage() {
                 notes: string | null;
               }[];
               focusFatigue: { focus: MuscleFocus; rating: number }[];
+              photos?: { id: string }[];
             };
           }>)
         : Promise.resolve(null),
-    ]).then(([exercisesRes, lastValuesRes, templatesRes, editRes]) => {
+      editSessionId
+        ? Promise.resolve(null)
+        : (fetch("/api/workouts/draft")
+            .then((r) => r.json())
+            .catch(() => null) as Promise<{ draft: { data: DraftData; updatedAt: string } | null } | null>),
+    ]).then(([exercisesRes, lastValuesRes, templatesRes, editRes, draftRes]) => {
       setExercises(exercisesRes.exercises);
       setLastValues(lastValuesRes.lastValues);
       setMostUsedExerciseIds(lastValuesRes.mostUsedExerciseIds);
@@ -177,6 +215,7 @@ export default function NewWorkoutPage() {
       if (editRes?.session) {
         const s = editRes.session;
         setNotes(s.notes ?? "");
+        setPhotos(s.photos ?? []);
         if (s.focusFatigue.length > 0) {
           setFocusFatigue(Object.fromEntries(s.focusFatigue.map((f) => [f.focus, f.rating])));
         } else if (s.perceivedExertion != null) {
@@ -209,11 +248,132 @@ export default function NewWorkoutPage() {
             done: false,
           }))
         );
+      } else if (draftRes?.draft && isMeaningfulDraft(draftRes.draft.data)) {
+        restoreDraft(draftRes.draft.data, draftRes.draft.updatedAt);
       } else {
         setRows([emptyRow()]);
       }
+      setDraftReady(true);
     });
   }, [editSessionId]);
+
+  latestDraftRef.current = {
+    unit: weightUnit.unit,
+    rows,
+    focusFatigue,
+    skinCondition,
+    trackSkin,
+    notes,
+    photoIds: photos.map((p) => p.id),
+  };
+  draftReadyRef.current = draftReady;
+
+  function restoreDraft(d: DraftData, updatedAt: string) {
+    const convert = (value: string) => {
+      const n = Number(value);
+      if (value === "" || isNaN(n) || d.unit === weightUnit.unit) return value;
+      return String(roundForDisplay(weightUnit.toDisplay(displayToKg(n, d.unit)), weightUnit.unit));
+    };
+    setRows(
+      d.rows.length > 0
+        ? d.rows.map((r) => ({ ...r, key: rowKey++, weightKg: convert(r.weightKg) }))
+        : [emptyRow()]
+    );
+    setFocusFatigue(d.focusFatigue ?? {});
+    setSkinCondition(d.skinCondition ?? 1);
+    setTrackSkin(!!d.trackSkin);
+    setNotes(d.notes ?? "");
+    setPhotos((d.photoIds ?? []).map((id) => ({ id })));
+    setDraftRestoredAt(updatedAt);
+    hasDraftRef.current = true;
+  }
+
+  // Autosave: shortly after any change, and immediately when the tab goes to
+  // the background (visibilitychange/pagehide via sendBeacon) - that's the
+  // moment a phone is most likely to kill the page.
+  useEffect(() => {
+    if (!draftReady || editSessionId) return;
+    const timer = setTimeout(async () => {
+      if (submittedRef.current || !latestDraftRef.current) return;
+      const d = latestDraftRef.current;
+      if (isMeaningfulDraft(d)) {
+        hasDraftRef.current = true;
+        await fetch("/api/workouts/draft", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(d),
+          keepalive: true,
+        }).catch(() => {});
+      } else if (hasDraftRef.current) {
+        hasDraftRef.current = false;
+        await fetch("/api/workouts/draft", { method: "DELETE" }).catch(() => {});
+      }
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [rows, focusFatigue, skinCondition, trackSkin, notes, photos, draftReady, editSessionId]);
+
+  useEffect(() => {
+    if (editSessionId) return;
+    function flush() {
+      const d = latestDraftRef.current;
+      if (!draftReadyRef.current || submittedRef.current || !d || !isMeaningfulDraft(d)) return;
+      navigator.sendBeacon("/api/workouts/draft", new Blob([JSON.stringify(d)], { type: "application/json" }));
+    }
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", flush);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", flush);
+    };
+  }, [editSessionId]);
+
+  async function discardDraft() {
+    const ids = photos.map((p) => p.id);
+    setRows([emptyRow()]);
+    setNotes("");
+    setFocusFatigue({});
+    setSkinCondition(1);
+    setTrackSkin(false);
+    setPhotos([]);
+    setDraftRestoredAt(null);
+    hasDraftRef.current = false;
+    await fetch("/api/workouts/draft", { method: "DELETE" }).catch(() => {});
+    await Promise.all(ids.map((id) => fetch(`/api/workout-photos/${id}`, { method: "DELETE" }).catch(() => {})));
+  }
+
+  async function handlePhotoFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (files.length === 0) return;
+    setUploadingPhotos(true);
+    let count = photos.length;
+    for (const file of files) {
+      if (count >= MAX_PHOTOS) {
+        toast.error(t("Maximal 10 Fotos pro Workout."));
+        break;
+      }
+      const form = new FormData();
+      form.append("image", file);
+      const res = await fetch("/api/workout-photos", { method: "POST", body: form });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        toast.error(t(data.error ?? "Konnte Foto nicht hochladen."));
+        continue;
+      }
+      const data: { photo: { id: string } } = await res.json();
+      setPhotos((prev) => [...prev, { id: data.photo.id }]);
+      count++;
+    }
+    setUploadingPhotos(false);
+  }
+
+  async function removePhoto(id: string) {
+    setPhotos((prev) => prev.filter((p) => p.id !== id));
+    await fetch(`/api/workout-photos/${id}`, { method: "DELETE" }).catch(() => {});
+  }
 
   useEffect(() => {
     if (restSecondsLeft === null) return;
@@ -414,6 +574,7 @@ export default function NewWorkoutPage() {
     setLoading(true);
 
     const payload = {
+      photoIds: photos.map((p) => p.id),
       notes: notes || undefined,
       focusFatigue: trainedFocuses.map((focus) => ({ focus, rating: fatigueFor(focus) })),
       skinCondition: trackSkin ? skinCondition : undefined,
@@ -452,6 +613,9 @@ export default function NewWorkoutPage() {
       toast.error(editSessionId ? t("Konnte Workout nicht aktualisieren.") : t("Konnte Workout nicht speichern."));
       return;
     }
+
+    submittedRef.current = true;
+    if (!editSessionId) await fetch("/api/workouts/draft", { method: "DELETE" }).catch(() => {});
 
     if (editSessionId) {
       toast.success(t("Workout aktualisiert!"));
@@ -503,6 +667,19 @@ export default function NewWorkoutPage() {
               <X className="size-4" />
             </Button>
           </div>
+        </div>
+      )}
+
+      {draftRestoredAt && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2 text-sm">
+          <span>
+            {t("Entwurf wiederhergestellt ({time})", {
+              time: new Date(draftRestoredAt).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" }),
+            })}
+          </span>
+          <button type="button" onClick={discardDraft} className="font-medium text-primary hover:underline">
+            {t("Verwerfen")}
+          </button>
         </div>
       )}
 
@@ -785,6 +962,58 @@ export default function NewWorkoutPage() {
               <Plus className="size-4" />
               {t("Satz hinzufügen")}
             </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Pump Pics")}</CardTitle>
+            <CardDescription>
+              {t("Fotos zu diesem Workout - sichtbar für dich und die Gruppen, in denen du es teilst.")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            {photos.length > 0 && (
+              <div className="flex flex-wrap gap-3">
+                {photos.map((p) => (
+                  <div key={p.id} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- auth-gated proxy route */}
+                    <img
+                      src={`/api/workout-photos/${p.id}`}
+                      alt={t("Pump Pic")}
+                      className="h-28 w-auto max-w-full rounded-lg border border-border object-contain"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(p.id)}
+                      aria-label={t("Foto entfernen")}
+                      className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-white shadow"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div>
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                multiple
+                className="hidden"
+                onChange={handlePhotoFiles}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                disabled={uploadingPhotos || photos.length >= MAX_PHOTOS}
+                onClick={() => photoInputRef.current?.click()}
+              >
+                <Camera className="size-4" />
+                {uploadingPhotos ? t("Wird hochgeladen…") : t("Foto hinzufügen")}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

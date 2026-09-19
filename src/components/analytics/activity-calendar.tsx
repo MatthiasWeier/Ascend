@@ -20,6 +20,7 @@ type DaySession = {
   notes: string | null;
   perceivedExertion: number | null;
   skinCondition: number | null;
+  photos?: { id: string }[];
   sets: {
     id: string;
     reps: number | null;
@@ -206,6 +207,7 @@ export function ActivityCalendar({
                   perceivedExertion={s.perceivedExertion}
                   skinCondition={s.skinCondition}
                   sets={s.sets}
+                  photos={s.photos}
                   onDeleted={() => selectedDate && openDay(selectedDate)}
                 />
               ))}
