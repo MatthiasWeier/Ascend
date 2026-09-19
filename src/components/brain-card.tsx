@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { BrainSuggestion } from "@/lib/workout-brain";
 
 export function BrainCard({ suggestion }: { suggestion: BrainSuggestion }) {
-  const Icon = suggestion.isOverloaded ? BedDouble : suggestion.headline.includes("statt") ? Hand : Sparkles;
+  const Icon = suggestion.isOverloaded ? BedDouble : suggestion.isSwap ? Hand : Sparkles;
 
   return (
     <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card py-0">

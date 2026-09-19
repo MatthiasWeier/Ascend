@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useLocale } from "@/components/locale-provider";
 
 const GRADES = ["1", "2", "3", "4", "5", "6", "7", "8"];
 
@@ -26,6 +27,7 @@ export function BoulderDayDialog({
   onOpenChange: (open: boolean) => void;
   onSaved: () => void;
 }) {
+  const { t, dateLocale } = useLocale();
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState(false);
   const submittingRef = useRef(false);
@@ -50,10 +52,10 @@ export function BoulderDayDialog({
     setSaving(false);
     submittingRef.current = false;
     if (!res.ok) {
-      toast.error("Konnte nicht speichern.");
+      toast.error(t("Konnte nicht speichern."));
       return;
     }
-    toast.success("Boulder-Tag gespeichert!");
+    toast.success(t("Boulder-Tag gespeichert!"));
     setCounts({});
     onOpenChange(false);
     onSaved();
@@ -63,14 +65,14 @@ export function BoulderDayDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Bouldern am {new Date(date).toLocaleDateString("de-DE")}</DialogTitle>
-          <DialogDescription>Wie viele Boulder pro Schwierigkeit?</DialogDescription>
+          <DialogTitle>{t("Bouldern am {date}", { date: new Date(date).toLocaleDateString(dateLocale) })}</DialogTitle>
+          <DialogDescription>{t("Wie viele Boulder pro Schwierigkeit?")}</DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-2">
           {GRADES.map((grade) => (
             <div key={grade} className="flex items-center justify-between rounded-lg border border-border p-2">
-              <span className="text-sm font-medium">Grad {grade}</span>
+              <span className="text-sm font-medium">{t("Grad {grade}", { grade })}</span>
               <div className="flex items-center gap-1">
                 <Button
                   type="button"
@@ -92,7 +94,7 @@ export function BoulderDayDialog({
 
         <DialogFooter>
           <Button onClick={handleSave} disabled={saving || total === 0}>
-            {saving ? "Speichern…" : `${total} Boulder speichern`}
+            {saving ? t("Speichern…") : t("{n} Boulder speichern", { n: total })}
           </Button>
         </DialogFooter>
       </DialogContent>

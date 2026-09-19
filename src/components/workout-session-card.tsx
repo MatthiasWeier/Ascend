@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Pencil, Trash2, Trophy } from "lucide-react";
+import { ChevronDown, Pencil, Trash2, Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
 import { FOCUS_LABEL } from "@/lib/muscle-focus";
 import { cn } from "@/lib/utils";
 import { useWeightUnit } from "@/components/weight-unit-context";
+import { useLocale } from "@/components/locale-provider";
 import type { MuscleFocus, SetType } from "@prisma/client";
 
 type SetWithExercise = {
@@ -56,6 +57,7 @@ export function WorkoutSessionCard({
   authorName,
   prSetIds,
   onDeleted,
+  collapsible = false,
 }: {
   sessionId?: string;
   date: Date | string;
@@ -66,9 +68,12 @@ export function WorkoutSessionCard({
   authorName?: string;
   prSetIds?: Set<string>;
   onDeleted?: () => void;
+  collapsible?: boolean;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const router = useRouter();
   const { format, unitLabel } = useWeightUnit();
+  const { t, dateLocale } = useLocale();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const focuses = Array.from(new Set(sets.map((s) => s.exercise.focus)));
@@ -79,29 +84,29 @@ export function WorkoutSessionCard({
     const res = await fetch(`/api/workouts/${sessionId}`, { method: "DELETE" });
     setDeleting(false);
     if (!res.ok) {
-      toast.error("Konnte Workout nicht löschen.");
+      toast.error(t("Konnte Workout nicht löschen."));
       return;
     }
-    toast.success("Workout gelöscht.");
+    toast.success(t("Workout gelöscht."));
     setConfirmOpen(false);
     onDeleted?.();
     router.refresh();
   }
 
   return (
-    <Card>
+    <Card className="border-l-4 border-l-primary">
       <CardContent className="flex flex-col gap-3 px-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             {authorName && <span className="text-sm font-medium">{authorName}</span>}
             <span className="text-xs text-muted-foreground">
-              {new Date(date).toLocaleDateString("de-DE", { day: "2-digit", month: "short" })}
+              {new Date(date).toLocaleDateString(dateLocale, { day: "2-digit", month: "short" })}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             {focuses.map((f) => (
               <Badge key={f} variant="secondary" className="text-[10px]">
-                {FOCUS_LABEL[f]}
+                {t(FOCUS_LABEL[f])}
               </Badge>
             ))}
             {sessionId && (
@@ -113,13 +118,13 @@ export function WorkoutSessionCard({
                   className="h-7 gap-1 px-2 text-xs text-muted-foreground"
                 >
                   <Pencil className="size-3.5" />
-                  Bearbeiten
+                  {t("Bearbeiten")}
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon-sm"
                   className="text-muted-foreground hover:text-destructive"
-                  title="Löschen"
+                  title={t("Löschen")}
                   onClick={() => setConfirmOpen(true)}
                 >
                   <Trash2 className="size-4" />
@@ -129,7 +134,32 @@ export function WorkoutSessionCard({
           </div>
         </div>
 
-        <ul className="flex flex-col gap-1 text-sm">
+        {collapsible && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+            className="flex w-full items-center justify-between gap-2 rounded-lg bg-secondary/50 px-3 py-2 text-left text-sm transition-colors hover:bg-secondary"
+          >
+            <span>
+              <span className="font-medium">
+                {new Set(sets.map((s) => s.exercise.name)).size === 1
+                  ? t("1 Übung")
+                  : t("{n} Übungen", { n: new Set(sets.map((s) => s.exercise.name)).size })}
+              </span>
+              <span className="text-muted-foreground">
+                {" · "}
+                {sets.length === 1 ? t("1 Satz") : t("{n} Sätze", { n: sets.length })}
+                {prSetIds && sets.some((s) => prSetIds.has(s.id)) ? " · 🏆" : ""}
+              </span>
+            </span>
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              {expanded ? t("Details ausblenden") : t("Details einblenden")}
+              <ChevronDown className={cn("size-4 transition-transform", expanded && "rotate-180")} />
+            </span>
+          </button>
+        )}
+        <ul className={cn("flex flex-col gap-1 text-sm", collapsible && !expanded && "hidden")}>
           {sets.map((set) => {
             const isPr = prSetIds?.has(set.id) ?? false;
             const typeBadge = set.setType ? SET_TYPE_BADGE[set.setType] : undefined;
@@ -139,7 +169,7 @@ export function WorkoutSessionCard({
                   <span className="flex items-center gap-1.5">
                     {typeBadge && (
                       <span
-                        title={SET_TYPE_LABEL_FULL[set.setType!]}
+                        title={t(SET_TYPE_LABEL_FULL[set.setType!])}
                         className={cn(
                           "inline-flex size-4 items-center justify-center rounded-full text-[10px] font-bold",
                           typeBadge.className
@@ -151,7 +181,7 @@ export function WorkoutSessionCard({
                     {set.exercise.name}
                     {isPr && (
                       <span
-                        title="Neuer persönlicher Rekord"
+                        title={t("Neuer persönlicher Rekord")}
                         className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-500"
                       >
                         <Trophy className="size-3" />
@@ -175,8 +205,8 @@ export function WorkoutSessionCard({
 
         {(perceivedExertion != null || skinCondition != null) && (
           <div className="flex gap-4 text-xs text-muted-foreground">
-            {perceivedExertion != null && <span>Anstrengung {perceivedExertion}/10</span>}
-            {skinCondition != null && <span>Haut {skinCondition}/10</span>}
+            {perceivedExertion != null && <span>{t("Anstrengung {n}/10", { n: perceivedExertion })}</span>}
+            {skinCondition != null && <span>{t("Haut {n}/10", { n: skinCondition })}</span>}
           </div>
         )}
 
@@ -187,16 +217,15 @@ export function WorkoutSessionCard({
         <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Workout löschen?</AlertDialogTitle>
+              <AlertDialogTitle>{t("Workout löschen?")}</AlertDialogTitle>
               <AlertDialogDescription>
-                Das kann nicht rückgängig gemacht werden. Bereits geteilte Gruppen-Posts bleiben
-                erhalten, verlieren aber den Bezug zu diesem Workout.
+                {t("Das kann nicht rückgängig gemacht werden. Bereits geteilte Gruppen-Posts bleiben erhalten, verlieren aber den Bezug zu diesem Workout.")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+              <AlertDialogCancel>{t("Abbrechen")}</AlertDialogCancel>
               <AlertDialogAction disabled={deleting} onClick={handleDelete}>
-                {deleting ? "Löschen…" : "Löschen"}
+                {deleting ? t("Löschen…") : t("Löschen")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

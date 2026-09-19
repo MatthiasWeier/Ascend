@@ -5,14 +5,16 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWeightUnit } from "@/components/weight-unit-context";
+import { useLocale } from "@/components/locale-provider";
+import { EmptyChart } from "@/components/analytics/empty-chart";
 
 type Point = { date: string; volumeKg: number };
 
-const chartConfig = {
-  volumeKg: { label: "Volumen", color: "var(--chart-1)" },
-} satisfies ChartConfig;
-
 export function VolumeChart() {
+  const { t, dateLocale } = useLocale();
+  const chartConfig = {
+    volumeKg: { label: t("Volumen"), color: "var(--chart-1)" },
+  } satisfies ChartConfig;
   const [rawPoints, setRawPoints] = useState<Point[] | null>(null);
   const { toDisplay, unitLabel } = useWeightUnit();
 
@@ -26,9 +28,7 @@ export function VolumeChart() {
 
   if (rawPoints.length === 0) {
     return (
-      <p className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
-        Noch keine Reps-Workouts in den letzten 90 Tagen.
-      </p>
+      <EmptyChart variant="bars" message={t("Noch keine Reps-Workouts in den letzten 90 Tagen.")} />
     );
   }
 
@@ -44,14 +44,20 @@ export function VolumeChart() {
           axisLine={false}
           tickMargin={8}
           minTickGap={24}
-          tickFormatter={(v) => new Date(v).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}
+          tickFormatter={(v) => new Date(v).toLocaleDateString(dateLocale, { day: "2-digit", month: "2-digit" })}
         />
-        <YAxis tickLine={false} axisLine={false} tickMargin={8} width={48} />
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          width={60}
+          label={{ value: unitLabel, angle: -90, position: "insideLeft", fill: "var(--muted-foreground)", fontSize: 11 }}
+        />
         <ChartTooltip
           content={
             <ChartTooltipContent
-              labelFormatter={(v) => new Date(v).toLocaleDateString("de-DE")}
-              formatter={(value) => [`${value} ${unitLabel}`, "Volumen"]}
+              labelFormatter={(v) => new Date(v).toLocaleDateString(dateLocale)}
+              formatter={(value) => [`${value} ${unitLabel}`, t("Volumen")]}
             />
           }
         />

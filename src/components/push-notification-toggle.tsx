@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { useT } from "@/components/locale-provider";
 
 function urlBase64ToUint8Array(base64: string): Uint8Array {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
@@ -13,6 +14,7 @@ function urlBase64ToUint8Array(base64: string): Uint8Array {
 }
 
 export function PushNotificationToggle() {
+  const t = useT();
   const [available, setAvailable] = useState(false);
   const [checked, setChecked] = useState(false);
   const [unavailableReason, setUnavailableReason] = useState<string | null>(null);
@@ -22,7 +24,7 @@ export function PushNotificationToggle() {
 
   useEffect(() => {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      setUnavailableReason("Push wird von diesem Browser nicht unterstützt.");
+      setUnavailableReason(t("Push wird von diesem Browser nicht unterstützt."));
       setChecked(true);
       return;
     }
@@ -31,11 +33,11 @@ export function PushNotificationToggle() {
       .then((r) => r.json())
       .then(async (data: { configured?: boolean; publicKey?: string | null; error?: string }) => {
         if (data.error) {
-          setUnavailableReason(`Push-Konfiguration konnte nicht geladen werden (${data.error}).`);
+          setUnavailableReason(t("Push-Konfiguration konnte nicht geladen werden ({error}).", { error: data.error }));
           return;
         }
         if (!data.configured || !data.publicKey) {
-          setUnavailableReason("Push ist auf dem Server nicht eingerichtet.");
+          setUnavailableReason(t("Push ist auf dem Server nicht eingerichtet."));
           return;
         }
         setPublicKey(data.publicKey);
@@ -45,9 +47,10 @@ export function PushNotificationToggle() {
         setEnabled(!!subscription);
       })
       .catch((err) => {
-        setUnavailableReason(`Push-Konfiguration konnte nicht geladen werden (${err?.message ?? err}).`);
+        setUnavailableReason(t("Push-Konfiguration konnte nicht geladen werden ({error}).", { error: err?.message ?? String(err) }));
       })
       .finally(() => setChecked(true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleToggle(next: boolean) {
@@ -55,12 +58,12 @@ export function PushNotificationToggle() {
     try {
       if (next) {
         if (Notification.permission === "denied") {
-          toast.error("Benachrichtigungen sind im Browser blockiert.");
+          toast.error(t("Benachrichtigungen sind im Browser blockiert."));
           return;
         }
         const permission = await Notification.requestPermission();
         if (permission !== "granted") {
-          toast.error("Ohne Erlaubnis keine Benachrichtigungen.");
+          toast.error(t("Ohne Erlaubnis keine Benachrichtigungen."));
           return;
         }
         const registration = await navigator.serviceWorker.register("/sw.js");
@@ -79,7 +82,7 @@ export function PushNotificationToggle() {
           throw new Error(data.error ?? `HTTP ${res.status}`);
         }
         setEnabled(true);
-        toast.success("Push-Benachrichtigungen an.");
+        toast.success(t("Push-Benachrichtigungen an."));
       } else {
         const registration = await navigator.serviceWorker.getRegistration();
         const subscription = await registration?.pushManager.getSubscription();
@@ -92,12 +95,12 @@ export function PushNotificationToggle() {
           await subscription.unsubscribe();
         }
         setEnabled(false);
-        toast("Push-Benachrichtigungen aus.");
+        toast(t("Push-Benachrichtigungen aus."));
       }
     } catch (err) {
       console.error("Push toggle failed", err);
       const message = err instanceof Error ? err.message : String(err);
-      toast.error(`Konnte Push-Einstellung nicht ändern (${message}).`);
+      toast.error(t("Konnte Push-Einstellung nicht ändern ({error}).", { error: message }));
     } finally {
       setBusy(false);
     }
@@ -111,10 +114,9 @@ export function PushNotificationToggle() {
   return (
     <div className="flex items-center justify-between gap-3">
       <div>
-        <Label>Push-Benachrichtigungen</Label>
+        <Label>{t("Push-Benachrichtigungen")}</Label>
         <p className="text-xs text-muted-foreground">
-          Erhalte eine Benachrichtigung, wenn jemand in deinen Gruppen ein Workout postet oder
-          eine Challenge schafft.
+          {t("Erhalte eine Benachrichtigung, wenn jemand in deinen Gruppen ein Workout postet oder eine Challenge schafft.")}
         </p>
       </div>
       <Switch checked={enabled} onCheckedChange={handleToggle} disabled={busy} />

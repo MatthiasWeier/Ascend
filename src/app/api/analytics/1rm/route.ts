@@ -15,6 +15,34 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
+
+  // ?list=1: only exercises that can actually draw a graph, i.e. logged on
+  // at least 2 different days - most-trained first.
+  if (searchParams.get("list")) {
+    const logged = await prisma.workoutSet.findMany({
+      where: {
+        session: { userId: session.user.id },
+        reps: { not: null },
+        weightKg: { not: null },
+      },
+      select: {
+        exercise: { select: { id: true, name: true, type: true, isBodyweight: true } },
+        session: { select: { date: true } },
+      },
+    });
+    const daysByExercise = new Map<string, { exercise: (typeof logged)[number]["exercise"]; days: Set<string> }>();
+    for (const row of logged) {
+      const entry = daysByExercise.get(row.exercise.id) ?? { exercise: row.exercise, days: new Set<string>() };
+      entry.days.add(row.session.date.toISOString().slice(0, 10));
+      daysByExercise.set(row.exercise.id, entry);
+    }
+    const exercises = Array.from(daysByExercise.values())
+      .filter((e) => e.exercise.type === "REPS" && e.days.size >= 2)
+      .sort((a, b) => b.days.size - a.days.size || a.exercise.name.localeCompare(b.exercise.name))
+      .map((e) => ({ ...e.exercise, days: e.days.size }));
+    return NextResponse.json({ exercises });
+  }
+
   const exerciseId = searchParams.get("exerciseId");
   if (!exerciseId) {
     return NextResponse.json({ error: "exerciseId required" }, { status: 400 });

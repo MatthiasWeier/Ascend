@@ -1,0 +1,148 @@
+// Settings, security (2FA, sessions, API keys), data, admin.
+export const settings: Record<string, string> = {
+  "Konnte Gewicht nicht speichern.": "Couldn't save the weight.",
+  "Gewicht eingetragen!": "Weight logged!",
+  "Konnte Profilbild nicht hochladen.": "Couldn't upload the profile picture.",
+  "Profilbild aktualisiert!": "Profile picture updated!",
+  "Konnte Ziele nicht speichern.": "Couldn't save the goals.",
+  "Gespeichert!": "Saved!",
+  "Körpergewicht": "Body weight",
+  "Jeder Eintrag wird mit Datum gespeichert - Bodyweight-Übungen (Klimmzüge etc.) werden in Analytics immer gegen dein Gewicht *zum jeweiligen Zeitpunkt* bewertet, nicht dein aktuelles.":
+    "Every entry is saved with its date - bodyweight exercises (pull-ups etc.) are always rated in analytics against your weight *at the time*, not your current one.",
+  "Heute eintragen": "Log today",
+  "Gewicht": "Weight",
+  "Balance-Ziele": "Balance targets",
+  "Deine Wunsch-Verteilung fürs Balance-Radar. Muss nicht exakt 100% ergeben.": "Your desired split for the balance radar. Doesn't have to add up to exactly 100%.",
+  "Summe: {sum}%": "Total: {sum}%",
+  "perfekt": "perfect",
+  "Ziele speichern": "Save targets",
+  "Benachrichtigungen": "Notifications",
+  "Deine Daten": "Your data",
+  "Export, Import und ein abonnierbarer Kalender-Feed deiner Workouts.": "Export, import and a subscribable calendar feed of your workouts.",
+  "Einheiten": "Units",
+  "Betrifft nur die Anzeige - gespeichert wird intern immer in kg.": "Affects the display only - everything is always stored in kg internally.",
+  "Kilogramm (kg)": "Kilograms (kg)",
+  "Pfund (lbs)": "Pounds (lbs)",
+  "Gilt für dieses Gerät/diesen Browser. Von Nutzern eingegebene Inhalte (Beiträge, Notizen, eigene Übungen) werden nicht übersetzt.":
+    "Applies to this device/browser. User-entered content (posts, notes, custom exercises) is not translated.",
+  "API-Keys": "API keys",
+  "Für eigene Scripts/Automationen - siehe README für die Endpunkte.": "For your own scripts/automations - see the README for the endpoints.",
+  "Zwei-Faktor-Authentifizierung": "Two-factor authentication",
+  "Sitzungen": "Sessions",
+  "Geräte, die aktuell bei deinem Konto angemeldet sind.": "Devices currently signed in to your account.",
+  "Danger Zone": "Danger zone",
+  "Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden.": "This action is final and can't be undone.",
+
+  // data portability
+  "Alle Daten exportieren (JSON)": "Export all data (JSON)",
+  "{sessions} Workouts importiert ({sets} Sätze, {exercises} neue Übungen angelegt).": "{sessions} workouts imported ({sets} sets, {exercises} new exercises created).",
+  "{sessions} Workouts importiert ({sets} Sätze).": "{sessions} workouts imported ({sets} sets).",
+  "Importiere…": "Importing…",
+  "Strong/Hevy-CSV importieren": "Import Strong/Hevy CSV",
+  "Best-effort - unbekannte Übungen werden neu angelegt, Muskel-Fokus wird geraten und sollte danach geprüft werden.":
+    "Best effort - unknown exercises are created, muscle focus is guessed and should be reviewed afterwards.",
+  "Neuer Link erzeugt - der alte funktioniert nicht mehr.": "New link generated - the old one no longer works.",
+  "Kalender-Link anzeigen": "Show calendar link",
+  "In Kalender-Apps (Apple/Google Kalender etc.) als Abo hinzufügen:": "Add as a subscription in calendar apps (Apple/Google Calendar etc.):",
+  "Neu generieren": "Regenerate",
+
+  // account deletion
+  "Account löschen": "Delete account",
+  "Account endgültig löschen?": "Delete account permanently?",
+  "Das löscht alle deine Workouts, dein Körpergewicht-Verlauf, deine Klettereinträge und deine Mitgliedschaften in Gruppen. Das kann nicht rückgängig gemacht werden.":
+    "This deletes all your workouts, your body weight history, your climbing entries and your group memberships. This can't be undone.",
+  "Du bist Leader von dieser Gruppe:": "You are the leader of this group:",
+  "Du bist Leader von diesen Gruppen:": "You are the leader of these groups:",
+  "Da es keine Leader-Übertragung gibt, wird diese Gruppe komplett gelöscht — auch für alle anderen Mitglieder.":
+    "Since there's no leader transfer, this group will be deleted completely — for all other members too.",
+  "Da es keine Leader-Übertragung gibt, werden diese Gruppen komplett gelöscht — auch für alle anderen Mitglieder.":
+    "Since there's no leader transfer, these groups will be deleted completely — for all other members too.",
+  "Passwort zur Bestätigung": "Password to confirm",
+  "Endgültig löschen": "Delete permanently",
+
+  // push
+  "Push wird von diesem Browser nicht unterstützt.": "Push isn't supported by this browser.",
+  "Push-Konfiguration konnte nicht geladen werden ({error}).": "Couldn't load the push configuration ({error}).",
+  "Push ist auf dem Server nicht eingerichtet.": "Push isn't set up on the server.",
+  "Benachrichtigungen sind im Browser blockiert.": "Notifications are blocked in the browser.",
+  "Ohne Erlaubnis keine Benachrichtigungen.": "No notifications without permission.",
+  "Push-Benachrichtigungen an.": "Push notifications on.",
+  "Push-Benachrichtigungen aus.": "Push notifications off.",
+  "Konnte Push-Einstellung nicht ändern ({error}).": "Couldn't change the push setting ({error}).",
+  "Push-Benachrichtigungen": "Push notifications",
+  "Erhalte eine Benachrichtigung, wenn jemand in deinen Gruppen ein Workout postet oder eine Challenge schafft.":
+    "Get a notification when someone in your groups posts a workout or completes a challenge.",
+
+  // sessions
+  "Unbekanntes Gerät": "Unknown device",
+  "Konnte Sitzung nicht beenden.": "Couldn't end the session.",
+  "Sitzung beendet.": "Session ended.",
+  "Konnte andere Sitzungen nicht beenden.": "Couldn't end the other sessions.",
+  "Alle anderen Sitzungen beendet.": "All other sessions ended.",
+  "(dieses Gerät)": "(this device)",
+  "Zuletzt aktiv {when}": "Last active {when}",
+  "Diese Sitzung beenden?": "End this session?",
+  "Das meldet dich auf diesem Gerät ab.": "This logs you out on this device.",
+  "Das Gerät wird beim nächsten Zugriff automatisch abgemeldet.": "The device will be logged out automatically on its next request.",
+  "Alle anderen Sitzungen beenden": "End all other sessions",
+
+  // API keys
+  "Konnte API-Key nicht erstellen.": "Couldn't create the API key.",
+  "Konnte Key nicht widerrufen.": "Couldn't revoke the key.",
+  "Key widerrufen.": "Key revoked.",
+  "Neuer API-Key": "New API key",
+  "API-Key erstellen": "Create API key",
+  "Für eigene Scripts/Automationen gegen /api/v1/*.": "For your own scripts/automations against /api/v1/*.",
+  "z.B. Homeassistant-Script": "e.g. Home Assistant script",
+  "Noch keine API-Keys.": "No API keys yet.",
+  "zuletzt genutzt {date}": "last used {date}",
+  "noch nie genutzt": "never used",
+  "\"{name}\" widerrufen?": "Revoke \"{name}\"?",
+  "Scripts, die diesen Key benutzen, verlieren sofort den Zugriff.": "Scripts using this key lose access immediately.",
+  "Dein neuer API-Key": "Your new API key",
+  "Wird nur dieses eine Mal angezeigt - jetzt kopieren und sicher speichern.": "Shown only this once - copy it now and store it safely.",
+
+  // 2FA
+  "Backup-Codes": "Backup codes",
+  "Jeder Code funktioniert einmal, falls du keinen Zugriff mehr auf deine Authenticator-App hast. Speichere sie jetzt - sie werden nur dieses eine Mal angezeigt.":
+    "Each code works once, in case you lose access to your authenticator app. Save them now - they are only shown this one time.",
+  "Gespeichert - schließen": "Saved - close",
+  "2FA aktiviert!": "2FA enabled!",
+  "2FA deaktiviert.": "2FA disabled.",
+  "Zwei-Faktor-Authentifizierung ist aktiviert.": "Two-factor authentication is enabled.",
+  "Backup-Codes neu generieren": "Regenerate backup codes",
+  "2FA deaktivieren?": "Disable 2FA?",
+  "Dein Konto ist danach nur noch mit Benutzername und Passwort geschützt.": "Your account will then only be protected by username and password.",
+  "Backup-Codes neu generieren?": "Regenerate backup codes?",
+  "Alle bisherigen Backup-Codes werden ungültig.": "All previous backup codes become invalid.",
+  "Scanne den Code mit deiner Authenticator-App (Google Authenticator, Aegis, 1Password, ...) und gib den angezeigten 6-stelligen Code ein, um zu bestätigen.":
+    "Scan the code with your authenticator app (Google Authenticator, Aegis, 1Password, ...) and enter the 6-digit code shown to confirm.",
+  "QR-Code für 2FA-Setup": "QR code for 2FA setup",
+  "Manuell:": "Manual:",
+  "Prüfe…": "Checking…",
+  "Schützt dein Konto mit einem zusätzlichen Code aus einer Authenticator-App beim Login.": "Protects your account with an extra code from an authenticator app at login.",
+  "Konnte 2FA-Setup nicht starten.": "Couldn't start the 2FA setup.",
+  "Code ist falsch.": "Code is wrong.",
+  "Konnte 2FA nicht deaktivieren.": "Couldn't disable 2FA.",
+  "Konnte Backup-Codes nicht erneuern.": "Couldn't regenerate backup codes.",
+
+  // admin
+  "Zum Admin gemacht.": "Made admin.",
+  "Admin-Rechte entfernt.": "Admin rights removed.",
+  "2FA für diesen Nutzer zurückgesetzt.": "2FA reset for this user.",
+  "Nutzer gelöscht.": "User deleted.",
+  "{workouts} Workouts · {groups} Gruppen · seit {date}": "{workouts} workouts · {groups} groups · since {date}",
+  "Du kannst deinen eigenen Admin-Status nicht ändern": "You can't change your own admin status",
+  "2FA für diesen Nutzer zurücksetzen": "Reset 2FA for this user",
+  "2FA für {name} zurücksetzen?": "Reset 2FA for {name}?",
+  "Deaktiviert die Zwei-Faktor-Authentifizierung für dieses Konto und löscht alle Backup-Codes - für den Fall, dass die Person ihre Authenticator-App und Backup-Codes verloren hat. Sie kann 2FA danach in den Einstellungen neu einrichten.":
+    "Disables two-factor authentication for this account and deletes all backup codes - in case the person lost their authenticator app and backup codes. They can set up 2FA again in Settings afterwards.",
+  "Nutze die Konto-Löschung in den Einstellungen": "Use account deletion in Settings",
+  "Nutzer löschen": "Delete user",
+  "{name} (@{username}) löschen?": "Delete {name} (@{username})?",
+  "Löscht das Konto und alle zugehörigen Daten (Workouts, Gruppen-Mitgliedschaften, eigene Gruppen) endgültig. Das kann nicht rückgängig gemacht werden.":
+    "Permanently deletes the account and all related data (workouts, group memberships, own groups). This can't be undone.",
+  "Konnte Admin-Status nicht ändern.": "Couldn't change the admin status.",
+  "Konnte 2FA nicht zurücksetzen.": "Couldn't reset 2FA.",
+  "Konnte Nutzer nicht löschen.": "Couldn't delete the user.",
+};

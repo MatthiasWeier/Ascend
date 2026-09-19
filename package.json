@@ -1,12 +1,13 @@
 {
   "name": "ascend",
-  "version": "0.33.0",
+  "version": "0.35.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "i18n:check": "node --experimental-strip-types scripts/check-i18n.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {

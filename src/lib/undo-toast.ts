@@ -9,11 +9,13 @@ export function undoableAction({
   message,
   onCommit,
   onUndo,
+  undoLabel = "Rückgängig",
   duration = DEFAULT_DURATION_MS,
 }: {
   message: string;
   onCommit: () => void;
   onUndo: () => void;
+  undoLabel?: string;
   duration?: number;
 }) {
   let undone = false;
@@ -24,7 +26,7 @@ export function undoableAction({
   toast(message, {
     duration,
     action: {
-      label: "Rückgängig",
+      label: undoLabel,
       onClick: () => {
         undone = true;
         clearTimeout(timer);

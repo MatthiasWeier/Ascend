@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, LabelList } from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
@@ -12,14 +12,16 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VIZ_ORDINAL } from "@/lib/viz-colors";
 import { AddClimbingSendDialog } from "@/components/analytics/add-climbing-send-dialog";
+import { EmptyChart } from "@/components/analytics/empty-chart";
+import { useT } from "@/components/locale-provider";
 
 type GradeDatum = { grade: string; count: number; rank: number };
 
-const chartConfig = {
-  count: { label: "Anzahl" },
-} satisfies ChartConfig;
-
 export function ClimbingPyramid() {
+  const t = useT();
+  const chartConfig = {
+    count: { label: t("Anzahl") },
+  } satisfies ChartConfig;
   const [style, setStyle] = useState<"BOULDER" | "ROUTE">("BOULDER");
   const [grades, setGrades] = useState<GradeDatum[] | null>(null);
 
@@ -37,8 +39,8 @@ export function ClimbingPyramid() {
       <div className="flex items-center justify-between gap-2">
         <Tabs value={style} onValueChange={(v) => setStyle(v as "BOULDER" | "ROUTE")}>
           <TabsList>
-            <TabsTrigger value="BOULDER">Boulder</TabsTrigger>
-            <TabsTrigger value="ROUTE">Routen</TabsTrigger>
+            <TabsTrigger value="BOULDER">{t("Boulder")}</TabsTrigger>
+            <TabsTrigger value="ROUTE">{t("Routen")}</TabsTrigger>
           </TabsList>
         </Tabs>
         <AddClimbingSendDialog onAdded={refetch} />
@@ -47,9 +49,10 @@ export function ClimbingPyramid() {
       {grades == null ? (
         <Skeleton className="h-64 w-full" />
       ) : grades.length === 0 ? (
-        <p className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
-          Noch keine {style === "BOULDER" ? "Boulder" : "Routen"} eingetragen.
-        </p>
+        <EmptyChart
+          variant="bars"
+          message={style === "BOULDER" ? t("Noch keine Boulder eingetragen.") : t("Noch keine Routen eingetragen.")}
+        />
       ) : (
         <>
           <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
@@ -57,8 +60,9 @@ export function ClimbingPyramid() {
               <CartesianGrid horizontal={false} />
               <XAxis type="number" tickLine={false} axisLine={false} allowDecimals={false} />
               <YAxis dataKey="grade" type="category" tickLine={false} axisLine={false} width={48} />
-              <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`${value}×`, "Anzahl"]} />} />
+              <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`${value}×`, t("Anzahl")]} />} />
               <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                <LabelList dataKey="count" position="right" className="fill-foreground text-xs" />
                 {grades.map((g, i) => (
                   <Cell
                     key={g.grade}
@@ -69,7 +73,7 @@ export function ClimbingPyramid() {
             </BarChart>
           </ChartContainer>
           <p className="text-center text-xs text-muted-foreground">
-            Heller = leichter, dunkler = schwerer
+            {t("Heller = leichter, dunkler = schwerer")}
           </p>
         </>
       )}

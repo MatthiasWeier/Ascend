@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { useT } from "@/components/locale-provider";
 
 type Attempt = {
   id: string;
@@ -60,6 +61,7 @@ export function ChallengeExecutionDialog({
   onOpenChange: (open: boolean) => void;
   onChanged: () => void;
 }) {
+  const t = useT();
   const [attempt, setAttempt] = useState(initialAttempt);
   const [busy, setBusy] = useState(false);
   const elapsed = useElapsed(startedAt, attempt.status === "IN_PROGRESS");
@@ -81,13 +83,13 @@ export function ChallengeExecutionDialog({
     });
     setBusy(false);
     if (!res.ok) {
-      toast.error("Konnte nicht speichern.");
+      toast.error(t("Konnte nicht speichern."));
       return;
     }
     const data = await res.json();
     setAttempt(data.attempt);
     if (data.attempt.status === "COMPLETED") {
-      toast.success("Ziel erreicht! 🎉");
+      toast.success(t("Ziel erreicht! 🎉"));
       onChanged();
     }
   }
@@ -97,7 +99,7 @@ export function ChallengeExecutionDialog({
     const res = await fetch(`/api/challenge-attempts/${attempt.id}/end`, { method: "POST" });
     setBusy(false);
     if (!res.ok) {
-      toast.error("Fehlgeschlagen.");
+      toast.error(t("Fehlgeschlagen."));
       return;
     }
     const data = await res.json();
@@ -115,10 +117,10 @@ export function ChallengeExecutionDialog({
     setBusy(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(data.error ?? "Bewertung fehlgeschlagen.");
+      toast.error(t(data.error ?? "Bewertung fehlgeschlagen."));
       return;
     }
-    toast.success("Danke fürs Bewerten!");
+    toast.success(t("Danke fürs Bewerten!"));
     onChanged();
     onOpenChange(false);
   }
@@ -135,7 +137,7 @@ export function ChallengeExecutionDialog({
         {needsRating ? (
           <div className="flex flex-col items-center gap-4 py-2">
             <p className="text-center text-sm text-muted-foreground">
-              {attempt.currentReps} / {attempt.targetRepsSnapshot} Wdh &mdash; wie schwer war's?
+              {t("{cur} / {target} Wdh — wie schwer war's?", { cur: attempt.currentReps, target: attempt.targetRepsSnapshot })}
             </p>
             <div className="flex gap-2">
               {RATINGS.map((r) => (
@@ -145,7 +147,7 @@ export function ChallengeExecutionDialog({
                   disabled={busy}
                   onClick={() => rate(r.value)}
                   className="flex flex-col items-center gap-1 rounded-lg p-2 text-2xl transition-colors hover:bg-accent disabled:opacity-50"
-                  title={r.label}
+                  title={t(r.label)}
                 >
                   {r.emoji}
                 </button>
@@ -158,14 +160,14 @@ export function ChallengeExecutionDialog({
 
             <div className="flex flex-col items-center gap-1">
               <span className="text-5xl font-bold tabular-nums">{attempt.currentReps}</span>
-              <span className="text-sm text-muted-foreground">von {attempt.targetRepsSnapshot} Wdh</span>
+              <span className="text-sm text-muted-foreground">{t("von {target} Wdh", { target: attempt.targetRepsSnapshot })}</span>
             </div>
 
             <Progress value={progressPct} className="w-full" />
 
             {justFinished ? (
               <p className={cn("text-sm font-medium", attempt.status === "COMPLETED" ? "text-success" : "text-muted-foreground")}>
-                {attempt.status === "COMPLETED" ? "Geschafft! 🎉" : "Challenge beendet."}
+                {attempt.status === "COMPLETED" ? t("Geschafft! 🎉") : t("Challenge beendet.")}
               </p>
             ) : (
               <>
@@ -178,7 +180,7 @@ export function ChallengeExecutionDialog({
                 </div>
                 {canGiveUp && (
                   <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={endEarly}>
-                    Aufgeben
+                    {t("Aufgeben")}
                   </Button>
                 )}
               </>

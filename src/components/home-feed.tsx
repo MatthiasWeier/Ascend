@@ -7,6 +7,7 @@ import { WorkoutSessionCard } from "@/components/workout-session-card";
 import { FeedList } from "@/components/feed-list";
 import { cn } from "@/lib/utils";
 import { formatTimeAgo } from "@/lib/time-ago";
+import { useLocale } from "@/components/locale-provider";
 import type { ActivityItem } from "@/lib/group-activity";
 import type { MuscleFocus, SetType } from "@prisma/client";
 
@@ -72,46 +73,76 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 }
 
 function GroupItemRow({ item }: { item: ActivityItem }) {
+  const { t, dateLocale } = useLocale();
   let Icon = Dumbbell;
-  let text: React.ReactNode = "hat ein Workout gepostet";
+  let text: React.ReactNode = t("hat ein Workout gepostet");
   let iconColor = "text-primary";
   if (item.kind === "CHAT_PHOTO") {
     Icon = ImageIcon;
-    text = "hat ein Foto gepostet";
+    text = t("hat ein Foto gepostet");
   } else if (item.kind === "CHAT_TEXT") {
     Icon = MessageSquare;
-    text = `hat geschrieben: "${item.content}"`;
+    text = t("hat geschrieben: \"{text}\"", { text: item.content ?? "" });
   } else if (item.kind === "CHALLENGE_COMPLETED") {
     Icon = Check;
     iconColor = "text-success";
-    text = `hat "${item.templateName}" geschafft (${item.currentReps}/${item.targetRepsSnapshot})`;
+    text = t("hat \"{name}\" geschafft ({cur}/{target})", { name: item.templateName, cur: item.currentReps, target: item.targetRepsSnapshot });
   } else if (item.kind === "CHALLENGE_ENDED_EARLY") {
     Icon = XCircle;
     iconColor = "text-destructive";
-    text = `hat "${item.templateName}" abgebrochen (${item.currentReps}/${item.targetRepsSnapshot})`;
+    text = t("hat \"{name}\" abgebrochen ({cur}/{target})", { name: item.templateName, cur: item.currentReps, target: item.targetRepsSnapshot });
   }
+
+  const accent =
+    item.kind === "WORKOUT_SHARE"
+      ? "border-l-primary bg-primary/5"
+      : item.kind === "CHAT_PHOTO"
+        ? "border-l-sky-500 bg-sky-500/5"
+        : item.kind === "CHALLENGE_COMPLETED"
+          ? "border-l-success bg-success/5"
+          : item.kind === "CHALLENGE_ENDED_EARLY"
+            ? "border-l-destructive bg-destructive/5"
+            : "border-l-muted-foreground/40 bg-card";
+  const exerciseCount =
+    item.kind === "WORKOUT_SHARE"
+      ? new Set(
+          (item.content ?? "")
+            .split("\n")
+            .slice(1)
+            .map((l) => l.split(":")[0].trim())
+            .filter(Boolean)
+        ).size
+      : 0;
 
   return (
     <Link
       href={`/dashboard/groups/${item.groupId}`}
-      className="flex items-start gap-2.5 rounded-lg border border-border bg-card px-3 py-2.5 text-sm transition-colors hover:bg-accent"
+      className={`flex items-start gap-3 rounded-lg border border-l-4 border-border px-3 py-3 text-sm transition-colors hover:bg-accent ${accent}`}
     >
-      <Icon className={`mt-0.5 size-4 shrink-0 ${iconColor}`} />
+      <span className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-background/60 ${iconColor}`}>
+        <Icon className="size-4" />
+      </span>
       <div className="min-w-0 flex-1">
         <p className={item.kind === "CHAT_TEXT" ? "line-clamp-3" : "truncate"}>
           <span className="font-medium">{item.userName}</span> {text}
+          {exerciseCount > 0 && (
+            <span className="text-muted-foreground">
+              {" · "}
+              {exerciseCount === 1 ? t("1 Übung") : t("{n} Übungen", { n: exerciseCount })}
+            </span>
+          )}
         </p>
         {item.kind === "CHAT_PHOTO" && item.imageUrl && (
           // eslint-disable-next-line @next/next/no-img-element -- auth-gated proxy route, not optimizable
           <img
             src={item.imageUrl}
-            alt="Gruppen-Foto"
+            alt={t("Gruppen-Foto")}
             loading="lazy"
             className="mt-1.5 max-h-48 rounded-md border border-border object-cover"
           />
         )}
         <p className="mt-0.5 text-xs text-muted-foreground">
-          {item.groupName} · {formatTimeAgo(item.timestamp)}
+          {item.groupName} · {formatTimeAgo(item.timestamp, t, dateLocale)}
         </p>
       </div>
     </Link>
@@ -131,6 +162,7 @@ export function HomeFeed({
   groups: { id: string; name: string }[];
   prSetIds: Set<string>;
 }) {
+  const { t } = useLocale();
   const [sources, setSources] = useState<string[]>([]);
   const [types, setTypes] = useState<TypeFilter[]>([]);
   const [visible, setVisible] = useState(PAGE_SIZE);
@@ -215,7 +247,7 @@ export function HomeFeed({
       <div className="flex flex-col gap-2">
         <div className="-mx-1 flex items-center gap-1.5 overflow-x-auto px-1 pb-0.5">
           <Chip active={sources.includes("me")} onClick={() => toggleSource("me")}>
-            Ich
+            {t("Ich")}
           </Chip>
           {groups.map((g) => (
             <Chip key={g.id} active={sources.includes(g.id)} onClick={() => toggleSource(g.id)}>
@@ -224,14 +256,14 @@ export function HomeFeed({
           ))}
         </div>
         <div className="-mx-1 flex items-center gap-1.5 overflow-x-auto px-1 pb-0.5">
-          {(Object.keys(TYPE_LABELS) as TypeFilter[]).map((t) => (
-            <Chip key={t} active={types.includes(t)} onClick={() => toggleType(t)}>
-              {TYPE_LABELS[t]}
+          {(Object.keys(TYPE_LABELS) as TypeFilter[]).map((ty) => (
+            <Chip key={ty} active={types.includes(ty)} onClick={() => toggleType(ty)}>
+              {t(TYPE_LABELS[ty])}
             </Chip>
           ))}
           {filtersActive && (
             <button type="button" onClick={reset} className="shrink-0 px-1 text-xs text-muted-foreground hover:underline">
-              Zurücksetzen
+              {t("Zurücksetzen")}
             </button>
           )}
         </div>
@@ -240,7 +272,7 @@ export function HomeFeed({
       {entries.length === 0 ? (
         <p className="flex h-24 items-center justify-center gap-2 rounded-lg border border-dashed border-border text-sm text-muted-foreground">
           <Trophy className="size-4" />
-          {filtersActive ? "Nichts gefunden - Filter anpassen?" : "Noch nichts los."}
+          {filtersActive ? t("Nichts gefunden - Filter anpassen?") : t("Noch nichts los.")}
         </p>
       ) : (
         <>
@@ -256,6 +288,7 @@ export function HomeFeed({
                   skinCondition={e.data.skinCondition}
                   sets={e.data.sets}
                   prSetIds={prSetIds}
+                  collapsible
                 />
               ) : (
                 <GroupItemRow key={`g-${e.data.groupId}-${e.ts}-${e.data.userId}`} item={e.data} />
@@ -268,7 +301,7 @@ export function HomeFeed({
               onClick={() => setVisible((v) => v + PAGE_SIZE)}
               className="self-center rounded-full border border-border px-4 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary"
             >
-              Mehr anzeigen
+              {t("Mehr anzeigen")}
             </button>
           )}
         </>

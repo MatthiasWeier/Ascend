@@ -6,6 +6,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { FOCUS_LABEL } from "@/lib/muscle-focus";
 import { useWeightUnit } from "@/components/weight-unit-context";
+import { useLocale } from "@/components/locale-provider";
+import { EmptyChart } from "@/components/analytics/empty-chart";
 import type { MuscleFocus } from "@prisma/client";
 
 type Record = {
@@ -20,6 +22,7 @@ type Record = {
 export function PersonalRecords() {
   const [records, setRecords] = useState<Record[] | null>(null);
   const { toDisplay, unitLabel } = useWeightUnit();
+  const { t, dateLocale } = useLocale();
 
   useEffect(() => {
     fetch("/api/analytics/records")
@@ -31,9 +34,7 @@ export function PersonalRecords() {
 
   if (records.length === 0) {
     return (
-      <p className="flex h-32 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
-        Noch keine Rekorde - leg los!
-      </p>
+      <EmptyChart variant="bars" className="h-48" message={t("Noch keine Rekorde - leg los!")} />
     );
   }
 
@@ -48,11 +49,11 @@ export function PersonalRecords() {
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{r.exerciseName}</p>
             <p className="text-xs text-muted-foreground">
-              {new Date(r.achievedAt).toLocaleDateString("de-DE", { day: "2-digit", month: "short", year: "numeric" })}
+              {new Date(r.achievedAt).toLocaleDateString(dateLocale, { day: "2-digit", month: "short", year: "numeric" })}
             </p>
           </div>
           <Badge variant="secondary" className="shrink-0 text-[10px]">
-            {FOCUS_LABEL[r.focus]}
+            {t(FOCUS_LABEL[r.focus])}
           </Badge>
           <span className="shrink-0 font-mono text-sm tabular-nums">
             {r.type === "HOLD" ? `${r.bestValue}s` : `${Math.round(toDisplay(r.bestValue))} ${unitLabel}·1RM`}

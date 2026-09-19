@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/components/locale-provider";
 
 type Session = {
   id: string;
@@ -32,6 +33,7 @@ export function PostComposer({
   alreadySharedIds: Set<string>;
   onSubmit: (payload: PostPayload) => Promise<boolean>;
 }) {
+  const { t, dateLocale } = useLocale();
   const [mode, setMode] = useState<"TEXT" | "WORKOUT_SHARE" | "PHOTO">("TEXT");
   const [text, setText] = useState("");
   const [sessions, setSessions] = useState<Session[] | null>(null);
@@ -55,15 +57,15 @@ export function PostComposer({
     e.preventDefault();
 
     if (mode === "PHOTO" && !file) {
-      toast.error("Bitte ein Bild wählen.");
+      toast.error(t("Bitte ein Bild wählen."));
       return;
     }
     if (mode === "WORKOUT_SHARE" && !sessionId) {
-      toast.error("Bitte ein Workout wählen.");
+      toast.error(t("Bitte ein Workout wählen."));
       return;
     }
     if (mode === "TEXT" && !text.trim()) {
-      toast.error("Text darf nicht leer sein.");
+      toast.error(t("Text darf nicht leer sein."));
       return;
     }
 
@@ -78,10 +80,10 @@ export function PostComposer({
     setLoading(false);
 
     if (!ok) {
-      toast.error("Konnte nicht posten.");
+      toast.error(t("Konnte nicht posten."));
       return;
     }
-    toast.success("Gepostet!");
+    toast.success(t("Gepostet!"));
     if (mode === "PHOTO") {
       setFile(null);
       setCaption("");
@@ -99,22 +101,22 @@ export function PostComposer({
         <TabsList>
           <TabsTrigger value="TEXT">
             <MessageSquare className="size-3.5" />
-            Text
+            {t("Text")}
           </TabsTrigger>
           <TabsTrigger value="WORKOUT_SHARE">
             <Dumbbell className="size-3.5" />
-            Workout
+            {t("Workout")}
           </TabsTrigger>
           <TabsTrigger value="PHOTO">
             <ImageIcon className="size-3.5" />
-            Foto
+            {t("Foto")}
           </TabsTrigger>
         </TabsList>
       </Tabs>
 
       {mode === "TEXT" && (
         <Textarea
-          placeholder="Was gibt's Neues?"
+          placeholder={t("Was gibt's Neues?")}
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
@@ -124,18 +126,18 @@ export function PostComposer({
         const shareable = (sessions ?? []).filter((s) => !alreadySharedIds.has(s.id));
         return sessions != null && shareable.length === 0 ? (
           <p className="rounded-lg border border-dashed border-border p-3 text-center text-sm text-muted-foreground">
-            Alle deine Workouts sind bereits geteilt.
+            {t("Alle deine Workouts sind bereits geteilt.")}
           </p>
         ) : (
           <Select value={sessionId} onValueChange={(v) => setSessionId(v as string)}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Workout wählen" />
+              <SelectValue placeholder={t("Workout wählen")} />
             </SelectTrigger>
             <SelectContent>
               {shareable.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
-                  {new Date(s.date).toLocaleDateString("de-DE", { day: "2-digit", month: "short" })} —{" "}
-                  {s.sets.length} Sätze
+                  {new Date(s.date).toLocaleDateString(dateLocale, { day: "2-digit", month: "short" })} —{" "}
+                  {t("{n} Sätze", { n: s.sets.length })}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -153,7 +155,7 @@ export function PostComposer({
             className="text-sm"
           />
           <Textarea
-            placeholder="Bildunterschrift (optional)…"
+            placeholder={t("Bildunterschrift (optional)…")}
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
           />
@@ -161,7 +163,7 @@ export function PostComposer({
       )}
 
       <Button type="submit" disabled={loading} className="self-end">
-        {loading ? "Posten…" : "Posten"}
+        {loading ? t("Posten…") : t("Posten")}
       </Button>
     </form>
   );

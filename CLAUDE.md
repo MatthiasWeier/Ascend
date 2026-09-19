@@ -213,6 +213,21 @@ new thing a user would notice as separate" - the former is patch.
   retried or genuinely concurrent request - reuse this shape (not a
   client-side disable-button guard alone) for any future auto-derived
   aggregate.
+- **i18n: German text is the key.** `t("Speichern")` looks up the English
+  string in `lib/i18n/en/*.ts` and falls back to the German key itself, so a
+  missing translation degrades to German instead of breaking. Client code:
+  `useT()` / `useLocale()` (`components/locale-provider.tsx`; the locale lives in
+  the `ascend-locale` cookie, set from the DE/EN toggle); server components:
+  `await getT()` (`lib/i18n/server.ts`). Interpolation is `{name}` placeholders
+  (`t("Hi {name}", { name })`); plurals are two separate keys, not ICU. API
+  routes keep answering in German - clients translate errors with
+  `t(data.error ?? "fallback")`, so every API error string must also exist in
+  the dictionary. Dates use `dateLocale` (de-DE / en-GB), never a hardcoded
+  locale. Any new user-facing string: wrap it in t(), add the English entry,
+  and run `node --experimental-strip-types scripts/check-i18n.mjs` (exits
+  non-zero on missing keys). Beware local variables named `t` shadowing the
+  translate function (rename e.g. `tpl`, `ty`). Do not leave an empty
+  replacement in any scripted bulk edit - it silently mangles the file.
 - **Display-unit preference, kg-canonical storage.** `User.weightUnit`
   (`lib/weight-units.ts`, `components/weight-unit-context.tsx`) is a pure
   display setting - every weight is stored in kg everywhere (DB, API,

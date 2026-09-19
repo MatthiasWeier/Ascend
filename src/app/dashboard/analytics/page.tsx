@@ -16,30 +16,32 @@ import { ClimbingPyramid } from "@/components/analytics/climbing-pyramid";
 import { BoulderCalendar } from "@/components/analytics/boulder-calendar";
 import { PersonalRecords } from "@/components/analytics/personal-records";
 import { WeeklySets } from "@/components/analytics/weekly-sets";
+import { useT } from "@/components/locale-provider";
 
 export default function AnalyticsPage() {
+  const t = useT();
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">
+    <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6 lg:max-w-4xl">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
-        <p className="text-sm text-muted-foreground">Deine Fortschritte in Zahlen.</p>
+        <h1 className="text-2xl font-bold tracking-tight">{t("Analytics")}</h1>
+        <p className="text-sm text-muted-foreground">{t("Deine Fortschritte in Zahlen.")}</p>
       </div>
 
       <Tabs defaultValue="strength">
         <TabsList className="w-full flex-wrap">
-          <TabsTrigger value="strength">Kraft</TabsTrigger>
-          <TabsTrigger value="records">Rekorde</TabsTrigger>
-          <TabsTrigger value="volume">Volumen</TabsTrigger>
-          <TabsTrigger value="balance">Balance</TabsTrigger>
-          <TabsTrigger value="calendar">Kalender</TabsTrigger>
-          <TabsTrigger value="climbing">Klettern</TabsTrigger>
+          <TabsTrigger value="strength">{t("Kraft")}</TabsTrigger>
+          <TabsTrigger value="records">{t("Rekorde")}</TabsTrigger>
+          <TabsTrigger value="volume">{t("Volumen")}</TabsTrigger>
+          <TabsTrigger value="balance">{t("Balance")}</TabsTrigger>
+          <TabsTrigger value="calendar">{t("Kalender")}</TabsTrigger>
+          <TabsTrigger value="climbing">{t("Klettern")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="strength">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Maximalkraft-Verlauf</CardTitle>
-              <CardDescription>Geschätztes 1RM (Epley-Formel) pro Übung über Zeit.</CardDescription>
+              <CardTitle className="text-base">{t("Maximalkraft-Verlauf")}</CardTitle>
+              <CardDescription>{t("Geschätztes 1RM (Epley-Formel) pro Übung über Zeit.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <OneRmChart />
@@ -50,8 +52,8 @@ export default function AnalyticsPage() {
         <TabsContent value="records">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Persönliche Rekorde</CardTitle>
-              <CardDescription>Dein aktueller Bestwert pro Übung.</CardDescription>
+              <CardTitle className="text-base">{t("Persönliche Rekorde")}</CardTitle>
+              <CardDescription>{t("Dein aktueller Bestwert pro Übung.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <PersonalRecords />
@@ -62,8 +64,8 @@ export default function AnalyticsPage() {
         <TabsContent value="volume" className="flex flex-col gap-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Sätze diese Woche</CardTitle>
-              <CardDescription>Arbeitssätze pro Muskelgruppe seit Montag - Warm-ups zählen nicht mit.</CardDescription>
+              <CardTitle className="text-base">{t("Sätze diese Woche")}</CardTitle>
+              <CardDescription>{t("Arbeitssätze pro Muskelgruppe seit Montag - Warm-ups zählen nicht mit.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <WeeklySets />
@@ -71,8 +73,8 @@ export default function AnalyticsPage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Gesamtarbeit</CardTitle>
-              <CardDescription>Bewegtes Gewicht (Wdh × Gewicht) der letzten 90 Tage.</CardDescription>
+              <CardTitle className="text-base">{t("Gesamtarbeit")}</CardTitle>
+              <CardDescription>{t("Bewegtes Gewicht (Wdh × Gewicht) der letzten 90 Tage.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <VolumeChart />
@@ -83,8 +85,8 @@ export default function AnalyticsPage() {
         <TabsContent value="balance">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Balance-Spinnennetz</CardTitle>
-              <CardDescription>Wie ausgewogen ist dein Training über alle Bereiche?</CardDescription>
+              <CardTitle className="text-base">{t("Balance-Spinnennetz")}</CardTitle>
+              <CardDescription>{t("Wie ausgewogen ist dein Training über alle Bereiche?")}</CardDescription>
             </CardHeader>
             <CardContent>
               <BalanceRadar />
@@ -95,8 +97,8 @@ export default function AnalyticsPage() {
         <TabsContent value="calendar">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Aktivitäts-Kalender</CardTitle>
-              <CardDescription>Je dunkler, desto intensiver war dein Training an dem Tag.</CardDescription>
+              <CardTitle className="text-base">{t("Aktivitäts-Kalender")}</CardTitle>
+              <CardDescription>{t("Je dunkler, desto intensiver war dein Training an dem Tag.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <ActivityCalendar />
@@ -107,8 +109,8 @@ export default function AnalyticsPage() {
         <TabsContent value="climbing" className="flex flex-col gap-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Boulder-Kalender</CardTitle>
-              <CardDescription>Tag antippen, Anzahl pro Schwierigkeit eintragen.</CardDescription>
+              <CardTitle className="text-base">{t("Boulder-Kalender")}</CardTitle>
+              <CardDescription>{t("Tag antippen, Anzahl pro Schwierigkeit eintragen.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <BoulderCalendar />
@@ -116,8 +118,8 @@ export default function AnalyticsPage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Kletter-Pyramide</CardTitle>
-              <CardDescription>Anzahl geschaffter Boulder/Routen pro Schwierigkeitsgrad.</CardDescription>
+              <CardTitle className="text-base">{t("Kletter-Pyramide")}</CardTitle>
+              <CardDescription>{t("Anzahl geschaffter Boulder/Routen pro Schwierigkeitsgrad.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <ClimbingPyramid />

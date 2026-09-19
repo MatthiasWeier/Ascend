@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { WorkoutSessionCard } from "@/components/workout-session-card";
 import { VIZ_SEQUENTIAL } from "@/lib/viz-colors";
+import { useLocale } from "@/components/locale-provider";
 
 type Day = { date: string; intensity: number };
 
@@ -36,8 +37,7 @@ const LEVEL_COLORS = [
   VIZ_SEQUENTIAL[4],
 ];
 
-const MONTH_LABELS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
-const WEEKDAY_LABELS = ["Mo", "", "Mi", "", "Fr", "", ""];
+// Month/weekday labels come from the active locale inside the component.
 
 function toIsoDate(d: Date) {
   return d.toISOString().slice(0, 10);
@@ -52,6 +52,11 @@ export function ActivityCalendar({
   sessionsUrl?: (date: string) => string;
   editable?: boolean;
 } = {}) {
+  const { t, dateLocale } = useLocale();
+  const MONTH_LABELS = Array.from({ length: 12 }, (_, m) =>
+    new Date(Date.UTC(2024, m, 1)).toLocaleDateString(dateLocale, { month: "short", timeZone: "UTC" })
+  );
+  const WEEKDAY_LABELS = [t("Mo"), "", t("Mi"), "", t("Fr"), "", ""];
   const [year] = useState(new Date().getFullYear());
   const [days, setDays] = useState<Day[] | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -110,7 +115,8 @@ export function ActivityCalendar({
     }
 
     return { weeks, maxIntensity: max, monthMarkers };
-  }, [days, year]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [days, year, dateLocale]);
 
   if (days == null) return <Skeleton className="h-40 w-full" />;
 
@@ -129,7 +135,7 @@ export function ActivityCalendar({
               <span
                 key={i}
                 className="absolute"
-                style={{ left: m.weekIndex * 13 + 20 }}
+                style={{ left: m.weekIndex * 16 + 20 }}
               >
                 {m.label}
               </span>
@@ -138,7 +144,7 @@ export function ActivityCalendar({
           <div className="flex gap-[3px] pt-4">
             <div className="flex flex-col gap-[3px] pr-1 text-[10px] text-muted-foreground">
               {WEEKDAY_LABELS.map((l, i) => (
-                <div key={i} className="flex h-[10px] items-center">
+                <div key={i} className="flex h-[13px] items-center">
                   {l}
                 </div>
               ))}
@@ -150,9 +156,9 @@ export function ActivityCalendar({
                     key={di}
                     type="button"
                     disabled={!day.inYear || day.intensity <= 0}
-                    title={`${day.date}: ${day.inYear ? `Intensität ${day.intensity}` : ""}`}
+                    title={`${day.date}: ${day.inYear ? t("Intensität {n}", { n: day.intensity }) : ""}`}
                     onClick={() => openDay(day.date)}
-                    className="size-[10px] rounded-[2px] disabled:cursor-default enabled:cursor-pointer enabled:ring-offset-1 enabled:hover:ring-1 enabled:hover:ring-foreground/40"
+                    className="size-[13px] rounded-[3px] disabled:cursor-default enabled:cursor-pointer enabled:ring-offset-1 enabled:hover:ring-1 enabled:hover:ring-foreground/40"
                     style={{
                       backgroundColor: day.inYear ? LEVEL_COLORS[levelFor(day.intensity)] : "transparent",
                     }}
@@ -164,11 +170,11 @@ export function ActivityCalendar({
         </div>
       </div>
       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-        Weniger
+        {t("Weniger")}
         {LEVEL_COLORS.map((c, i) => (
           <div key={i} className="size-[10px] rounded-[2px]" style={{ backgroundColor: c }} />
         ))}
-        Mehr
+        {t("Mehr")}
       </div>
 
       <Dialog open={selectedDate != null} onOpenChange={(open) => !open && setSelectedDate(null)}>
@@ -176,7 +182,7 @@ export function ActivityCalendar({
           <DialogHeader>
             <DialogTitle>
               {selectedDate &&
-                new Date(`${selectedDate}T00:00:00.000Z`).toLocaleDateString("de-DE", {
+                new Date(`${selectedDate}T00:00:00.000Z`).toLocaleDateString(dateLocale, {
                   weekday: "long",
                   day: "2-digit",
                   month: "long",
@@ -188,7 +194,7 @@ export function ActivityCalendar({
           {daySessions == null ? (
             <Skeleton className="h-32 w-full" />
           ) : daySessions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Kein Workout an diesem Tag.</p>
+            <p className="text-sm text-muted-foreground">{t("Kein Workout an diesem Tag.")}</p>
           ) : (
             <div className="flex max-h-96 flex-col gap-3 overflow-y-auto">
               {daySessions.map((s) => (

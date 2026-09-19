@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import type { MuscleFocus } from "@prisma/client";
 import { FOCUS_LABEL, ALL_FOCUSES, computeLoadPercents } from "@/lib/muscle-focus";
+import type { TFunction } from "@/lib/i18n";
 
 export { FOCUS_LABEL };
 
@@ -36,12 +37,14 @@ export type BrainSuggestion = {
   skinRecoveryDaysNeeded: number;
   skinDaysSince: number | null;
   skinRecovered: boolean;
+  isSwap: boolean;
   headline: string;
   detail: string;
 };
 
-export async function getBrainSuggestion(userId: string): Promise<BrainSuggestion> {
+export async function getBrainSuggestion(userId: string, t: TFunction): Promise<BrainSuggestion> {
   const now = new Date();
+  const focusName = (f: MuscleFocus) => t(FOCUS_LABEL[f]);
 
   const [sets, balanceGoals] = await Promise.all([
     prisma.workoutSet.findMany({
@@ -144,18 +147,22 @@ export async function getBrainSuggestion(userId: string): Promise<BrainSuggestio
   function describeSuggested() {
     if (isBalanceDriven) {
       return {
-        headline: FOCUS_LABEL[suggestedFocus],
-        detail: `Bei ${FOCUS_LABEL[suggestedFocus]} liegst du bei ${actualByFocus[suggestedFocus]}% deines Trainingsvolumens - Ziel sind ${targetByFocus.get(
-          suggestedFocus
-        )}%. Zeit, das auszugleichen.`,
+        headline: focusName(suggestedFocus),
+        detail: t("Bei {focus} liegst du bei {actual}% deines Trainingsvolumens - Ziel sind {target}%. Zeit, das auszugleichen.", {
+          focus: focusName(suggestedFocus),
+          actual: actualByFocus[suggestedFocus],
+          target: targetByFocus.get(suggestedFocus) ?? 0,
+        }),
       };
     }
     return {
-      headline: FOCUS_LABEL[suggestedFocus],
+      headline: focusName(suggestedFocus),
       detail:
         focusDaysSince == null
-          ? "Du hast diesen Fokus noch nie trainiert. Perfekter Einstieg."
-          : `Zuletzt vor ${focusDaysSince} Tag${focusDaysSince === 1 ? "" : "en"} trainiert — am längsten her von allen Bereichen.`,
+          ? t("Du hast diesen Fokus noch nie trainiert. Perfekter Einstieg.")
+          : focusDaysSince === 1
+            ? t("Zuletzt vor 1 Tag trainiert — am längsten her von allen Bereichen.")
+            : t("Zuletzt vor {n} Tagen trainiert — am längsten her von allen Bereichen.", { n: focusDaysSince }),
     };
   }
 
@@ -192,23 +199,29 @@ export async function getBrainSuggestion(userId: string): Promise<BrainSuggestio
   const skinRecovered = skinDaysSince == null || skinDaysSince >= skinRecoveryDaysNeeded;
 
   let effectiveFocus = suggestedFocus;
+  let isSwap = false;
   let headline: string;
   let detail: string;
 
   if (isOverloaded) {
-    headline = "Ruhetag empfohlen";
-    detail = `Deine letzten Workouts waren mit Ø ${recentAvgExertion?.toFixed(
-      1
-    )}/10 sehr intensiv. Gib deinem Nervensystem heute eine Pause.`;
+    headline = t("Ruhetag empfohlen");
+    detail = t("Deine letzten Workouts waren mit Ø {avg}/10 sehr intensiv. Gib deinem Nervensystem heute eine Pause.", {
+      avg: recentAvgExertion?.toFixed(1) ?? "",
+    });
   } else if (!skinRecovered && GRIP_DEPENDENT_FOCUSES.includes(suggestedFocus)) {
     const safeCandidates = eligibleFocuses.filter((f) => !GRIP_DEPENDENT_FOCUSES.includes(f));
     if (safeCandidates.length > 0) {
       effectiveFocus = pickBestFocus(safeCandidates);
+      isSwap = true;
       const remaining = skinRecoveryDaysNeeded - (skinDaysSince ?? 0);
-      headline = `${FOCUS_LABEL[effectiveFocus]} statt ${FOCUS_LABEL[suggestedFocus]}`;
-      detail = `Deine Haut braucht noch ${remaining} Tag${
-        remaining === 1 ? "" : "e"
-      } zur Regeneration. Heute lieber ${FOCUS_LABEL[effectiveFocus]} trainieren.`;
+      headline = t("{a} statt {b}", { a: focusName(effectiveFocus), b: focusName(suggestedFocus) });
+      detail =
+        remaining === 1
+          ? t("Deine Haut braucht noch 1 Tag zur Regeneration. Heute lieber {focus} trainieren.", { focus: focusName(effectiveFocus) })
+          : t("Deine Haut braucht noch {n} Tage zur Regeneration. Heute lieber {focus} trainieren.", {
+              n: remaining,
+              focus: focusName(effectiveFocus),
+            });
     } else {
       // No safe non-grip focus left to swap in (e.g. everything else is
       // excluded via Balance-Ziele) - fall back to the normal suggestion.
@@ -226,6 +239,7 @@ export async function getBrainSuggestion(userId: string): Promise<BrainSuggestio
     skinRecoveryDaysNeeded,
     skinDaysSince,
     skinRecovered,
+    isSwap,
     headline,
     detail,
   };

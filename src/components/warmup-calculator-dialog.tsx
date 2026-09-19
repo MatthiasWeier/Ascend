@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { computeWarmupSets } from "@/lib/warmup-calculator";
 import { useWeightUnit } from "@/components/weight-unit-context";
+import { useT } from "@/components/locale-provider";
 
 // targetWeightKg/onInsert stay in kg (canonical) - only the dialog's own
 // display text is shown in the user's chosen unit.
@@ -27,6 +28,7 @@ export function WarmupCalculatorDialog({
   onInsert: (sets: { weightKg: number; reps: number }[]) => void;
 }) {
   const { format, unitLabel } = useWeightUnit();
+  const t = useT();
   const [open, setOpen] = useState(false);
   const sets = computeWarmupSets(targetWeightKg, targetReps || 8);
 
@@ -34,21 +36,20 @@ export function WarmupCalculatorDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button type="button" variant="ghost" size="icon" className="text-muted-foreground" title="Aufwärm-Rechner" />
+          <Button type="button" variant="ghost" size="icon" className="text-muted-foreground" title={t("Aufwärm-Rechner")} />
         }
       >
         <Layers className="size-4" />
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Aufwärm-Sätze</DialogTitle>
+          <DialogTitle>{t("Aufwärm-Sätze")}</DialogTitle>
           <DialogDescription>
-            Vorschlag basierend auf {format(targetWeightKg)}{unitLabel} Arbeitsgewicht - wird als
-            Aufwärmsätze vor diesem Satz eingefügt.
+            {t("Vorschlag basierend auf {weight} Arbeitsgewicht - wird als Aufwärmsätze vor diesem Satz eingefügt.", { weight: `${format(targetWeightKg)}${unitLabel}` })}
           </DialogDescription>
         </DialogHeader>
         {sets.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Bitte zuerst ein Zielgewicht eintragen.</p>
+          <p className="text-sm text-muted-foreground">{t("Bitte zuerst ein Zielgewicht eintragen.")}</p>
         ) : (
           <div className="flex flex-col gap-1.5">
             {sets.map((s, i) => (
@@ -73,7 +74,7 @@ export function WarmupCalculatorDialog({
               setOpen(false);
             }}
           >
-            Einfügen
+            {t("Einfügen")}
           </Button>
         </DialogFooter>
       </DialogContent>

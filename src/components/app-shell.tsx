@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
+import { useT } from "@/components/locale-provider";
 import { LegalFooter } from "@/components/legal-footer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -55,6 +57,7 @@ export function AppShell({
   isAdmin?: boolean;
 }) {
   const pathname = usePathname();
+  const t = useT();
 
   return (
     <div className="flex min-h-screen w-full">
@@ -82,7 +85,7 @@ export function AppShell({
                 )}
               >
                 <item.icon className="size-4" />
-                {item.label}
+                {t(item.label)}
               </Link>
             );
           })}
@@ -111,7 +114,7 @@ export function AppShell({
           )}
         >
           <Settings className="size-4" />
-          Einstellungen
+          {t("Einstellungen")}
         </Link>
         <LegalFooter className="mt-4 px-3" />
       </aside>
@@ -124,6 +127,7 @@ export function AppShell({
             <span className="font-bold">Ascend</span>
           </Link>
           <div className="flex items-center gap-2">
+            <LanguageToggle />
             <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger className="outline-none">
@@ -147,14 +151,14 @@ export function AppShell({
                 )}
                 <DropdownMenuItem render={<Link href="/dashboard/settings" />}>
                   <Settings className="size-4" />
-                  Einstellungen
+                  {t("Einstellungen")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   variant="destructive"
                   onClick={() => signOut({ redirectTo: "/" })}
                 >
                   <LogOut className="size-4" />
-                  Abmelden
+                  {t("Abmelden")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -181,7 +185,7 @@ export function AppShell({
               )}
             >
               <item.icon className="size-5" />
-              {item.label}
+              {t(item.label)}
             </Link>
           );
         })}

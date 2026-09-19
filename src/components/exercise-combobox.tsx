@@ -13,6 +13,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useT } from "@/components/locale-provider";
 
 type ComboExercise = { id: string; name: string };
 
@@ -27,6 +28,7 @@ export function ExerciseCombobox({
   onChange: (id: string) => void;
   className?: string;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const selected = exercises.find((e) => e.id === value);
 
@@ -44,15 +46,15 @@ export function ExerciseCombobox({
         }
       >
         <span className={cn("truncate", !selected && "text-muted-foreground")}>
-          {selected ? selected.name : "Wähle aus"}
+          {selected ? selected.name : t("Wähle aus")}
         </span>
         <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
       </PopoverTrigger>
       <PopoverContent className="w-[260px] p-0" align="start">
         <Command>
-          <CommandInput placeholder="Übung suchen…" />
+          <CommandInput placeholder={t("Übung suchen…")} />
           <CommandList>
-            <CommandEmpty>Keine Übung gefunden.</CommandEmpty>
+            <CommandEmpty>{t("Keine Übung gefunden.")}</CommandEmpty>
             <CommandGroup>
               {exercises.map((ex) => (
                 <CommandItem

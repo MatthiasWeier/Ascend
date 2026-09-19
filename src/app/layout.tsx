@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "./providers";
 import { Toaster } from "@/components/ui/sonner";
+import { LocaleProvider } from "@/components/locale-provider";
+import { getLocale } from "@/lib/i18n/server";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,18 +33,21 @@ export const viewport: Viewport = {
   themeColor: "#0c0b08",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const locale = await getLocale();
   return (
     <html
-      lang="de"
+      lang={locale}
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Providers>
-          {children}
-          <Toaster richColors position="top-center" />
-        </Providers>
+        <LocaleProvider initialLocale={locale}>
+          <Providers>
+            {children}
+            <Toaster richColors position="top-center" />
+          </Providers>
+        </LocaleProvider>
       </body>
     </html>
   );

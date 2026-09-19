@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useT } from "@/components/locale-provider";
 
 type SetupData = { secret: string; qrCodeDataUri: string };
 
@@ -36,6 +37,7 @@ function PasswordConfirmDialog({
   onOpenChange: (open: boolean) => void;
   onConfirm: (password: string) => Promise<void>;
 }) {
+  const t = useT();
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -54,7 +56,7 @@ function PasswordConfirmDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="confirm-password">Passwort</Label>
+          <Label htmlFor="confirm-password">{t("Passwort")}</Label>
           <Input
             id="confirm-password"
             type="password"
@@ -65,10 +67,10 @@ function PasswordConfirmDialog({
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Abbrechen
+            {t("Abbrechen")}
           </Button>
           <Button variant="destructive" disabled={busy || !password} onClick={handleConfirm}>
-            {busy ? "Einen Moment…" : confirmLabel}
+            {busy ? t("Einen Moment…") : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -83,15 +85,14 @@ function BackupCodesDialog({
   codes: string[] | null;
   onClose: () => void;
 }) {
+  const t = useT();
   return (
     <Dialog open={codes != null} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Backup-Codes</DialogTitle>
+          <DialogTitle>{t("Backup-Codes")}</DialogTitle>
           <DialogDescription>
-            Jeder Code funktioniert einmal, falls du keinen Zugriff mehr auf deine
-            Authenticator-App hast. Speichere sie jetzt - sie werden nur dieses eine Mal
-            angezeigt.
+            {t("Jeder Code funktioniert einmal, falls du keinen Zugriff mehr auf deine Authenticator-App hast. Speichere sie jetzt - sie werden nur dieses eine Mal angezeigt.")}
           </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-2 rounded-lg border border-border bg-secondary/40 p-3 font-mono text-sm">
@@ -100,7 +101,7 @@ function BackupCodesDialog({
           ))}
         </div>
         <DialogFooter>
-          <Button onClick={onClose}>Gespeichert - schließen</Button>
+          <Button onClick={onClose}>{t("Gespeichert - schließen")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -114,6 +115,7 @@ export function TwoFactorSetup({
   enabled: boolean;
   onChanged: () => void;
 }) {
+  const t = useT();
   const [setupData, setSetupData] = useState<SetupData | null>(null);
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState(false);
@@ -126,7 +128,7 @@ export function TwoFactorSetup({
     setBusy(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(data.error ?? "Konnte 2FA-Setup nicht starten.");
+      toast.error(t(data.error ?? "Konnte 2FA-Setup nicht starten."));
       return;
     }
     const data = await res.json();
@@ -143,14 +145,14 @@ export function TwoFactorSetup({
     setBusy(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(data.error ?? "Code ist falsch.");
+      toast.error(t(data.error ?? "Code ist falsch."));
       return;
     }
     const data = await res.json();
     setSetupData(null);
     setToken("");
     setBackupCodes(data.backupCodes);
-    toast.success("2FA aktiviert!");
+    toast.success(t("2FA aktiviert!"));
     onChanged();
   }
 
@@ -162,11 +164,11 @@ export function TwoFactorSetup({
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(data.error ?? "Konnte 2FA nicht deaktivieren.");
+      toast.error(t(data.error ?? "Konnte 2FA nicht deaktivieren."));
       return;
     }
     setConfirmDialog(null);
-    toast.success("2FA deaktiviert.");
+    toast.success(t("2FA deaktiviert."));
     onChanged();
   }
 
@@ -178,7 +180,7 @@ export function TwoFactorSetup({
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(data.error ?? "Konnte Backup-Codes nicht erneuern.");
+      toast.error(t(data.error ?? "Konnte Backup-Codes nicht erneuern."));
       return;
     }
     const data = await res.json();
@@ -191,7 +193,7 @@ export function TwoFactorSetup({
       <div className="flex flex-col gap-3">
         <p className="flex items-center gap-2 text-sm text-success">
           <ShieldCheck className="size-4" />
-          Zwei-Faktor-Authentifizierung ist aktiviert.
+          {t("Zwei-Faktor-Authentifizierung ist aktiviert.")}
         </p>
         <div className="flex flex-wrap gap-2">
           <Button
@@ -201,7 +203,7 @@ export function TwoFactorSetup({
             onClick={() => setConfirmDialog("regenerate")}
           >
             <KeyRound className="size-4" />
-            Backup-Codes neu generieren
+            {t("Backup-Codes neu generieren")}
           </Button>
           <Button
             type="button"
@@ -211,23 +213,23 @@ export function TwoFactorSetup({
             onClick={() => setConfirmDialog("disable")}
           >
             <ShieldOff className="size-4" />
-            Deaktivieren
+            {t("Deaktivieren")}
           </Button>
         </div>
 
         <PasswordConfirmDialog
           open={confirmDialog === "disable"}
-          title="2FA deaktivieren?"
-          description="Dein Konto ist danach nur noch mit Benutzername und Passwort geschützt."
-          confirmLabel="Deaktivieren"
+          title={t("2FA deaktivieren?")}
+          description={t("Dein Konto ist danach nur noch mit Benutzername und Passwort geschützt.")}
+          confirmLabel={t("Deaktivieren")}
           onOpenChange={(o) => !o && setConfirmDialog(null)}
           onConfirm={handleDisable}
         />
         <PasswordConfirmDialog
           open={confirmDialog === "regenerate"}
-          title="Backup-Codes neu generieren?"
-          description="Alle bisherigen Backup-Codes werden ungültig."
-          confirmLabel="Neu generieren"
+          title={t("Backup-Codes neu generieren?")}
+          description={t("Alle bisherigen Backup-Codes werden ungültig.")}
+          confirmLabel={t("Neu generieren")}
           onOpenChange={(o) => !o && setConfirmDialog(null)}
           onConfirm={handleRegenerate}
         />
@@ -240,19 +242,18 @@ export function TwoFactorSetup({
     return (
       <div className="flex flex-col gap-3">
         <p className="text-sm text-muted-foreground">
-          Scanne den Code mit deiner Authenticator-App (Google Authenticator, Aegis,
-          1Password, ...) und gib den angezeigten 6-stelligen Code ein, um zu bestätigen.
+          {t("Scanne den Code mit deiner Authenticator-App (Google Authenticator, Aegis, 1Password, ...) und gib den angezeigten 6-stelligen Code ein, um zu bestätigen.")}
         </p>
         {/* eslint-disable-next-line @next/next/no-img-element -- data: URI, Next's image optimizer doesn't apply */}
         <img
           src={setupData.qrCodeDataUri}
-          alt="QR-Code für 2FA-Setup"
+          alt={t("QR-Code für 2FA-Setup")}
           width={200}
           height={200}
           className="rounded-lg border border-border"
         />
         <p className="break-all font-mono text-xs text-muted-foreground">
-          Manuell: {setupData.secret}
+          {t("Manuell:")} {setupData.secret}
         </p>
         <div className="flex items-center gap-2">
           <Input
@@ -264,10 +265,10 @@ export function TwoFactorSetup({
             className="w-32"
           />
           <Button type="button" disabled={busy || token.length !== 6} onClick={confirmSetup}>
-            {busy ? "Prüfe…" : "Bestätigen"}
+            {busy ? t("Prüfe…") : t("Bestätigen")}
           </Button>
           <Button type="button" variant="ghost" onClick={() => setSetupData(null)}>
-            Abbrechen
+            {t("Abbrechen")}
           </Button>
         </div>
         <BackupCodesDialog codes={backupCodes} onClose={() => setBackupCodes(null)} />
@@ -278,12 +279,11 @@ export function TwoFactorSetup({
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm text-muted-foreground">
-        Schützt dein Konto mit einem zusätzlichen Code aus einer Authenticator-App beim
-        Login.
+        {t("Schützt dein Konto mit einem zusätzlichen Code aus einer Authenticator-App beim Login.")}
       </p>
       <Button type="button" size="sm" className="w-fit" disabled={busy} onClick={startSetup}>
         <ShieldCheck className="size-4" />
-        Aktivieren
+        {t("Aktivieren")}
       </Button>
     </div>
   );

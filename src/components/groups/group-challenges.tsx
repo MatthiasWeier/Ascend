@@ -19,6 +19,7 @@ import {
 import { FeedList } from "@/components/feed-list";
 import { cn } from "@/lib/utils";
 import { ChallengeExecutionDialog } from "@/components/groups/challenge-execution-dialog";
+import { useLocale } from "@/components/locale-provider";
 
 type GoalView = {
   id: string;
@@ -53,6 +54,7 @@ type DailyChallenge = {
 type Template = { id: string; name: string; description: string | null; exercise: { name: string } };
 
 export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLeader: boolean }) {
+  const { t } = useLocale();
   const [challenges, setChallenges] = useState<DailyChallenge[] | null>(null);
   const [canActivateMore, setCanActivateMore] = useState(false);
   const [templates, setTemplates] = useState<Template[] | null>(null);
@@ -86,10 +88,10 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(data.error ?? "Fehlgeschlagen.");
+      toast.error(t(data.error ?? "Fehlgeschlagen."));
       return;
     }
-    toast.success("Challenge aktiviert!");
+    toast.success(t("Challenge aktiviert!"));
     setActivateOpen(false);
     setStakesInput("");
     refetch();
@@ -98,7 +100,7 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
   async function deactivate(id: string) {
     const res = await fetch(`/api/groups/${groupId}/daily-challenges/${id}`, { method: "DELETE" });
     if (!res.ok) {
-      toast.error("Fehlgeschlagen.");
+      toast.error(t("Fehlgeschlagen."));
       return;
     }
     refetch();
@@ -109,7 +111,7 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
       method: goal.myVote ? "DELETE" : "POST",
     });
     if (!res.ok) {
-      toast.error("Fehlgeschlagen.");
+      toast.error(t("Fehlgeschlagen."));
       return;
     }
     refetch();
@@ -119,7 +121,7 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
     const res = await fetch(`/api/challenge-goals/${goal.id}/attempts`, { method: "POST" });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(data.error ?? "Konnte nicht starten.");
+      toast.error(t(data.error ?? "Konnte nicht starten."));
       return;
     }
     const data = await res.json();
@@ -146,17 +148,17 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
             render={<Button size="sm" className="self-end" disabled={!canActivateMore} onClick={openActivateDialog} />}
           >
             <Plus className="size-4" />
-            Challenge aktivieren {!canActivateMore && "(max. 4)"}
+            {t("Challenge aktivieren")} {!canActivateMore && t("(max. 4)")}
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Challenge-Thema wählen</DialogTitle>
-              <DialogDescription>Jeder setzt danach sein eigenes Reps-Ziel.</DialogDescription>
+              <DialogTitle>{t("Challenge-Thema wählen")}</DialogTitle>
+              <DialogDescription>{t("Jeder setzt danach sein eigenes Reps-Ziel.")}</DialogDescription>
             </DialogHeader>
             <Input
               value={stakesInput}
               onChange={(e) => setStakesInput(e.target.value)}
-              placeholder="Einsatz (optional), z.B. „Verlierer macht 20 Liegestütze“"
+              placeholder={t("Einsatz (optional), z.B. „Verlierer macht 20 Liegestütze“")}
               maxLength={200}
             />
             {templates == null ? (
@@ -164,17 +166,17 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
             ) : (
               <div className="flex max-h-80 flex-col gap-2 overflow-y-auto">
                 {templates
-                  .filter((t) => !activeTemplateNames.has(t.name))
-                  .map((t) => (
+                  .filter((tpl) => !activeTemplateNames.has(tpl.name))
+                  .map((tpl) => (
                     <button
-                      key={t.id}
+                      key={tpl.id}
                       type="button"
-                      onClick={() => activate(t.id)}
+                      onClick={() => activate(tpl.id)}
                       className="flex flex-col items-start gap-0.5 rounded-lg border border-border p-3 text-left transition-colors hover:bg-accent"
                     >
-                      <span className="font-medium">{t.name}</span>
+                      <span className="font-medium">{tpl.name}</span>
                       <span className="text-xs text-muted-foreground">
-                        {t.description} · {t.exercise.name}
+                        {tpl.description ? t(tpl.description) : ""} · {tpl.exercise.name}
                       </span>
                     </button>
                   ))}
@@ -188,7 +190,7 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
         <Skeleton className="h-32 w-full" />
       ) : challenges.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          Noch keine Daily Challenges aktiv.{isLeader ? " Aktivier eine!" : " Der Leader kann welche aktivieren."}
+          {t("Noch keine Daily Challenges aktiv.")} {isLeader ? t("Aktivier eine!") : t("Der Leader kann welche aktivieren.")}
         </p>
       ) : (
         <FeedList>
@@ -198,11 +200,13 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="font-medium">{dc.templateName}</p>
-                    <p className="text-xs text-muted-foreground">{dc.templateDescription}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {dc.templateDescription ? t(dc.templateDescription) : ""}
+                    </p>
                     {dc.stakes && (
                       <p className="mt-1 flex items-center gap-1 text-xs font-medium text-amber-500">
                         <Zap className="size-3" />
-                        Einsatz: {dc.stakes}
+                        {t("Einsatz: {stakes}", { stakes: dc.stakes })}
                       </p>
                     )}
                   </div>
@@ -250,6 +254,7 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
 }
 
 function GoalRow({ goal, onYammer, onStart }: { goal: GoalView; onYammer: () => void; onStart: () => void }) {
+  const { t } = useLocale();
   const completed = goal.todayAttempt?.status === "COMPLETED";
   const needsRating =
     goal.todayAttempt &&
@@ -261,15 +266,15 @@ function GoalRow({ goal, onYammer, onStart }: { goal: GoalView; onYammer: () => 
     <div className="flex items-center gap-2 rounded-lg bg-secondary/40 px-3 py-2 text-sm">
       <span className={cn("flex-1", goal.isInvalidated && "text-muted-foreground line-through")}>
         {goal.userName}
-        {goal.isMe && " (du)"}
+        {goal.isMe && ` (${t("du")})`}
       </span>
-      <span className="text-xs text-muted-foreground">{goal.targetReps} Wdh</span>
+      <span className="text-xs text-muted-foreground">{t("{n} Wdh", { n: goal.targetReps })}</span>
 
       {completed && <Check className="size-4 text-success" />}
 
       {goal.isInvalidated && (
         <Badge variant="destructive" className="text-[10px]">
-          Angefochten
+          {t("Angefochten")}
         </Badge>
       )}
 
@@ -278,7 +283,7 @@ function GoalRow({ goal, onYammer, onStart }: { goal: GoalView; onYammer: () => 
           variant={goal.myVote ? "default" : "outline"}
           size="icon-sm"
           onClick={onYammer}
-          title={`Yammer (${goal.voteCount}/${goal.votesNeeded})`}
+          title={t("Yammer ({votes}/{needed})", { votes: goal.voteCount, needed: goal.votesNeeded })}
         >
           <MessageCircleWarning className="size-3.5" />
         </Button>
@@ -317,6 +322,7 @@ function HistoryButton({
   dailyChallengeId: string;
   title: string;
 }) {
+  const { t, dateLocale } = useLocale();
   const [open, setOpen] = useState(false);
   const [members, setMembers] = useState<HistoryMember[] | null>(null);
 
@@ -334,20 +340,20 @@ function HistoryButton({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Verlauf: {title}</DialogTitle>
-          <DialogDescription>Wer hat wann geschafft, aufgegeben oder gar nicht erst versucht.</DialogDescription>
+          <DialogTitle>{t("Verlauf: {title}", { title })}</DialogTitle>
+          <DialogDescription>{t("Wer hat wann geschafft, aufgegeben oder gar nicht erst versucht.")}</DialogDescription>
         </DialogHeader>
         {members == null ? (
           <Skeleton className="h-40 w-full" />
         ) : members.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Noch niemand hat ein Ziel für diese Challenge gesetzt.</p>
+          <p className="text-sm text-muted-foreground">{t("Noch niemand hat ein Ziel für diese Challenge gesetzt.")}</p>
         ) : (
           <div className="flex max-h-96 flex-col gap-4 overflow-y-auto">
             {members.map((m) => (
               <div key={m.userId} className="flex flex-col gap-1.5">
                 <p className="text-sm font-medium">{m.userName}</p>
                 {m.history.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">Noch keine Versuche.</p>
+                  <p className="text-xs text-muted-foreground">{t("Noch keine Versuche.")}</p>
                 ) : (
                   <div className="flex flex-col gap-1">
                     {m.history.map((h) => (
@@ -356,7 +362,7 @@ function HistoryButton({
                         className="flex items-center gap-2 rounded-lg bg-secondary/40 px-3 py-1.5 text-xs"
                       >
                         <span className="w-20 shrink-0 text-muted-foreground">
-                          {new Date(h.dateKey).toLocaleDateString("de-DE", { day: "2-digit", month: "short" })}
+                          {new Date(h.dateKey).toLocaleDateString(dateLocale, { day: "2-digit", month: "short" })}
                         </span>
                         {h.status === "COMPLETED" ? (
                           <Check className="size-3.5 shrink-0 text-success" />
@@ -366,7 +372,7 @@ function HistoryButton({
                           <Play className="size-3.5 shrink-0 text-primary" />
                         )}
                         <span className="flex-1">
-                          {h.currentReps}/{h.targetRepsSnapshot} Wdh
+                          {t("{cur}/{target} Wdh", { cur: h.currentReps, target: h.targetRepsSnapshot })}
                         </span>
                         <span className="font-mono text-muted-foreground">{h.percent}%</span>
                       </div>
@@ -391,6 +397,7 @@ function SetGoalInline({
   dailyChallengeId: string;
   onSet: () => void;
 }) {
+  const { t } = useLocale();
   const [value, setValue] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -406,7 +413,7 @@ function SetGoalInline({
     });
     setSaving(false);
     if (!res.ok) {
-      toast.error("Fehlgeschlagen.");
+      toast.error(t("Fehlgeschlagen."));
       return;
     }
     setValue("");
@@ -418,7 +425,7 @@ function SetGoalInline({
       onSubmit={handleSubmit}
       className="flex items-center gap-2 rounded-lg border border-dashed border-border px-3 py-2"
     >
-      <span className="flex-1 text-sm text-muted-foreground">Dein Ziel (Reps)</span>
+      <span className="flex-1 text-sm text-muted-foreground">{t("Dein Ziel (Reps)")}</span>
       <Input
         type="number"
         min={1}
@@ -428,7 +435,7 @@ function SetGoalInline({
         required
       />
       <Button type="submit" size="sm" disabled={saving}>
-        Setzen
+        {t("Setzen")}
       </Button>
     </form>
   );

@@ -16,6 +16,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { LegalFooter } from "@/components/legal-footer";
+import { LanguageToggle } from "@/components/language-toggle";
+import { useT } from "@/components/locale-provider";
 
 export default function RegisterPage() {
   return (
@@ -27,6 +29,7 @@ export default function RegisterPage() {
 
 function RegisterForm() {
   const router = useRouter();
+  const t = useT();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const inviteFromLink = searchParams.get("invite") ?? "";
@@ -59,8 +62,8 @@ function RegisterForm() {
       const data = await res.json().catch(() => ({}));
       setError(
         data.error === "Username already registered"
-          ? "Benutzername bereits vergeben."
-          : (data.error ?? "Registrierung fehlgeschlagen.")
+          ? t("Benutzername bereits vergeben.")
+          : t(data.error ?? "Registrierung fehlgeschlagen.")
       );
       setLoading(false);
       return;
@@ -74,6 +77,7 @@ function RegisterForm() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 px-4">
+      <LanguageToggle className="absolute right-4 top-4" />
       <div className="flex animate-in items-center gap-2 fade-in duration-500">
         <Mountain className="size-7 text-primary" />
         <span className="text-xl font-bold tracking-tight">Ascend</span>
@@ -82,18 +86,18 @@ function RegisterForm() {
       <div className="w-full max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Account erstellen</CardTitle>
+            <CardTitle className="text-xl">{t("Account erstellen")}</CardTitle>
             <CardDescription>
               {inviteFromLink
-                ? "Du wurdest zu einer Gruppe eingeladen - nach dem Anlegen bist du direkt Mitglied."
-                : "Push dich selbst. Push deine Crew."}
+                ? t("Du wurdest zu einer Gruppe eingeladen - nach dem Anlegen bist du direkt Mitglied.")
+                : t("Push dich selbst. Push deine Crew.")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               {(inviteOnly || inviteFromLink) && (
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="inviteCode">Einladungscode</Label>
+                  <Label htmlFor="inviteCode">{t("Einladungscode")}</Label>
                   <Input
                     id="inviteCode"
                     required={inviteOnly}
@@ -104,7 +108,7 @@ function RegisterForm() {
                   />
                   {inviteOnly && !inviteFromLink && (
                     <p className="text-xs text-muted-foreground">
-                      Diese Instanz ist nur mit Einladungslink zugänglich.
+                      {t("Diese Instanz ist nur mit Einladungslink zugänglich.")}
                     </p>
                   )}
                 </div>
@@ -120,7 +124,7 @@ function RegisterForm() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="username">Benutzername</Label>
+                <Label htmlFor="username">{t("Benutzername")}</Label>
                 <Input
                   id="username"
                   required
@@ -131,10 +135,10 @@ function RegisterForm() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">Nur Buchstaben, Zahlen, _ . -</p>
+                <p className="text-xs text-muted-foreground">{t("Nur Buchstaben, Zahlen, _ . -")}</p>
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="password">Passwort</Label>
+                <Label htmlFor="password">{t("Passwort")}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -144,22 +148,22 @@ function RegisterForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">Mindestens 8 Zeichen</p>
+                <p className="text-xs text-muted-foreground">{t("Mindestens 8 Zeichen")}</p>
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" disabled={loading} className="mt-2">
-                {loading ? "Einen Moment…" : "Registrieren"}
+                {loading ? t("Einen Moment…") : t("Registrieren")}
               </Button>
             </form>
           </CardContent>
         </Card>
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Schon einen Account?{" "}
+          {t("Schon einen Account?")}{" "}
           <Link
             href={`/login${callbackUrl !== "/dashboard" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
             className="font-medium text-primary hover:underline"
           >
-            Anmelden
+            {t("Anmelden")}
           </Link>
         </p>
       </div>

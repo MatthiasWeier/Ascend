@@ -13,8 +13,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { copyToClipboard } from "@/lib/clipboard";
+import { useT } from "@/components/locale-provider";
 
 export function InviteButton({ inviteCode }: { inviteCode: string }) {
+  const t = useT();
   const [copied, setCopied] = useState(false);
   const [fallbackUrl, setFallbackUrl] = useState<string | null>(null);
 
@@ -23,7 +25,7 @@ export function InviteButton({ inviteCode }: { inviteCode: string }) {
     const ok = await copyToClipboard(url);
     if (ok) {
       setCopied(true);
-      toast.success("Invite-Link kopiert!");
+      toast.success(t("Invite-Link kopiert!"));
       setTimeout(() => setCopied(false), 2000);
       return;
     }
@@ -36,15 +38,15 @@ export function InviteButton({ inviteCode }: { inviteCode: string }) {
     <>
       <Button variant="outline" size="sm" onClick={handleCopy}>
         {copied ? <Check className="size-4" /> : <Link2 className="size-4" />}
-        Einladen
+        {t("Einladen")}
       </Button>
 
       <Dialog open={!!fallbackUrl} onOpenChange={(open) => !open && setFallbackUrl(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Invite-Link</DialogTitle>
+            <DialogTitle>{t("Invite-Link")}</DialogTitle>
             <DialogDescription>
-              Automatisches Kopieren hat nicht geklappt - markier den Link und kopier ihn manuell.
+              {t("Automatisches Kopieren hat nicht geklappt - markier den Link und kopier ihn manuell.")}
             </DialogDescription>
           </DialogHeader>
           <Input readOnly value={fallbackUrl ?? ""} onFocus={(e) => e.currentTarget.select()} autoFocus />

@@ -16,6 +16,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { LegalFooter } from "@/components/legal-footer";
+import { LanguageToggle } from "@/components/language-toggle";
+import { useT } from "@/components/locale-provider";
 
 export default function LoginPage() {
   return (
@@ -27,6 +29,7 @@ export default function LoginPage() {
 
 function LoginForm() {
   const router = useRouter();
+  const t = useT();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [username, setUsername] = useState("");
@@ -71,8 +74,8 @@ function LoginForm() {
     if (result?.error) {
       setError(
         needsTotp
-          ? "Benutzername, Passwort oder Code ist falsch."
-          : "Benutzername oder Passwort ist falsch."
+          ? t("Benutzername, Passwort oder Code ist falsch.")
+          : t("Benutzername oder Passwort ist falsch.")
       );
       return;
     }
@@ -82,6 +85,7 @@ function LoginForm() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 px-4">
+      <LanguageToggle className="absolute right-4 top-4" />
       <div className="flex animate-in items-center gap-2 fade-in duration-500">
         <Mountain className="size-7 text-primary" />
         <span className="text-xl font-bold tracking-tight">Ascend</span>
@@ -90,13 +94,13 @@ function LoginForm() {
       <div className="w-full max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Willkommen zurück</CardTitle>
-            <CardDescription>Melde dich an, um weiterzutrainieren.</CardDescription>
+            <CardTitle className="text-xl">{t("Willkommen zurück")}</CardTitle>
+            <CardDescription>{t("Melde dich an, um weiterzutrainieren.")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="username">Benutzername</Label>
+                <Label htmlFor="username">{t("Benutzername")}</Label>
                 <Input
                   id="username"
                   required
@@ -107,7 +111,7 @@ function LoginForm() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="password">Passwort</Label>
+                <Label htmlFor="password">{t("Passwort")}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -120,13 +124,13 @@ function LoginForm() {
               </div>
               {needsTotp && (
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="totp">2FA-Code</Label>
+                  <Label htmlFor="totp">{t("2FA-Code")}</Label>
                   <Input
                     id="totp"
                     required
                     autoFocus
                     inputMode="numeric"
-                    placeholder="123456 oder Backup-Code"
+                    placeholder={t("123456 oder Backup-Code")}
                     autoComplete="one-time-code"
                     value={totpToken}
                     onChange={(e) => setTotpToken(e.target.value)}
@@ -135,7 +139,7 @@ function LoginForm() {
               )}
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" disabled={loading} className="mt-2">
-                {loading ? "Einen Moment…" : needsTotp ? "Bestätigen" : "Anmelden"}
+                {loading ? t("Einen Moment…") : needsTotp ? t("Bestätigen") : t("Anmelden")}
               </Button>
               {needsTotp && (
                 <button
@@ -147,19 +151,19 @@ function LoginForm() {
                     setError(null);
                   }}
                 >
-                  Zurück
+                  {t("Zurück")}
                 </button>
               )}
             </form>
           </CardContent>
         </Card>
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Noch kein Account?{" "}
+          {t("Noch kein Account?")}{" "}
           <Link
             href={`/register${callbackUrl !== "/dashboard" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
             className="font-medium text-primary hover:underline"
           >
-            Registrieren
+            {t("Registrieren")}
           </Link>
         </p>
       </div>

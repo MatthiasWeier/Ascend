@@ -44,8 +44,11 @@ production-deployment details.
 
 ## Conventions
 
-- UI strings are German (the app's actual users are German-speaking); code,
-  comments, and commit messages are English.
+- UI strings are German in code and wrapped in `t("...")`; the English
+  translation goes into `src/lib/i18n/en/`. Run
+  `node --experimental-strip-types scripts/check-i18n.mjs` before opening a
+  PR - it fails on missing translations. Code, comments, and commit messages
+  are English.
 - No new required third-party/cloud dependencies. Optional integrations
   (S3/MinIO storage, Web Push, Prometheus metrics) are fine as long as the
   app works fully without them when their env vars are unset.

@@ -26,6 +26,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useLocale } from "@/components/locale-provider";
 
 type ApiKeyInfo = {
   id: string;
@@ -36,6 +37,7 @@ type ApiKeyInfo = {
 };
 
 export function ApiKeyManager() {
+  const { t, dateLocale } = useLocale();
   const [keys, setKeys] = useState<ApiKeyInfo[] | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState("");
@@ -61,7 +63,7 @@ export function ApiKeyManager() {
     });
     setCreating(false);
     if (!res.ok) {
-      toast.error("Konnte API-Key nicht erstellen.");
+      toast.error(t("Konnte API-Key nicht erstellen."));
       return;
     }
     const data: { rawKey: string } = await res.json();
@@ -74,16 +76,16 @@ export function ApiKeyManager() {
   async function handleRevoke(keyId: string) {
     const res = await fetch(`/api/settings/api-keys/${keyId}`, { method: "DELETE" });
     if (!res.ok) {
-      toast.error("Konnte Key nicht widerrufen.");
+      toast.error(t("Konnte Key nicht widerrufen."));
       return;
     }
-    toast.success("Key widerrufen.");
+    toast.success(t("Key widerrufen."));
     refetch();
   }
 
   function copyNewKey() {
     if (!newRawKey) return;
-    navigator.clipboard.writeText(newRawKey).then(() => toast.success("Kopiert."));
+    navigator.clipboard.writeText(newRawKey).then(() => toast.success(t("Kopiert.")));
   }
 
   return (
@@ -91,24 +93,24 @@ export function ApiKeyManager() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogTrigger render={<Button type="button" variant="outline" size="sm" className="self-start" />}>
           <Key className="size-3.5" />
-          Neuer API-Key
+          {t("Neuer API-Key")}
         </DialogTrigger>
         <DialogContent>
           <form onSubmit={handleCreate}>
             <DialogHeader>
-              <DialogTitle>API-Key erstellen</DialogTitle>
-              <DialogDescription>Für eigene Scripts/Automationen gegen /api/v1/*.</DialogDescription>
+              <DialogTitle>{t("API-Key erstellen")}</DialogTitle>
+              <DialogDescription>{t("Für eigene Scripts/Automationen gegen /api/v1/*.")}</DialogDescription>
             </DialogHeader>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="z.B. Homeassistant-Script"
+              placeholder={t("z.B. Homeassistant-Script")}
               className="my-2"
               required
             />
             <DialogFooter>
               <Button type="submit" disabled={creating}>
-                {creating ? "Erstellen…" : "Erstellen"}
+                {creating ? t("Erstellen…") : t("Erstellen")}
               </Button>
             </DialogFooter>
           </form>
@@ -118,7 +120,7 @@ export function ApiKeyManager() {
       {keys == null ? (
         <Skeleton className="h-16 w-full" />
       ) : keys.length === 0 ? (
-        <p className="text-xs text-muted-foreground">Noch keine API-Keys.</p>
+        <p className="text-xs text-muted-foreground">{t("Noch keine API-Keys.")}</p>
       ) : (
         <div className="flex flex-col gap-1.5">
           {keys.map((k) => (
@@ -128,8 +130,8 @@ export function ApiKeyManager() {
                 <p className="font-mono text-xs text-muted-foreground">
                   {k.keyPrefix}… ·{" "}
                   {k.lastUsedAt
-                    ? `zuletzt genutzt ${new Date(k.lastUsedAt).toLocaleDateString("de-DE")}`
-                    : "noch nie genutzt"}
+                    ? t("zuletzt genutzt {date}", { date: new Date(k.lastUsedAt).toLocaleDateString(dateLocale) })
+                    : t("noch nie genutzt")}
                 </p>
               </div>
               <AlertDialog>
@@ -138,14 +140,14 @@ export function ApiKeyManager() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>"{k.name}" widerrufen?</AlertDialogTitle>
+                    <AlertDialogTitle>{t("\"{name}\" widerrufen?", { name: k.name })}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Scripts, die diesen Key benutzen, verlieren sofort den Zugriff.
+                      {t("Scripts, die diesen Key benutzen, verlieren sofort den Zugriff.")}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleRevoke(k.id)}>Widerrufen</AlertDialogAction>
+                    <AlertDialogCancel>{t("Abbrechen")}</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleRevoke(k.id)}>{t("Widerrufen")}</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -157,9 +159,9 @@ export function ApiKeyManager() {
       <Dialog open={newRawKey != null} onOpenChange={(open) => !open && setNewRawKey(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Dein neuer API-Key</DialogTitle>
+            <DialogTitle>{t("Dein neuer API-Key")}</DialogTitle>
             <DialogDescription>
-              Wird nur dieses eine Mal angezeigt - jetzt kopieren und sicher speichern.
+              {t("Wird nur dieses eine Mal angezeigt - jetzt kopieren und sicher speichern.")}
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center gap-2">
@@ -170,7 +172,7 @@ export function ApiKeyManager() {
           </div>
           <DialogFooter>
             <Button type="button" onClick={() => setNewRawKey(null)}>
-              Fertig
+              {t("Fertig")}
             </Button>
           </DialogFooter>
         </DialogContent>

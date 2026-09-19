@@ -19,10 +19,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { FeedList } from "@/components/feed-list";
+import { useT } from "@/components/locale-provider";
 
 type Group = { id: string; name: string; memberCount: number; role: "LEADER" | "MEMBER" };
 
 export default function GroupsPage() {
+  const t = useT();
   const [groups, setGroups] = useState<Group[] | null>(null);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -51,10 +53,10 @@ export default function GroupsPage() {
     setCreating(false);
     submittingRef.current = false;
     if (!res.ok) {
-      toast.error("Konnte Gruppe nicht erstellen.");
+      toast.error(t("Konnte Gruppe nicht erstellen."));
       return;
     }
-    toast.success("Gruppe erstellt!");
+    toast.success(t("Gruppe erstellt!"));
     setName("");
     setOpen(false);
     refetch();
@@ -64,27 +66,27 @@ export default function GroupsPage() {
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Gruppen</h1>
-          <p className="text-sm text-muted-foreground">Trainiert zusammen, pusht euch.</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("Gruppen")}</h1>
+          <p className="text-sm text-muted-foreground">{t("Trainiert zusammen, pusht euch.")}</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger render={<Button size="sm" />}>
             <Plus className="size-4" />
-            Neu
+            {t("Neu")}
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Neue Gruppe</DialogTitle>
-              <DialogDescription>Du wirst automatisch Owner und kannst danach Leute einladen.</DialogDescription>
+              <DialogTitle>{t("Neue Gruppe")}</DialogTitle>
+              <DialogDescription>{t("Du wirst automatisch Owner und kannst danach Leute einladen.")}</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreate} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="group-name">Name</Label>
+                <Label htmlFor="group-name">{t("Name")}</Label>
                 <Input id="group-name" value={name} onChange={(e) => setName(e.target.value)} required />
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={creating}>
-                  {creating ? "Erstellen…" : "Erstellen"}
+                  {creating ? t("Erstellen…") : t("Erstellen")}
                 </Button>
               </DialogFooter>
             </form>
@@ -99,7 +101,7 @@ export default function GroupsPage() {
         </div>
       ) : groups.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          Noch in keiner Gruppe. Erstell eine oder lass dich einladen.
+          {t("Noch in keiner Gruppe. Erstell eine oder lass dich einladen.")}
         </p>
       ) : (
         <FeedList>
@@ -113,8 +115,8 @@ export default function GroupsPage() {
                   <div className="flex-1">
                     <p className="font-medium">{g.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {g.memberCount} Mitglied{g.memberCount === 1 ? "" : "er"}
-                      {g.role === "LEADER" ? " · Leader" : ""}
+                      {g.memberCount === 1 ? t("1 Mitglied") : t("{n} Mitglieder", { n: g.memberCount })}
+                      {g.role === "LEADER" ? ` · ${t("Leader")}` : ""}
                     </p>
                   </div>
                 </CardContent>

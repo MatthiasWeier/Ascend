@@ -16,10 +16,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useT } from "@/components/locale-provider";
 
 type OwnedGroup = { id: string; name: string };
 
 export function DeleteAccountDialog() {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [ownedGroups, setOwnedGroups] = useState<OwnedGroup[] | null>(null);
   const [password, setPassword] = useState("");
@@ -44,7 +46,7 @@ export function DeleteAccountDialog() {
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(data.error ?? "Löschen fehlgeschlagen.");
+      toast.error(t(data.error ?? "Löschen fehlgeschlagen."));
       setDeleting(false);
       return;
     }
@@ -55,29 +57,29 @@ export function DeleteAccountDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button variant="destructive" />}>
         <Trash2 className="size-4" />
-        Account löschen
+        {t("Account löschen")}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Account endgültig löschen?</DialogTitle>
+          <DialogTitle>{t("Account endgültig löschen?")}</DialogTitle>
           <DialogDescription>
-            Das löscht alle deine Workouts, dein Körpergewicht-Verlauf, deine Klettereinträge und deine
-            Mitgliedschaften in Gruppen. Das kann nicht rückgängig gemacht werden.
+            {t("Das löscht alle deine Workouts, dein Körpergewicht-Verlauf, deine Klettereinträge und deine Mitgliedschaften in Gruppen. Das kann nicht rückgängig gemacht werden.")}
           </DialogDescription>
         </DialogHeader>
 
         {ownedGroups && ownedGroups.length > 0 && (
           <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-            Du bist Leader von {ownedGroups.length === 1 ? "dieser Gruppe" : "diesen Gruppen"}:{" "}
-            <strong>{ownedGroups.map((g) => g.name).join(", ")}</strong>. Da es keine
-            Leader-Übertragung gibt, wird{ownedGroups.length === 1 ? " diese Gruppe" : " werden diese Gruppen"} komplett
-            gelöscht — auch für alle anderen Mitglieder.
+            {ownedGroups.length === 1 ? t("Du bist Leader von dieser Gruppe:") : t("Du bist Leader von diesen Gruppen:")}{" "}
+            <strong>{ownedGroups.map((g) => g.name).join(", ")}</strong>.{" "}
+            {ownedGroups.length === 1
+              ? t("Da es keine Leader-Übertragung gibt, wird diese Gruppe komplett gelöscht — auch für alle anderen Mitglieder.")
+              : t("Da es keine Leader-Übertragung gibt, werden diese Gruppen komplett gelöscht — auch für alle anderen Mitglieder.")}
           </div>
         )}
 
         <form onSubmit={handleDelete} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="delete-password">Passwort zur Bestätigung</Label>
+            <Label htmlFor="delete-password">{t("Passwort zur Bestätigung")}</Label>
             <Input
               id="delete-password"
               type="password"
@@ -89,7 +91,7 @@ export function DeleteAccountDialog() {
           </div>
           <DialogFooter>
             <Button type="submit" variant="destructive" disabled={deleting}>
-              {deleting ? "Löschen…" : "Endgültig löschen"}
+              {deleting ? t("Löschen…") : t("Endgültig löschen")}
             </Button>
           </DialogFooter>
         </form>

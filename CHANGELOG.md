@@ -5,6 +5,43 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.35.0] - 2026-09-19
+
+### Changed
+- **Desktop-Layout**: ab großen Bildschirmen zwei Spalten - rechts bleiben
+  Workout Brain, offene Challenges und eine 12-Wochen-Aktivitätsübersicht
+  sichtbar.
+- **Feeds**: Workouts (eigene und geteilte) zeigen zuerst eine Zusammenfassung
+  ("5 Übungen · 14 Sätze") mit "Details einblenden"; Eintragsarten sind per
+  farbigem Rand und Icon-Kreis schneller unterscheidbar.
+- **Workout eintragen**: größere Eingabefelder und mehr Abstand, die
+  "Häufig"-Pillen sehen wie Buttons aus.
+- **Analytics**: Empty States mit Dummy-Graph und Button, Einheiten an den
+  Y-Achsen, Werte direkt an den Pyramiden-Balken, größerer Aktivitäts-Kalender.
+  "Kraft" listet nur Übungen mit mindestens 2 Trainingstagen (Graph möglich)
+  und wählt die meisttrainierte vor.
+- Hellere Nebentexte im Dark Mode (Kontrast).
+## [0.34.0] - 2026-09-19
+
+### Added
+- **Englisch/Deutsch umschaltbar**: Umschalter (DE/EN) in der Kopfleiste, auf
+  Login/Registrierung/Startseite und in den Einstellungen. Die gewählte Sprache
+  wird in einem Cookie (`ascend-locale`) pro Gerät gespeichert und gilt auch
+  vor dem Login. Übersetzt sind die gesamte Oberfläche, Workout-Brain-Texte,
+  Zeitangaben/Datumsformate, Fehlermeldungen des Servers sowie Impressum und
+  Datenschutzerklärung (englische Fassung als Serviceübersetzung - die
+  deutsche ist verbindlich).
+- `scripts/check-i18n.mjs` (`pnpm i18n:check`): findet fehlende englische
+  Übersetzungen und noch nicht übersetzte deutsche Texte.
+
+### Bekannte Grenzen
+- Von Nutzern eingegebene Inhalte (Beiträge, Notizen, eigene Übungen,
+  Gruppennamen) werden nicht übersetzt.
+- Push-Benachrichtigungen werden serverseitig auf Deutsch verschickt (die
+  Sprache des Empfängers ist dort nicht bekannt).
+- Bereits gespeicherte Workout-Zusammenfassungen in Gruppen-Posts bleiben
+  wie geteilt; nur die Kopfzeile ("Workout vom …") wird übersetzt.
+
 ## [0.33.0] - 2026-09-19
 
 ### Changed

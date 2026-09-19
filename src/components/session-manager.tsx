@@ -16,6 +16,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useLocale } from "@/components/locale-provider";
+import type { TFunction } from "@/lib/i18n";
 
 type SessionInfo = {
   id: string;
@@ -27,18 +29,19 @@ type SessionInfo = {
 
 // Best-effort, cosmetic only - just enough to tell devices apart in the
 // list, not a real UA parser.
-function describeUserAgent(ua: string | null): string {
-  if (!ua) return "Unbekanntes Gerät";
+function describeUserAgent(ua: string | null, t: TFunction): string {
+  if (!ua) return t("Unbekanntes Gerät");
   if (/iphone/i.test(ua)) return "iPhone";
   if (/ipad/i.test(ua)) return "iPad";
   if (/android/i.test(ua)) return "Android";
   if (/windows/i.test(ua)) return "Windows";
   if (/macintosh|mac os/i.test(ua)) return "Mac";
   if (/linux/i.test(ua)) return "Linux";
-  return "Unbekanntes Gerät";
+  return t("Unbekanntes Gerät");
 }
 
 export function SessionManager() {
+  const { t, dateLocale } = useLocale();
   const [sessions, setSessions] = useState<SessionInfo[] | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [revokingAll, setRevokingAll] = useState(false);
@@ -56,10 +59,10 @@ export function SessionManager() {
     const res = await fetch(`/api/settings/sessions/${id}`, { method: "DELETE" });
     setBusyId(null);
     if (!res.ok) {
-      toast.error("Konnte Sitzung nicht beenden.");
+      toast.error(t("Konnte Sitzung nicht beenden."));
       return;
     }
-    toast.success("Sitzung beendet.");
+    toast.success(t("Sitzung beendet."));
     refetch();
   }
 
@@ -68,10 +71,10 @@ export function SessionManager() {
     const res = await fetch("/api/settings/sessions", { method: "DELETE" });
     setRevokingAll(false);
     if (!res.ok) {
-      toast.error("Konnte andere Sitzungen nicht beenden.");
+      toast.error(t("Konnte andere Sitzungen nicht beenden."));
       return;
     }
-    toast.success("Alle anderen Sitzungen beendet.");
+    toast.success(t("Alle anderen Sitzungen beendet."));
     refetch();
   }
 
@@ -88,11 +91,11 @@ export function SessionManager() {
               <Laptop className="size-4 shrink-0 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">
-                  {describeUserAgent(s.userAgent)}
-                  {s.isCurrent && <span className="ml-1.5 text-xs text-success">(dieses Gerät)</span>}
+                  {describeUserAgent(s.userAgent, t)}
+                  {s.isCurrent && <span className="ml-1.5 text-xs text-success">{t("(dieses Gerät)")}</span>}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Zuletzt aktiv {new Date(s.lastSeenAt).toLocaleString("de-DE")}
+                  {t("Zuletzt aktiv {when}", { when: new Date(s.lastSeenAt).toLocaleString(dateLocale) })}
                 </p>
               </div>
             </div>
@@ -106,16 +109,16 @@ export function SessionManager() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Diese Sitzung beenden?</AlertDialogTitle>
+                  <AlertDialogTitle>{t("Diese Sitzung beenden?")}</AlertDialogTitle>
                   <AlertDialogDescription>
                     {s.isCurrent
-                      ? "Das meldet dich auf diesem Gerät ab."
-                      : "Das Gerät wird beim nächsten Zugriff automatisch abgemeldet."}
+                      ? t("Das meldet dich auf diesem Gerät ab.")
+                      : t("Das Gerät wird beim nächsten Zugriff automatisch abgemeldet.")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => revoke(s.id)}>Beenden</AlertDialogAction>
+                  <AlertDialogCancel>{t("Abbrechen")}</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => revoke(s.id)}>{t("Beenden")}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -124,7 +127,7 @@ export function SessionManager() {
       </div>
       {hasOthers && (
         <Button type="button" variant="outline" size="sm" className="w-fit" disabled={revokingAll} onClick={revokeOthers}>
-          {revokingAll ? "Einen Moment…" : "Alle anderen Sitzungen beenden"}
+          {revokingAll ? t("Einen Moment…") : t("Alle anderen Sitzungen beenden")}
         </Button>
       )}
     </div>

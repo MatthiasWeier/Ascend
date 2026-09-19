@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useT } from "@/components/locale-provider";
 
 const FOCUS_OPTIONS = [
   { value: "PUSH", label: "Push" },
@@ -41,6 +42,7 @@ type CreatedExercise = {
 };
 
 export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: CreatedExercise) => void }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -76,11 +78,11 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
     setSaving(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(data.error ?? "Konnte Übung nicht anlegen.");
+      toast.error(t(data.error ?? "Konnte Übung nicht anlegen."));
       return;
     }
     const data: { exercise: CreatedExercise } = await res.json();
-    toast.success("Übung angelegt!");
+    toast.success(t("Übung angelegt!"));
     setName("");
     setDescription("");
     setOpen(false);
@@ -91,39 +93,39 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button type="button" variant="outline" size="sm" />}>
         <Plus className="size-4" />
-        Neue Übung
+        {t("Neue Übung")}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Neue Übung anlegen</DialogTitle>
+          <DialogTitle>{t("Neue Übung anlegen")}</DialogTitle>
           <DialogDescription>
-            Für dich persönlich, oder sichtbar für eine ganze Gruppe.
+            {t("Für dich persönlich, oder sichtbar für eine ganze Gruppe.")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ex-name">Name</Label>
+            <Label htmlFor="ex-name">{t("Name")}</Label>
             <Input id="ex-name" value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ex-desc">Beschreibung</Label>
+            <Label htmlFor="ex-desc">{t("Beschreibung")}</Label>
             <Textarea id="ex-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
           <div className="flex gap-3">
             <div className="flex flex-1 flex-col gap-1.5">
-              <Label>Art</Label>
+              <Label>{t("Art")}</Label>
               <Select value={type} onValueChange={(v) => setType(v as "REPS" | "HOLD")}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="REPS">Wdh + Gewicht</SelectItem>
-                  <SelectItem value="HOLD">Halten (Zeit)</SelectItem>
+                  <SelectItem value="REPS">{t("Wdh + Gewicht")}</SelectItem>
+                  <SelectItem value="HOLD">{t("Halten (Zeit)")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex flex-1 flex-col gap-1.5">
-              <Label>Fokus</Label>
+              <Label>{t("Fokus")}</Label>
               <Select value={focus} onValueChange={(v) => setFocus(v as typeof focus)}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
@@ -131,7 +133,7 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
                 <SelectContent>
                   {FOCUS_OPTIONS.map((f) => (
                     <SelectItem key={f.value} value={f.value}>
-                      {f.label}
+                      {t(f.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -141,23 +143,23 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
 
           <div className="flex items-center justify-between rounded-lg border border-border p-3">
             <div>
-              <Label htmlFor="ex-bw">Bodyweight-Übung</Label>
-              <p className="text-xs text-muted-foreground">Körpergewicht fließt in Analytics/Power ein.</p>
+              <Label htmlFor="ex-bw">{t("Bodyweight-Übung")}</Label>
+              <p className="text-xs text-muted-foreground">{t("Körpergewicht fließt in Analytics/Power ein.")}</p>
             </div>
             <Switch id="ex-bw" checked={isBodyweight} onCheckedChange={setIsBodyweight} />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label>Sichtbarkeit</Label>
+            <Label>{t("Sichtbarkeit")}</Label>
             <Select value={groupId} onValueChange={(v) => setGroupId(v as string)}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="personal">Nur für mich</SelectItem>
+                <SelectItem value="personal">{t("Nur für mich")}</SelectItem>
                 {groups.map((g) => (
                   <SelectItem key={g.id} value={g.id}>
-                    Gruppe: {g.name}
+                    {t("Gruppe: {name}", { name: g.name })}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -166,7 +168,7 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
 
           <DialogFooter>
             <Button type="submit" disabled={saving}>
-              {saving ? "Anlegen…" : "Anlegen"}
+              {saving ? t("Anlegen…") : t("Anlegen")}
             </Button>
           </DialogFooter>
         </form>

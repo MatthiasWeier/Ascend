@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import type { MuscleFocus } from "@prisma/client";
+import { useT } from "@/components/locale-provider";
 
 type WeeklySet = { focus: MuscleFocus; label: string; count: number };
 
 export function WeeklySets() {
+  const t = useT();
   const [data, setData] = useState<WeeklySet[] | null>(null);
 
   useEffect(() => {
@@ -25,8 +27,8 @@ export function WeeklySets() {
       {data.map((d) => (
         <div key={d.focus} className="flex flex-col gap-1">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">{d.label}</span>
-            <span className="font-medium tabular-nums">{d.count} Sätze</span>
+            <span className="text-muted-foreground">{t(d.label)}</span>
+            <span className="font-medium tabular-nums">{t("{n} Sätze", { n: d.count })}</span>
           </div>
           <Progress value={Math.round((d.count / max) * 100)} />
         </div>

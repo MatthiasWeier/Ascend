@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useLocale } from "@/components/locale-provider";
 
 type AdminUser = {
   id: string;
@@ -30,6 +31,7 @@ type AdminUser = {
 };
 
 export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
+  const { t, dateLocale } = useLocale();
   const [users, setUsers] = useState<AdminUser[] | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -51,10 +53,10 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
     setBusyId(null);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(data.error ?? "Konnte Admin-Status nicht ändern.");
+      toast.error(t(data.error ?? "Konnte Admin-Status nicht ändern."));
       return;
     }
-    toast.success(next ? "Zum Admin gemacht." : "Admin-Rechte entfernt.");
+    toast.success(next ? t("Zum Admin gemacht.") : t("Admin-Rechte entfernt."));
     refetch();
   }
 
@@ -68,10 +70,10 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
     setBusyId(null);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(data.error ?? "Konnte 2FA nicht zurücksetzen.");
+      toast.error(t(data.error ?? "Konnte 2FA nicht zurücksetzen."));
       return;
     }
-    toast.success("2FA für diesen Nutzer zurückgesetzt.");
+    toast.success(t("2FA für diesen Nutzer zurückgesetzt."));
     refetch();
   }
 
@@ -81,10 +83,10 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
     setBusyId(null);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(data.error ?? "Konnte Nutzer nicht löschen.");
+      toast.error(t(data.error ?? "Konnte Nutzer nicht löschen."));
       return;
     }
-    toast.success("Nutzer gelöscht.");
+    toast.success(t("Nutzer gelöscht."));
     refetch();
   }
 
@@ -104,8 +106,11 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
                 {u.name} <span className="text-muted-foreground">@{u.username}</span>
               </p>
               <p className="text-xs text-muted-foreground">
-                {u._count.workoutSessions} Workouts · {u._count.groupMemberships} Gruppen · seit{" "}
-                {new Date(u.createdAt).toLocaleDateString("de-DE")}
+                {t("{workouts} Workouts · {groups} Gruppen · seit {date}", {
+                  workouts: u._count.workoutSessions,
+                  groups: u._count.groupMemberships,
+                  date: new Date(u.createdAt).toLocaleDateString(dateLocale),
+                })}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -114,7 +119,7 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
                 checked={u.isAdmin}
                 disabled={isSelf || busyId === u.id}
                 onCheckedChange={(v) => toggleAdmin(u.id, v)}
-                title={isSelf ? "Du kannst deinen eigenen Admin-Status nicht ändern" : undefined}
+                title={isSelf ? t("Du kannst deinen eigenen Admin-Status nicht ändern") : undefined}
               />
             </div>
             {u.totpEnabled && (
@@ -127,7 +132,7 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
                       size="icon-sm"
                       className="text-muted-foreground hover:text-foreground"
                       disabled={busyId === u.id}
-                      title="2FA für diesen Nutzer zurücksetzen"
+                      title={t("2FA für diesen Nutzer zurücksetzen")}
                     />
                   }
                 >
@@ -135,18 +140,15 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>2FA für {u.name} zurücksetzen?</AlertDialogTitle>
+                    <AlertDialogTitle>{t("2FA für {name} zurücksetzen?", { name: u.name })}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Deaktiviert die Zwei-Faktor-Authentifizierung für dieses Konto und
-                      löscht alle Backup-Codes - für den Fall, dass die Person ihre
-                      Authenticator-App und Backup-Codes verloren hat. Sie kann 2FA danach
-                      in den Einstellungen neu einrichten.
+                      {t("Deaktiviert die Zwei-Faktor-Authentifizierung für dieses Konto und löscht alle Backup-Codes - für den Fall, dass die Person ihre Authenticator-App und Backup-Codes verloren hat. Sie kann 2FA danach in den Einstellungen neu einrichten.")}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                    <AlertDialogCancel>{t("Abbrechen")}</AlertDialogCancel>
                     <AlertDialogAction onClick={() => disableTotp(u.id)}>
-                      Zurücksetzen
+                      {t("Zurücksetzen")}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -161,7 +163,7 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
                     size="icon-sm"
                     className="text-muted-foreground hover:text-destructive"
                     disabled={isSelf || busyId === u.id}
-                    title={isSelf ? "Nutze die Konto-Löschung in den Einstellungen" : "Nutzer löschen"}
+                    title={isSelf ? t("Nutze die Konto-Löschung in den Einstellungen") : t("Nutzer löschen")}
                   />
                 }
               >
@@ -169,15 +171,14 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>{u.name} (@{u.username}) löschen?</AlertDialogTitle>
+                  <AlertDialogTitle>{t("{name} (@{username}) löschen?", { name: u.name, username: u.username })}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Löscht das Konto und alle zugehörigen Daten (Workouts, Gruppen-Mitgliedschaften,
-                    eigene Gruppen) endgültig. Das kann nicht rückgängig gemacht werden.
+                    {t("Löscht das Konto und alle zugehörigen Daten (Workouts, Gruppen-Mitgliedschaften, eigene Gruppen) endgültig. Das kann nicht rückgängig gemacht werden.")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => deleteUser(u.id)}>Löschen</AlertDialogAction>
+                  <AlertDialogCancel>{t("Abbrechen")}</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => deleteUser(u.id)}>{t("Löschen")}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

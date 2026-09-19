@@ -5,18 +5,16 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { BoulderDayDialog } from "@/components/analytics/boulder-day-dialog";
+import { useLocale } from "@/components/locale-provider";
 
 const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
-const MONTH_NAMES = [
-  "Januar", "Februar", "März", "April", "Mai", "Juni",
-  "Juli", "August", "September", "Oktober", "November", "Dezember",
-];
 
 function pad(n: number) {
   return n.toString().padStart(2, "0");
 }
 
 export function BoulderCalendar() {
+  const { t, dateLocale } = useLocale();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1); // 1-12
@@ -58,7 +56,11 @@ export function BoulderCalendar() {
           <ChevronLeft className="size-4" />
         </Button>
         <span className="text-sm font-medium">
-          {MONTH_NAMES[month - 1]} {year}
+          {new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString(dateLocale, {
+            month: "long",
+            year: "numeric",
+            timeZone: "UTC",
+          })}
         </span>
         <Button variant="ghost" size="icon-sm" onClick={() => changeMonth(1)}>
           <ChevronRight className="size-4" />
@@ -67,7 +69,7 @@ export function BoulderCalendar() {
 
       <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-muted-foreground">
         {WEEKDAYS.map((d) => (
-          <div key={d}>{d}</div>
+          <div key={d}>{t(d)}</div>
         ))}
       </div>
 

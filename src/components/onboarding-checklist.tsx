@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Check, Scale, Dumbbell, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getT } from "@/lib/i18n/server";
 
 type Step = {
   href: string;
@@ -10,32 +11,33 @@ type Step = {
   done: boolean;
 };
 
-export function OnboardingChecklist({
+export async function OnboardingChecklist({
   hasBodyWeight,
   hasGroup,
 }: {
   hasBodyWeight: boolean;
   hasGroup: boolean;
 }) {
+  const { t } = await getT();
   const steps: Step[] = [
     {
       href: "/dashboard/settings",
-      label: "Körpergewicht eintragen",
-      description: "Für korrekt bewertete Bodyweight-Übungen wie Klimmzüge",
+      label: t("Körpergewicht eintragen"),
+      description: t("Für korrekt bewertete Bodyweight-Übungen wie Klimmzüge"),
       icon: Scale,
       done: hasBodyWeight,
     },
     {
       href: "/dashboard/workouts/new",
-      label: "Erstes Workout eintragen",
-      description: "Übung wählen, Sätze eintragen, fertig",
+      label: t("Erstes Workout eintragen"),
+      description: t("Übung wählen, Sätze eintragen, fertig"),
       icon: Dumbbell,
       done: false,
     },
     {
       href: "/dashboard/groups",
-      label: "Gruppe erstellen oder beitreten",
-      description: "Gemeinsame Ziele, Feed und Challenges mit Freunden",
+      label: t("Gruppe erstellen oder beitreten"),
+      description: t("Gemeinsame Ziele, Feed und Challenges mit Freunden"),
       icon: Users,
       done: hasGroup,
     },
@@ -43,7 +45,7 @@ export function OnboardingChecklist({
 
   return (
     <div className="rounded-xl border border-dashed border-border p-4">
-      <p className="mb-3 text-sm font-semibold">So geht's los</p>
+      <p className="mb-3 text-sm font-semibold">{t("So geht's los")}</p>
       <div className="flex flex-col gap-1">
         {steps.map((step) => (
           <Link

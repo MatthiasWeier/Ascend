@@ -11,16 +11,21 @@ import { Button } from "@/components/ui/button";
 import { BrainCard } from "@/components/brain-card";
 import { DailyChallengeReminder } from "@/components/daily-challenge-reminder";
 import { HomeFeed } from "@/components/home-feed";
+import { MiniActivity } from "@/components/mini-activity";
 import { DashboardRefresh } from "@/components/dashboard-refresh";
 import { OnboardingChecklist } from "@/components/onboarding-checklist";
+import { getT } from "@/lib/i18n/server";
 
 export default async function DashboardPage() {
+  const { t } = await getT();
   const session = await auth();
   const userId = session!.user.id;
 
-  const [suggestion, sessions, prSetIds, pendingChallenges, groupActivity, streak, user, memberships] =
+  const twelveWeeksAgo = new Date(Date.now() - 12 * 7 * 24 * 60 * 60 * 1000);
+
+  const [suggestion, sessions, prSetIds, pendingChallenges, groupActivity, streak, user, memberships, recentDays] =
     await Promise.all([
-      getBrainSuggestion(userId),
+      getBrainSuggestion(userId, t),
       prisma.workoutSession.findMany({
         where: { userId },
         orderBy: { date: "desc" },
@@ -36,6 +41,10 @@ export default async function DashboardPage() {
         where: { userId },
         select: { group: { select: { id: true, name: true } } },
         orderBy: { joinedAt: "asc" },
+      }),
+      prisma.workoutSession.findMany({
+        where: { userId, date: { gte: twelveWeeksAgo } },
+        select: { date: true, _count: { select: { sets: true } } },
       }),
     ]);
 
@@ -65,53 +74,64 @@ export default async function DashboardPage() {
 
   return (
     <DashboardRefresh>
-    <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">
-      <DailyChallengeReminder pending={pendingChallenges} />
+      <div className="mx-auto max-w-2xl px-4 py-6 xl:max-w-6xl">
+        <div className="flex flex-col gap-6 xl:grid xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-start xl:gap-8">
+          <div className="flex min-w-0 flex-col gap-6">
+            <div className="xl:hidden">
+              <DailyChallengeReminder pending={pendingChallenges} />
+            </div>
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Hey, {session!.user.name}</h1>
-          {streak > 0 ? (
-            <p className="flex items-center gap-1 text-sm font-medium text-amber-500">
-              <Flame className="size-4" />
-              {streak} Tag{streak === 1 ? "" : "e"} Streak
-            </p>
-          ) : (
-            <p className="text-sm text-muted-foreground">Schön, dass du da bist.</p>
-          )}
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">{t("Hey, {name}", { name: session!.user.name ?? "" })}</h1>
+                {streak > 0 ? (
+                  <p className="flex items-center gap-1 text-sm font-medium text-amber-500">
+                    <Flame className="size-4" />
+                    {streak === 1 ? t("1 Tag Streak") : t("{n} Tage Streak", { n: streak })}
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t("Schön, dass du da bist.")}</p>
+                )}
+              </div>
+              <Button render={<Link href="/dashboard/workouts/new" />} className="hidden sm:inline-flex">
+                <PlusCircle className="size-4" />
+                {t("Workout")}
+              </Button>
+            </div>
+
+            <div className="xl:hidden">
+              <BrainCard suggestion={suggestion} />
+            </div>
+
+            <Button render={<Link href="/dashboard/workouts/new" />} size="lg" className="w-full sm:hidden">
+              <PlusCircle className="size-4" />
+              {t("Workout eintragen")}
+            </Button>
+
+            <div className="flex flex-col gap-3">
+              <h2 className="text-sm font-semibold text-muted-foreground">{t("Feed")}</h2>
+              {sessions.length === 0 && groupActivity.length === 0 ? (
+                <OnboardingChecklist hasBodyWeight={user?.bodyWeightKg != null} hasGroup={groups.length > 0} />
+              ) : (
+                <HomeFeed
+                  me={userId}
+                  ownWorkouts={ownWorkouts}
+                  activity={groupActivity}
+                  groups={groups}
+                  prSetIds={prSetIds}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Desktop side column: what used to sit above the feed, kept in view */}
+          <aside className="hidden xl:sticky xl:top-20 xl:flex xl:flex-col xl:gap-4">
+            <BrainCard suggestion={suggestion} />
+            <DailyChallengeReminder pending={pendingChallenges} />
+            <MiniActivity sessions={recentDays.map((d) => ({ date: d.date, sets: d._count.sets }))} />
+          </aside>
         </div>
-        <Button render={<Link href="/dashboard/workouts/new" />} className="hidden sm:inline-flex">
-          <PlusCircle className="size-4" />
-          Workout
-        </Button>
       </div>
-
-      <BrainCard suggestion={suggestion} />
-
-      <Button
-        render={<Link href="/dashboard/workouts/new" />}
-        size="lg"
-        className="w-full sm:hidden"
-      >
-        <PlusCircle className="size-4" />
-        Workout eintragen
-      </Button>
-
-      <div className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-muted-foreground">Feed</h2>
-        {sessions.length === 0 && groupActivity.length === 0 ? (
-          <OnboardingChecklist hasBodyWeight={user?.bodyWeightKg != null} hasGroup={groups.length > 0} />
-        ) : (
-          <HomeFeed
-            me={userId}
-            ownWorkouts={ownWorkouts}
-            activity={groupActivity}
-            groups={groups}
-            prSetIds={prSetIds}
-          />
-        )}
-      </div>
-    </div>
     </DashboardRefresh>
   );
 }

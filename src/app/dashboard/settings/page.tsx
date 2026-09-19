@@ -37,6 +37,8 @@ import { roundForDisplay } from "@/lib/weight-units";
 import type { WeightUnit } from "@/lib/weight-units";
 import { TwoFactorSetup } from "@/components/two-factor-setup";
 import { SessionManager } from "@/components/session-manager";
+import { useLocale } from "@/components/locale-provider";
+import type { Locale } from "@/lib/i18n";
 
 type SettingsData = {
   user: {
@@ -65,6 +67,7 @@ const weightChartConfig = {
 
 export default function SettingsPage() {
   const weightUnit = useWeightUnit();
+  const { t, locale, setLocale } = useLocale();
   const [data, setData] = useState<SettingsData | null>(null);
   const [bodyWeight, setBodyWeight] = useState("");
   const [savingWeight, setSavingWeight] = useState(false);
@@ -120,10 +123,10 @@ export default function SettingsPage() {
     });
     setSavingWeight(false);
     if (!res.ok) {
-      toast.error("Konnte Gewicht nicht speichern.");
+      toast.error(t("Konnte Gewicht nicht speichern."));
       return;
     }
-    toast.success("Gewicht eingetragen!");
+    toast.success(t("Gewicht eingetragen!"));
     refetch();
   }
 
@@ -132,7 +135,7 @@ export default function SettingsPage() {
     e.target.value = "";
     if (!file) return;
     if (file.size > 4 * 1024 * 1024) {
-      toast.error("Bild zu groß (max. 4MB).");
+      toast.error(t("Bild zu groß (max. 4MB)."));
       return;
     }
     setUploadingAvatar(true);
@@ -141,10 +144,10 @@ export default function SettingsPage() {
     const res = await fetch("/api/settings/avatar", { method: "POST", body: formData });
     setUploadingAvatar(false);
     if (!res.ok) {
-      toast.error("Konnte Profilbild nicht hochladen.");
+      toast.error(t("Konnte Profilbild nicht hochladen."));
       return;
     }
-    toast.success("Profilbild aktualisiert!");
+    toast.success(t("Profilbild aktualisiert!"));
     refetch();
   }
 
@@ -159,10 +162,10 @@ export default function SettingsPage() {
     });
     setSavingGoals(false);
     if (!res.ok) {
-      toast.error("Konnte Ziele nicht speichern.");
+      toast.error(t("Konnte Ziele nicht speichern."));
       return;
     }
-    toast.success("Gespeichert!");
+    toast.success(t("Gespeichert!"));
   }
 
   if (data == null) {
@@ -202,7 +205,7 @@ export default function SettingsPage() {
           />
         </button>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Einstellungen</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("Einstellungen")}</h1>
           <p className="text-sm text-muted-foreground">{data.user.name} · @{data.user.username}</p>
           <p className="mt-1 text-xs text-muted-foreground/60">Ascend v{APP_VERSION}</p>
         </div>
@@ -210,10 +213,9 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Körpergewicht</CardTitle>
+          <CardTitle className="text-base">{t("Körpergewicht")}</CardTitle>
           <CardDescription>
-            Jeder Eintrag wird mit Datum gespeichert - Bodyweight-Übungen (Klimmzüge etc.) werden in
-            Analytics immer gegen dein Gewicht *zum jeweiligen Zeitpunkt* bewertet, nicht dein aktuelles.
+            {t("Jeder Eintrag wird mit Datum gespeichert - Bodyweight-Übungen (Klimmzüge etc.) werden in Analytics immer gegen dein Gewicht *zum jeweiligen Zeitpunkt* bewertet, nicht dein aktuelles.")}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -229,7 +231,7 @@ export default function SettingsPage() {
             />
             <span className="text-sm text-muted-foreground">{weightUnit.unitLabel}</span>
             <Button onClick={handleSaveWeight} disabled={savingWeight} size="sm" className="ml-auto">
-              {savingWeight ? "Speichern…" : "Heute eintragen"}
+              {savingWeight ? t("Speichern…") : t("Heute eintragen")}
             </Button>
           </div>
 
@@ -247,8 +249,8 @@ export default function SettingsPage() {
                 <ChartTooltip
                   content={
                     <ChartTooltipContent
-                      labelFormatter={(v) => new Date(v).toLocaleDateString("de-DE")}
-                      formatter={(value) => [`${value} ${weightUnit.unitLabel}`, "Gewicht"]}
+                      labelFormatter={(v) => new Date(v).toLocaleDateString(locale === "en" ? "en-GB" : "de-DE")}
+                      formatter={(value) => [`${value} ${weightUnit.unitLabel}`, t("Gewicht")]}
                     />
                   }
                 />
@@ -267,16 +269,16 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Balance-Ziele</CardTitle>
+          <CardTitle className="text-base">{t("Balance-Ziele")}</CardTitle>
           <CardDescription>
-            Deine Wunsch-Verteilung fürs Balance-Radar. Muss nicht exakt 100% ergeben.
+            {t("Deine Wunsch-Verteilung fürs Balance-Radar. Muss nicht exakt 100% ergeben.")}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           {ALL_FOCUSES.map((focus) => (
             <div key={focus} className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <Label>{FOCUS_LABEL[focus]}</Label>
+                <Label>{t(FOCUS_LABEL[focus])}</Label>
                 <span className="text-sm font-medium text-primary">{goals[focus]}%</span>
               </div>
               <Slider
@@ -289,17 +291,17 @@ export default function SettingsPage() {
             </div>
           ))}
           <p className={`text-xs ${goalSum === 100 ? "text-success" : "text-muted-foreground"}`}>
-            Summe: {goalSum}%{goalSum === 100 ? " — perfekt" : ""}
+            {t("Summe: {sum}%", { sum: goalSum })}{goalSum === 100 ? ` — ${t("perfekt")}` : ""}
           </p>
           <Button onClick={handleSaveGoals} disabled={savingGoals} size="lg">
-            {savingGoals ? "Speichern…" : "Ziele speichern"}
+            {savingGoals ? t("Speichern…") : t("Ziele speichern")}
           </Button>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Benachrichtigungen</CardTitle>
+          <CardTitle className="text-base">{t("Benachrichtigungen")}</CardTitle>
         </CardHeader>
         <CardContent>
           <PushNotificationToggle />
@@ -308,8 +310,8 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Deine Daten</CardTitle>
-          <CardDescription>Export, Import und ein abonnierbarer Kalender-Feed deiner Workouts.</CardDescription>
+          <CardTitle className="text-base">{t("Deine Daten")}</CardTitle>
+          <CardDescription>{t("Export, Import und ein abonnierbarer Kalender-Feed deiner Workouts.")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <DataExport />
@@ -320,9 +322,9 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Einheiten</CardTitle>
+          <CardTitle className="text-base">{t("Einheiten")}</CardTitle>
           <CardDescription>
-            Betrifft nur die Anzeige - gespeichert wird intern immer in kg.
+            {t("Betrifft nur die Anzeige - gespeichert wird intern immer in kg.")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -334,8 +336,8 @@ export default function SettingsPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="KG">Kilogramm (kg)</SelectItem>
-              <SelectItem value="LBS">Pfund (lbs)</SelectItem>
+              <SelectItem value="KG">{t("Kilogramm (kg)")}</SelectItem>
+              <SelectItem value="LBS">{t("Pfund (lbs)")}</SelectItem>
             </SelectContent>
           </Select>
         </CardContent>
@@ -343,8 +345,28 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">API-Keys</CardTitle>
-          <CardDescription>Für eigene Scripts/Automationen - siehe README für die Endpunkte.</CardDescription>
+          <CardTitle className="text-base">Sprache / Language</CardTitle>
+          <CardDescription>
+            {t("Gilt für dieses Gerät/diesen Browser. Von Nutzern eingegebene Inhalte (Beiträge, Notizen, eigene Übungen) werden nicht übersetzt.")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Select value={locale} onValueChange={(v) => setLocale(v as Locale)}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="de">Deutsch</SelectItem>
+              <SelectItem value="en">English</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("API-Keys")}</CardTitle>
+          <CardDescription>{t("Für eigene Scripts/Automationen - siehe README für die Endpunkte.")}</CardDescription>
         </CardHeader>
         <CardContent>
           <ApiKeyManager />
@@ -353,7 +375,7 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Zwei-Faktor-Authentifizierung</CardTitle>
+          <CardTitle className="text-base">{t("Zwei-Faktor-Authentifizierung")}</CardTitle>
         </CardHeader>
         <CardContent>
           <TwoFactorSetup enabled={data.user.totpEnabled} onChanged={refetch} />
@@ -362,9 +384,9 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Sitzungen</CardTitle>
+          <CardTitle className="text-base">{t("Sitzungen")}</CardTitle>
           <CardDescription>
-            Geräte, die aktuell bei deinem Konto angemeldet sind.
+            {t("Geräte, die aktuell bei deinem Konto angemeldet sind.")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -374,8 +396,8 @@ export default function SettingsPage() {
 
       <Card className="border-destructive/30">
         <CardHeader>
-          <CardTitle className="text-base text-destructive">Danger Zone</CardTitle>
-          <CardDescription>Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden.</CardDescription>
+          <CardTitle className="text-base text-destructive">{t("Danger Zone")}</CardTitle>
+          <CardDescription>{t("Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden.")}</CardDescription>
         </CardHeader>
         <CardContent>
           <DeleteAccountDialog />

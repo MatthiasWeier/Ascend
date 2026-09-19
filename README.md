@@ -121,6 +121,9 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   hinzufügen
 - ✅ **Workout bearbeiten & löschen** - inkl. korrekter Nachführung
   verknüpfter Gruppenziel-Beiträge
+- ✅ **Deutsch/Englisch umschaltbar** (Kopfleiste, Login, Settings): komplette
+  Oberfläche zweisprachig, Sprache per Cookie pro Gerät; Nutzerinhalte und
+  Push-Texte bleiben unübersetzt
 - ✅ **kg/lbs umschaltbar** (Settings): reine Anzeige-Einstellung, intern
   wird immer in kg gespeichert; Hantelscheiben-/Aufwärm-Rechner rechnen
   mit dem passenden Scheiben-Satz für die gewählte Einheit

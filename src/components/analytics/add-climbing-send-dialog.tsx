@@ -16,8 +16,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useT } from "@/components/locale-provider";
 
 export function AddClimbingSendDialog({ onAdded }: { onAdded: () => void }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [style, setStyle] = useState<"BOULDER" | "ROUTE">("BOULDER");
   const [grade, setGrade] = useState("");
@@ -35,10 +37,10 @@ export function AddClimbingSendDialog({ onAdded }: { onAdded: () => void }) {
     });
     setLoading(false);
     if (!res.ok) {
-      toast.error("Konnte Send nicht speichern.");
+      toast.error(t("Konnte Send nicht speichern."));
       return;
     }
-    toast.success("Send gespeichert!");
+    toast.success(t("Send gespeichert!"));
     setGrade("");
     setAttempts("1");
     setOpen(false);
@@ -49,36 +51,36 @@ export function AddClimbingSendDialog({ onAdded }: { onAdded: () => void }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button variant="outline" size="sm" />}>
         <Plus className="size-4" />
-        Send eintragen
+        {t("Send eintragen")}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Send eintragen</DialogTitle>
-          <DialogDescription>Boulder oder Route mit Schwierigkeitsgrad.</DialogDescription>
+          <DialogTitle>{t("Send eintragen")}</DialogTitle>
+          <DialogDescription>{t("Boulder oder Route mit Schwierigkeitsgrad.")}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Tabs value={style} onValueChange={(v) => setStyle(v as "BOULDER" | "ROUTE")}>
             <TabsList className="w-full">
               <TabsTrigger value="BOULDER" className="flex-1">
-                Boulder
+                {t("Boulder")}
               </TabsTrigger>
               <TabsTrigger value="ROUTE" className="flex-1">
-                Route
+                {t("Route")}
               </TabsTrigger>
             </TabsList>
           </Tabs>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="grade">Grad</Label>
+            <Label htmlFor="grade">{t("Grad")}</Label>
             <Input
               id="grade"
-              placeholder={style === "BOULDER" ? "z.B. V5" : "z.B. 6a+"}
+              placeholder={style === "BOULDER" ? t("z.B. V5") : t("z.B. 6a+")}
               value={grade}
               onChange={(e) => setGrade(e.target.value)}
               required
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="attempts">Versuche</Label>
+            <Label htmlFor="attempts">{t("Versuche")}</Label>
             <Input
               id="attempts"
               type="number"
@@ -89,7 +91,7 @@ export function AddClimbingSendDialog({ onAdded }: { onAdded: () => void }) {
           </div>
           <DialogFooter>
             <Button type="submit" disabled={loading}>
-              {loading ? "Speichern…" : "Speichern"}
+              {loading ? t("Speichern…") : t("Speichern")}
             </Button>
           </DialogFooter>
         </form>
