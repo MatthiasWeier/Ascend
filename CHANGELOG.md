@@ -5,6 +5,24 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.41.0] - 2026-09-20
+
+### Added
+- **Klettertag-Button auf der Startseite**: "Klettertag" öffnet direkt den Boulder-Dialog für
+  heute (neben "Workout"; am Handy neben "Workout eintragen").
+- **Push + Glocke für Klettertage**: wer einen neuen Klettertag einträgt, benachrichtigt die
+  Mitglieder der Gruppen, in denen er/sie das Teilen des Trainings aktiviert hat
+  ("X war bouldern (12 Boulder)"). Nachträgliches Bearbeiten eines Tages löst nichts aus.
+- **Benachrichtigungen führen zur Nachricht**: ein Klick auf Kommentar-, Antwort- oder
+  Workout-Benachrichtigung öffnet den Gruppen-Feed, scrollt zum Beitrag bzw. Kommentar,
+  klappt die Kommentare auf und hebt die Stelle kurz hervor (auch per Push-Link).
+
+### Fixed
+- **Kalender "Klettern"**: Ein Klick auf einen markierten Tag öffnete einen leeren Dialog
+  (alle Grade 0). Er lädt jetzt die gespeicherten Boulder des Tages, beim Speichern werden sie
+  ersetzt statt doppelt angehängt; alle auf 0 = Tag leeren. Routen/andere Grade des Tages
+  bleiben unangetastet (mit Hinweis).
+
 ## [0.40.0] - 2026-09-19
 
 ### Added

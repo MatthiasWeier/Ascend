@@ -30,7 +30,7 @@ export async function autoShareToGroups(
   ]);
   if (memberships.length === 0) return [];
 
-  await prisma.groupPost.createMany({
+  const created = await prisma.groupPost.createManyAndReturn({
     data: memberships.map((m) => ({
       groupId: m.groupId,
       userId,
@@ -39,7 +39,9 @@ export async function autoShareToGroups(
       workoutSessionId: workoutSession.id,
     })),
     skipDuplicates: true,
+    select: { id: true, groupId: true },
   });
+  const postByGroup = new Map(created.map((p) => [p.groupId, p.id]));
 
   for (const m of memberships) {
     const otherUserIds = m.group.members.map((mem) => mem.userId);
@@ -49,7 +51,7 @@ export async function autoShareToGroups(
       actorId: userId,
       actorName: actor?.name ?? "Jemand",
       groupName: m.group.name,
-      url: `/dashboard/groups/${m.groupId}`,
+      url: `/dashboard/groups/${m.groupId}?tab=feed${postByGroup.has(m.groupId) ? `&post=${postByGroup.get(m.groupId)}` : ""}`,
       pushTitle: m.group.name,
       pushBody: `${actor?.name ?? "Jemand"} hat ein Workout gepostet`,
     }).catch(() => {});

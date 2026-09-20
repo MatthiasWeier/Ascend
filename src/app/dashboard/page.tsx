@@ -8,6 +8,7 @@ import { getPendingDailyChallenges } from "@/lib/pending-challenges";
 import { getRecentGroupActivity } from "@/lib/group-activity";
 import { computeCurrentStreak } from "@/lib/streak";
 import { Button } from "@/components/ui/button";
+import { AddClimbingDayButton } from "@/components/add-climbing-day-button";
 import { BrainCard } from "@/components/brain-card";
 import { DailyChallengeReminder } from "@/components/daily-challenge-reminder";
 import { HomeFeed } from "@/components/home-feed";
@@ -125,20 +126,26 @@ export default async function DashboardPage() {
                   <p className="text-sm text-muted-foreground">{t("Schön, dass du da bist.")}</p>
                 )}
               </div>
-              <Button render={<Link href="/dashboard/workouts/new" />} className="hidden sm:inline-flex">
-                <PlusCircle className="size-4" />
-                {t("Workout")}
-              </Button>
+              <div className="hidden items-center gap-2 sm:flex">
+                <AddClimbingDayButton />
+                <Button render={<Link href="/dashboard/workouts/new" />}>
+                  <PlusCircle className="size-4" />
+                  {t("Workout")}
+                </Button>
+              </div>
             </div>
 
             <div className="xl:hidden">
               <BrainCard suggestion={suggestion} />
             </div>
 
-            <Button render={<Link href="/dashboard/workouts/new" />} size="lg" className="w-full sm:hidden">
-              <PlusCircle className="size-4" />
-              {t("Workout eintragen")}
-            </Button>
+            <div className="grid grid-cols-[1fr_auto] gap-2 sm:hidden">
+              <Button render={<Link href="/dashboard/workouts/new" />} size="lg">
+                <PlusCircle className="size-4" />
+                {t("Workout eintragen")}
+              </Button>
+              <AddClimbingDayButton size="lg" />
+            </div>
 
             <div className="flex flex-col gap-3">
               <h2 className="text-sm font-semibold text-muted-foreground">{t("Feed")}</h2>

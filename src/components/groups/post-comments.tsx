@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { MessageCircle } from "lucide-react";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLocale } from "@/components/locale-provider";
 import { formatTimeAgo } from "@/lib/time-ago";
+import { cn } from "@/lib/utils";
 
 type PostComment = {
   id: string;
@@ -30,12 +31,15 @@ export function PostComments({
   initialCount,
   isLeader,
   label,
+  focusCommentId,
 }: {
   groupId: string;
   postId: string;
   initialCount: number;
   isLeader: boolean;
   label?: string;
+  // Opens the thread and scrolls to this comment (notification deep link).
+  focusCommentId?: string;
 }) {
   const { t, dateLocale } = useLocale();
   const { data: authSession } = useSession();
@@ -50,19 +54,42 @@ export function PostComments({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [highlightId, setHighlightId] = useState<string | null>(null);
 
   const base = `/api/groups/${groupId}/posts/${postId}/comments`;
   const count = comments ? comments.filter((c) => !c.deleted).length : initialCount;
 
+  function loadComments() {
+    fetch(base)
+      .then((r) => r.json())
+      .then((data: { comments: PostComment[] }) => setComments(data.comments));
+  }
+
   function toggleOpen() {
     const next = !open;
     setOpen(next);
-    if (next && comments == null) {
-      fetch(base)
-        .then((r) => r.json())
-        .then((data: { comments: PostComment[] }) => setComments(data.comments));
-    }
+    if (next && comments == null) loadComments();
   }
+
+  useEffect(() => {
+    if (!focusCommentId) return;
+    setOpen(true);
+    loadComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusCommentId]);
+
+  useEffect(() => {
+    if (!focusCommentId || !comments?.some((c) => c.id === focusCommentId)) return;
+    setHighlightId(focusCommentId);
+    const scroll = setTimeout(() => {
+      document.getElementById(`comment-${focusCommentId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 150);
+    const clear = setTimeout(() => setHighlightId(null), 3500);
+    return () => {
+      clearTimeout(scroll);
+      clearTimeout(clear);
+    };
+  }, [focusCommentId, comments]);
 
   const childrenOf = useMemo(() => {
     const map = new Map<string | null, PostComment[]>();
@@ -144,7 +171,10 @@ export function PostComments({
 
     return (
       <div key={c.id} className="flex flex-col gap-1.5">
-        <div className="flex flex-col gap-1 rounded-lg bg-secondary/30 px-3 py-2">
+        <div
+          id={`comment-${c.id}`}
+          className={cn("flex flex-col gap-1 rounded-lg bg-secondary/30 px-3 py-2 transition-shadow", highlightId === c.id && "ring-2 ring-primary")}
+        >
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <button
               type="button"

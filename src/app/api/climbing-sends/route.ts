@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { germanDateKey } from "@/lib/german-time";
+import { BOULDER_DAY_GRADES, DATE_KEY_RE, getSendsOnDay } from "@/lib/climbing-day";
 
 const sendSchema = z.object({
   style: z.enum(["BOULDER", "ROUTE"]),
@@ -19,6 +20,27 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
+
+  // One day, for the day dialog: what the quick grades hold, plus how many
+  // sends of other kinds (routes, V-scale...) that day has.
+  const dateParam = searchParams.get("date");
+  if (dateParam) {
+    if (!DATE_KEY_RE.test(dateParam)) {
+      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    }
+    const sends = await getSendsOnDay(session.user.id, dateParam);
+    const boulders: Record<string, number> = {};
+    let other = 0;
+    for (const s of sends) {
+      if (s.style === "BOULDER" && BOULDER_DAY_GRADES.includes(s.grade)) {
+        boulders[s.grade] = (boulders[s.grade] ?? 0) + s.count;
+      } else {
+        other += s.count;
+      }
+    }
+    return NextResponse.json({ boulders, other });
+  }
+
   const year = Number(searchParams.get("year") ?? new Date().getFullYear());
   const month = Number(searchParams.get("month") ?? new Date().getMonth() + 1); // 1-12
 

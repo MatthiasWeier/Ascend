@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Check, Dumbbell, HandHeart, MessageCircle, Reply, Trophy } from "lucide-react";
+import { Bell, Check, Dumbbell, HandHeart, MessageCircle, Mountain, Reply, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,7 +13,7 @@ import type { TFunction } from "@/lib/i18n";
 
 type Item = {
   id: string;
-  type: "COMMENT" | "REPLY" | "NUDGE" | "WORKOUT_POST" | "CHALLENGE_DONE";
+  type: "COMMENT" | "REPLY" | "NUDGE" | "WORKOUT_POST" | "CHALLENGE_DONE" | "CLIMBING";
   actorName: string;
   groupName: string;
   snippet: string | null;
@@ -34,6 +34,8 @@ function describe(n: Item, t: TFunction) {
       return { icon: HandHeart, text: t("{name} hat dich angestupst - zieh dein Workout durch!", { name: n.actorName }) };
     case "WORKOUT_POST":
       return { icon: Dumbbell, text: t("{name} hat ein Workout gepostet", { name: n.actorName }) };
+    case "CLIMBING":
+      return { icon: Mountain, text: t("{name} war bouldern ({n} Boulder)", { name: n.actorName, n: n.snippet ?? "" }) };
     case "CHALLENGE_DONE":
       return {
         icon: Trophy,
@@ -163,7 +165,7 @@ export function NotificationBell() {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className={cn("block", !n.readAt && "font-medium")}>{text}</span>
-                    {n.snippet && n.type !== "CHALLENGE_DONE" && (
+                    {n.snippet && n.type !== "CHALLENGE_DONE" && n.type !== "CLIMBING" && (
                       <span className="mt-0.5 line-clamp-2 block text-xs text-muted-foreground">“{n.snippet}”</span>
                     )}
                     <span className="mt-0.5 block text-xs text-muted-foreground">

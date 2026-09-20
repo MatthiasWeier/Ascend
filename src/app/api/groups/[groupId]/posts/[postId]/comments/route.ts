@@ -109,7 +109,7 @@ export async function POST(
     actorName: comment.user.name,
     groupName: group?.name ?? "",
     snippet: comment.content.slice(0, 120),
-    url: `/dashboard/groups/${groupId}`,
+    url: `/dashboard/groups/${groupId}?tab=feed&post=${postId}&comment=${comment.id}`,
     pushTitle: group?.name ?? "Ascend",
   };
   if (parentAuthorId) {

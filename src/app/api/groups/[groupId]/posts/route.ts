@@ -199,7 +199,7 @@ export async function POST(
       actorId: session.user.id,
       actorName: post.user.name,
       groupName: group?.name ?? "",
-      url: `/dashboard/groups/${groupId}`,
+      url: `/dashboard/groups/${groupId}?tab=feed&post=${post.id}`,
       pushTitle: group?.name ?? "Ascend",
       pushBody: `${post.user.name} hat ein Workout gepostet`,
     }).catch(() => {});

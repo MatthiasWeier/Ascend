@@ -13,6 +13,7 @@ import { FeedList } from "@/components/feed-list";
 import { PullToRefresh } from "@/components/pull-to-refresh";
 import { PostComposer, type PostPayload } from "@/components/groups/post-composer";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { undoableAction } from "@/lib/undo-toast";
 import { REACTION_EMOJIS } from "@/lib/post-reactions";
@@ -122,6 +123,10 @@ export function GroupFeed({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
+  const searchParams = useSearchParams();
+  const focusPostId = searchParams.get("post");
+  const focusCommentId = searchParams.get("comment");
+  const [highlightPostId, setHighlightPostId] = useState<string | null>(null);
 
   function refetch() {
     return fetch(`/api/groups/${groupId}/posts`)
@@ -132,6 +137,22 @@ export function GroupFeed({
   useEffect(() => {
     refetch();
   }, [groupId]);
+
+  // Arriving from a notification: bring the post into view and flash it.
+  useEffect(() => {
+    if (!focusPostId || !posts?.some((p) => p.id === focusPostId)) return;
+    setTypeFilter("ALL");
+    setAuthorFilter(null);
+    setHighlightPostId(focusPostId);
+    const scroll = setTimeout(() => {
+      document.getElementById(`post-${focusPostId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+    const clear = setTimeout(() => setHighlightPostId(null), 3500);
+    return () => {
+      clearTimeout(scroll);
+      clearTimeout(clear);
+    };
+  }, [focusPostId, posts]);
 
   const myAlreadySharedIds = useMemo(() => {
     const myUserId = authSession?.user?.id;
@@ -380,7 +401,11 @@ export function GroupFeed({
             const canEdit = !post.pending && isOwn && post.type !== "WORKOUT_SHARE";
             const isEditing = editingId === post.id;
             return (
-            <Card key={post.id} className={cn(post.pending && "opacity-60")}>
+            <Card
+              key={post.id}
+              id={`post-${post.id}`}
+              className={cn(post.pending && "opacity-60", highlightPostId === post.id && "ring-2 ring-primary transition-shadow")}
+            >
               <CardContent className="flex flex-col gap-2 px-5">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <button
@@ -493,6 +518,7 @@ export function GroupFeed({
                     postId={post.id}
                     initialCount={post.commentCount ?? 0}
                     isLeader={isLeader}
+                    focusCommentId={post.id === focusPostId ? focusCommentId ?? undefined : undefined}
                   />
                 )}
               </CardContent>

@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { sendPushToUsers } from "@/lib/push";
 import { logger } from "@/lib/logger";
 
-export type NotificationType = "COMMENT" | "REPLY" | "NUDGE" | "WORKOUT_POST" | "CHALLENGE_DONE";
+export type NotificationType = "COMMENT" | "REPLY" | "NUDGE" | "WORKOUT_POST" | "CHALLENGE_DONE" | "CLIMBING";
 
 // Creates the in-app notification (the bell) and, on top, tries a web
 // push. The in-app entry is the reliable part - push depends on the

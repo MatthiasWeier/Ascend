@@ -90,6 +90,8 @@ export function GroupDetail({ groupId }: { groupId: string }) {
     ? (requestedTab as (typeof VALID_TABS)[number])
     : "feed";
   const [activeTab, setActiveTab] = useState<string>(initialTab);
+  // A notification link can point at another tab while this page is already open.
+  useEffect(() => setActiveTab(initialTab), [initialTab]);
   const [group, setGroup] = useState<GroupInfo | null>(null);
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState("");
