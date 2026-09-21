@@ -5,6 +5,21 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.46.0] - 2026-09-22
+
+### Added
+- **Eigene Übungen bearbeiten und löschen**: neue Settings-Karte "Eigene Übungen" (deine selbst angelegten Übungen
+  plus Gruppen-Übungen, die du als Leader verwaltest). Bearbeitbar sind Name, Beschreibung, Art (Wdh/Halten), Fokus,
+  Bodyweight und die trainierten Muskeln. Wechselt die Art, werden bereits geloggte Sätze umgerechnet
+  (Wiederholungen <-> Sekunden), statt falsch angezeigt zu werden - so lässt sich eine versehentlich als "Wdh" angelegte
+  Halte-Übung reparieren. Ist die Übung mit einem Gruppenziel verknüpft, bleibt die Art gesperrt.
+  Löschen geht, solange keine Sätze, Challenges oder Gruppenziele daran hängen (sonst Hinweis mit Anzahl);
+  Vorlagen verlieren nur den Eintrag. Standardübungen bleiben unantastbar.
+- **App-installieren-Hinweis**: Auf dem Handy im Browser (nicht als installierte App) steht oben "Lade Ascend als
+  App runter" mit "Installieren" (Chrome/Android: nativer Dialog) bzw. "So geht's" (Anleitung für Safari/iOS und
+  andere Browser). Schließen (X) blendet ihn bis zum nächsten Besuch aus, "Nicht mehr anzeigen" dauerhaft auf diesem
+  Gerät. In den Einstellungen gibt es die Karte "App installieren" (Installieren/Anleitung, Hinweis wieder einblenden).
+
 ## [0.45.0] - 2026-09-21
 
 ### Added

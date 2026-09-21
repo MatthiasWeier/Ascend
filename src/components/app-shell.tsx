@@ -20,6 +20,7 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { NotificationBell } from "@/components/notification-bell";
 import { useT } from "@/components/locale-provider";
 import { LegalFooter } from "@/components/legal-footer";
+import { InstallAppBanner } from "@/components/install-app";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -123,6 +124,7 @@ export function AppShell({
       </aside>
 
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+        <InstallAppBanner />
         {/* Top bar */}
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-md md:justify-end">
           <Link href="/" className="flex items-center gap-2 md:hidden">

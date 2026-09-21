@@ -44,19 +44,41 @@ type CreatedExercise = {
   focus: "PUSH" | "PULL" | "LEGS" | "CORE" | "GRIP";
 };
 
-export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: CreatedExercise) => void }) {
+export type EditableExercise = CreatedExercise & {
+  description: string | null;
+  isBodyweight: boolean;
+  muscles: { muscle: Muscle; role: "PRIMARY" | "SECONDARY" }[];
+  setCount: number;
+};
+
+// Creates a custom exercise - or, with `editing`, edits one (mount it with a
+// key per exercise; the parent controls when it closes).
+export function CreateExerciseDialog({
+  onCreated,
+  editing,
+  onEditClose,
+  onSaved,
+}: {
+  onCreated?: (exercise: CreatedExercise) => void;
+  editing?: EditableExercise | null;
+  onEditClose?: () => void;
+  onSaved?: () => void;
+}) {
   const t = useT();
+  const isEdit = !!editing;
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [type, setType] = useState<"REPS" | "HOLD">("REPS");
-  const [focus, setFocus] = useState<"PUSH" | "PULL" | "LEGS" | "CORE" | "GRIP">("PUSH");
-  const [isBodyweight, setIsBodyweight] = useState(false);
+  const [name, setName] = useState(editing?.name ?? "");
+  const [description, setDescription] = useState(editing?.description ?? "");
+  const [type, setType] = useState<"REPS" | "HOLD">(editing?.type ?? "REPS");
+  const [focus, setFocus] = useState<"PUSH" | "PULL" | "LEGS" | "CORE" | "GRIP">(editing?.focus ?? "PUSH");
+  const [isBodyweight, setIsBodyweight] = useState(editing?.isBodyweight ?? false);
   const [groupId, setGroupId] = useState<string>("personal");
   const [groups, setGroups] = useState<{ id: string; name: string }[]>([]);
   const [saving, setSaving] = useState(false);
   // Tap a muscle: not trained -> primary -> secondary -> not trained.
-  const [muscleRoles, setMuscleRoles] = useState<Partial<Record<Muscle, "PRIMARY" | "SECONDARY">>>({});
+  const [muscleRoles, setMuscleRoles] = useState<Partial<Record<Muscle, "PRIMARY" | "SECONDARY">>>(
+    Object.fromEntries((editing?.muscles ?? []).map((m) => [m.muscle, m.role]))
+  );
 
   function cycleMuscle(m: Muscle) {
     setMuscleRoles((prev) => {
@@ -69,15 +91,45 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
   }
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || isEdit) return;
     fetch("/api/groups")
       .then((r) => r.json())
       .then((data: { groups: { id: string; name: string }[] }) => setGroups(data.groups));
-  }, [open]);
+  }, [open, isEdit]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
+    if (editing) {
+      const res = await fetch(`/api/exercises/${editing.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          description: description || null,
+          type,
+          focus,
+          isBodyweight,
+          primaryMuscles: ALL_MUSCLES.filter((m) => muscleRoles[m] === "PRIMARY"),
+          secondaryMuscles: ALL_MUSCLES.filter((m) => muscleRoles[m] === "SECONDARY"),
+        }),
+      });
+      setSaving(false);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        toast.error(t(data.error ?? "Konnte Übung nicht speichern."));
+        return;
+      }
+      const data: { convertedSets: number } = await res.json();
+      toast.success(
+        data.convertedSets > 0
+          ? t("Übung gespeichert - {n} Sätze umgerechnet.", { n: data.convertedSets })
+          : t("Übung gespeichert.")
+      );
+      onSaved?.();
+      onEditClose?.();
+      return;
+    }
     const res = await fetch("/api/exercises", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -104,20 +156,24 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
     setDescription("");
     setMuscleRoles({});
     setOpen(false);
-    onCreated(data.exercise);
+    onCreated?.(data.exercise);
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button type="button" variant="outline" size="sm" />}>
-        <Plus className="size-4" />
-        {t("Neue Übung")}
-      </DialogTrigger>
+    <Dialog open={isEdit || open} onOpenChange={(o) => (isEdit ? !o && onEditClose?.() : setOpen(o))}>
+      {!isEdit && (
+        <DialogTrigger render={<Button type="button" variant="outline" size="sm" />}>
+          <Plus className="size-4" />
+          {t("Neue Übung")}
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("Neue Übung anlegen")}</DialogTitle>
+          <DialogTitle>{isEdit ? t("Übung bearbeiten") : t("Neue Übung anlegen")}</DialogTitle>
           <DialogDescription>
-            {t("Für dich persönlich, oder sichtbar für eine ganze Gruppe.")}
+            {isEdit
+              ? t("Änderungen gelten überall, wo die Übung verwendet wird.")
+              : t("Für dich persönlich, oder sichtbar für eine ganze Gruppe.")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -170,6 +226,14 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
             </div>
           </div>
 
+          {editing && type !== editing.type && editing.setCount > 0 && (
+            <p className="rounded-md bg-amber-500/10 px-2 py-1.5 text-xs text-amber-500">
+              {type === "HOLD"
+                ? t("Deine {n} bisherigen Sätze werden umgerechnet: aus Wiederholungen werden Sekunden.", { n: editing.setCount })
+                : t("Deine {n} bisherigen Sätze werden umgerechnet: aus Sekunden werden Wiederholungen.", { n: editing.setCount })}
+            </p>
+          )}
+
           <div className="flex flex-col gap-1.5">
             <Label>{t("Trainierte Muskeln")}</Label>
             <p className="text-xs text-muted-foreground">
@@ -204,33 +268,35 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
             <Switch id="ex-bw" checked={isBodyweight} onCheckedChange={setIsBodyweight} />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>{t("Sichtbarkeit")}</Label>
-            <Select
-              items={[
-                { value: "personal", label: t("Nur für mich") },
-                ...groups.map((g) => ({ value: g.id, label: t("Gruppe: {name}", { name: g.name }) })),
-              ]}
-              value={groupId}
-              onValueChange={(v) => setGroupId(v as string)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="personal">{t("Nur für mich")}</SelectItem>
-                {groups.map((g) => (
-                  <SelectItem key={g.id} value={g.id}>
-                    {t("Gruppe: {name}", { name: g.name })}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {!isEdit && (
+            <div className="flex flex-col gap-1.5">
+              <Label>{t("Sichtbarkeit")}</Label>
+              <Select
+                items={[
+                  { value: "personal", label: t("Nur für mich") },
+                  ...groups.map((g) => ({ value: g.id, label: t("Gruppe: {name}", { name: g.name }) })),
+                ]}
+                value={groupId}
+                onValueChange={(v) => setGroupId(v as string)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="personal">{t("Nur für mich")}</SelectItem>
+                  {groups.map((g) => (
+                    <SelectItem key={g.id} value={g.id}>
+                      {t("Gruppe: {name}", { name: g.name })}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <DialogFooter>
             <Button type="submit" disabled={saving}>
-              {saving ? t("Anlegen…") : t("Anlegen")}
+              {saving ? (isEdit ? t("Speichern…") : t("Anlegen…")) : isEdit ? t("Speichern") : t("Anlegen")}
             </Button>
           </DialogFooter>
         </form>

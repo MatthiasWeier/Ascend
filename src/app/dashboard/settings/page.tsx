@@ -30,6 +30,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ReplayTutorialButton } from "@/components/onboarding-tutorial";
 import { MuscleWishes } from "@/components/muscle-wishes";
 import { InjuriesCard } from "@/components/injuries-card";
+import { MyExercises } from "@/components/my-exercises";
+import { InstallAppCard } from "@/components/install-app";
 import { DeleteAccountDialog } from "@/components/delete-account-dialog";
 import { PushNotificationToggle } from "@/components/push-notification-toggle";
 import { DataExport, DataImport, CalendarFeed } from "@/components/data-portability";
@@ -279,6 +281,25 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <MuscleWishes />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("Eigene Übungen")}</CardTitle>
+          <CardDescription>{t("Selbst angelegte Übungen bearbeiten oder löschen.")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <MyExercises />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("App installieren")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <InstallAppCard />
         </CardContent>
       </Card>
 
