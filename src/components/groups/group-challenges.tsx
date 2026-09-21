@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { BoldNumbers } from "@/components/bold-numbers";
 import {
   Dialog,
   DialogContent,
@@ -214,7 +216,14 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
                   <div className="flex items-center gap-1">
                     <HistoryButton groupId={groupId} dailyChallengeId={dc.id} title={dc.templateName} />
                     {isLeader && (
-                      <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive" onClick={() => deactivate(dc.id)}>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-muted-foreground hover:text-destructive"
+                        title={t("Challenge deaktivieren")}
+                        aria-label={t("Challenge deaktivieren")}
+                        onClick={() => deactivate(dc.id)}
+                      >
                         <X className="size-4" />
                       </Button>
                     )}
@@ -222,10 +231,11 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  {dc.goals.map((g) => (
+                  {rankGoals(dc.goals).map(({ goal: g, rank }) => (
                     <GoalRow
                       key={g.id}
                       goal={g}
+                      rank={rank}
                       onYammer={() => toggleYammer(g)}
                       onStart={() => startAttempt(dc, g)}
                     />
@@ -254,7 +264,43 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
   );
 }
 
-function GoalRow({ goal, onYammer, onStart }: { goal: GoalView; onYammer: () => void; onStart: () => void }) {
+const RANK_STYLE = [
+  "bg-amber-400 text-amber-950", // 1st
+  "bg-slate-300 text-slate-900", // 2nd
+  "bg-orange-400 text-orange-950", // 3rd
+];
+
+// Today's standing: finished challenges first (earliest finisher ahead), then
+// by progress towards the personal target. Nobody who hasn't started gets a rank.
+function rankGoals(goals: GoalView[]): { goal: GoalView; rank: number | null }[] {
+  const score = (g: GoalView) => {
+    const a = g.todayAttempt;
+    if (g.isInvalidated || !a) return null;
+    if (a.status === "COMPLETED") return { done: 1, at: a.completedAt ? new Date(a.completedAt).getTime() : 0, pct: 1 };
+    return a.currentReps > 0 ? { done: 0, at: 0, pct: a.currentReps / a.targetRepsSnapshot } : null;
+  };
+  const ranked = goals
+    .map((goal) => ({ goal, s: score(goal) }))
+    .filter((x): x is { goal: GoalView; s: NonNullable<ReturnType<typeof score>> } => x.s != null)
+    .sort((a, b) => b.s.done - a.s.done || (a.s.done ? a.s.at - b.s.at : b.s.pct - a.s.pct));
+  const rankedIds = new Set(ranked.map((r) => r.goal.id));
+  return [
+    ...ranked.map((r, i) => ({ goal: r.goal, rank: i + 1 })),
+    ...goals.filter((g) => !rankedIds.has(g.id)).map((goal) => ({ goal, rank: null })),
+  ];
+}
+
+function GoalRow({
+  goal,
+  rank,
+  onYammer,
+  onStart,
+}: {
+  goal: GoalView;
+  rank: number | null;
+  onYammer: () => void;
+  onStart: () => void;
+}) {
   const { t } = useLocale();
   const completed = goal.todayAttempt?.status === "COMPLETED";
   const needsRating =
@@ -265,11 +311,29 @@ function GoalRow({ goal, onYammer, onStart }: { goal: GoalView; onYammer: () => 
 
   return (
     <div className="flex items-center gap-2 rounded-lg bg-secondary/40 px-3 py-2 text-sm">
-      <span className={cn("flex-1", goal.isInvalidated && "text-muted-foreground line-through")}>
+      <span
+        title={rank ? t("Platz {n} heute", { n: rank }) : t("Noch nicht gestartet")}
+        className={cn(
+          "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold",
+          rank ? (RANK_STYLE[rank - 1] ?? "bg-secondary text-foreground") : "text-muted-foreground"
+        )}
+      >
+        {rank ?? "–"}
+      </span>
+      <span className={cn("flex-1 font-medium", goal.isInvalidated && "text-muted-foreground line-through")}>
         {goal.userName}
         {goal.isMe && ` (${t("du")})`}
       </span>
-      <span className="text-xs text-muted-foreground">{t("{n} Wdh", { n: goal.targetReps })}</span>
+      <span className="text-xs text-muted-foreground">
+        {goal.todayAttempt ? (
+          <BoldNumbers
+            className="text-sm"
+            text={t("{cur}/{target} Wdh", { cur: goal.todayAttempt.currentReps, target: goal.todayAttempt.targetRepsSnapshot })}
+          />
+        ) : (
+          t("{n} Wdh", { n: goal.targetReps })
+        )}
+      </span>
 
       {completed && <Check className="size-4 text-success" />}
 
@@ -280,14 +344,25 @@ function GoalRow({ goal, onYammer, onStart }: { goal: GoalView; onYammer: () => 
       )}
 
       {goal.canVote && !goal.isInvalidated && (
-        <Button
-          variant={goal.myVote ? "default" : "outline"}
-          size="icon-sm"
-          onClick={onYammer}
-          title={t("Yammer ({votes}/{needed})", { votes: goal.voteCount, needed: goal.votesNeeded })}
-        >
-          <MessageCircleWarning className="size-3.5" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                variant={goal.myVote ? "default" : "outline"}
+                size="icon-sm"
+                onClick={onYammer}
+                aria-label={t("Ziel anfechten")}
+              />
+            }
+          >
+            <MessageCircleWarning className="size-3.5" />
+          </TooltipTrigger>
+          <TooltipContent>
+            {goal.myVote
+              ? t("Anfechtung zurückziehen ({votes}/{needed})", { votes: goal.voteCount, needed: goal.votesNeeded })
+              : t("Ziel zu niedrig? Anfechten ({votes}/{needed})", { votes: goal.voteCount, needed: goal.votesNeeded })}
+          </TooltipContent>
+        </Tooltip>
       )}
       {goal.canVote && goal.voteCount > 0 && (
         <span className="text-[10px] text-muted-foreground">
@@ -296,9 +371,26 @@ function GoalRow({ goal, onYammer, onStart }: { goal: GoalView; onYammer: () => 
       )}
 
       {goal.isMe && !goal.isInvalidated && (!goal.todayAttempt || goal.todayAttempt.status === "IN_PROGRESS" || needsRating) && (
-        <Button size="icon-sm" onClick={onStart}>
-          <Play className="size-3.5" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                size="icon-sm"
+                onClick={onStart}
+                aria-label={needsRating ? t("Schwierigkeit bewerten") : t("Challenge starten")}
+              />
+            }
+          >
+            <Play className="size-3.5" />
+          </TooltipTrigger>
+          <TooltipContent>
+            {needsRating
+              ? t("Schwierigkeit bewerten")
+              : goal.todayAttempt
+                ? t("Challenge fortsetzen")
+                : t("Challenge starten")}
+          </TooltipContent>
+        </Tooltip>
       )}
     </div>
   );
@@ -336,7 +428,18 @@ function HistoryButton({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="ghost" size="icon-sm" className="text-muted-foreground" onClick={load} />}>
+      <DialogTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="text-muted-foreground"
+            title={t("Verlauf anzeigen")}
+            aria-label={t("Verlauf anzeigen")}
+            onClick={load}
+          />
+        }
+      >
         <History className="size-4" />
       </DialogTrigger>
       <DialogContent>

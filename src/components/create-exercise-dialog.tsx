@@ -114,7 +114,14 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
           <div className="flex gap-3">
             <div className="flex flex-1 flex-col gap-1.5">
               <Label>{t("Art")}</Label>
-              <Select value={type} onValueChange={(v) => setType(v as "REPS" | "HOLD")}>
+              <Select
+                items={[
+                  { value: "REPS", label: t("Wdh + Gewicht") },
+                  { value: "HOLD", label: t("Halten (Zeit)") },
+                ]}
+                value={type}
+                onValueChange={(v) => setType(v as "REPS" | "HOLD")}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -126,7 +133,11 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
             </div>
             <div className="flex flex-1 flex-col gap-1.5">
               <Label>{t("Fokus")}</Label>
-              <Select value={focus} onValueChange={(v) => setFocus(v as typeof focus)}>
+              <Select
+                items={FOCUS_OPTIONS.map((f) => ({ value: f.value, label: t(f.label) }))}
+                value={focus}
+                onValueChange={(v) => setFocus(v as typeof focus)}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -151,7 +162,14 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
 
           <div className="flex flex-col gap-1.5">
             <Label>{t("Sichtbarkeit")}</Label>
-            <Select value={groupId} onValueChange={(v) => setGroupId(v as string)}>
+            <Select
+              items={[
+                { value: "personal", label: t("Nur für mich") },
+                ...groups.map((g) => ({ value: g.id, label: t("Gruppe: {name}", { name: g.name }) })),
+              ]}
+              value={groupId}
+              onValueChange={(v) => setGroupId(v as string)}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>

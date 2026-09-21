@@ -4,7 +4,6 @@ export const tutorial: Record<string, string> = {
   "Dein Tracker für Kraft und Klettern - allein oder mit Freunden. Die kurze Tour zeigt dir, wo du was findest.": "Your tracker for strength and climbing - solo or with friends. This short tour shows you where everything is.",
   "Hier hältst du jedes Training fest.": "This is where you record every training session.",
   "Übung wählen, Wiederholungen und Gewicht eintragen": "Pick an exercise, enter reps and weight",
-  "Mit ✓ startet automatisch der Pausen-Timer": "Tapping ✓ starts the rest timer automatically",
   "Vorlagen sparen Zeit bei Routine-Workouts": "Templates save time on routine workouts",
   "Dein Entwurf wird automatisch gespeichert - auch wenn du kurz die App wechselst": "Your draft is saved automatically - even if you briefly switch apps",
   "Pump Pics, Notizen & Rekorde": "Pump pics, notes & records",

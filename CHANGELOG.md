@@ -5,6 +5,28 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.42.0] - 2026-09-21
+
+### Changed
+- **Feed & Workout-Karten**: Status ("X hat ein Workout gepostet") und Metriken sind klar getrennt -
+  Name fett, Aktion gedämpft, Zahlen wie "2 Übungen · 4 Sätze" oder "100/100" fett in Akzentfarbe
+  (`BoldNumbers`). "Details einblenden" hat eine größere Klickfläche mit größerem Caret;
+  Kommentar-Button größer, immer mit Text.
+- **Workout eintragen**: der Satz-Haken ist jetzt ein Button "Satz & Pause" (danach "Erledigt");
+  "Satz hinzufügen" ist ein deutlich erkennbarer, gestrichelter Vollbreiten-Button; Papierkorb mit Tooltip.
+- **Analytics**: Aktivitätskalender mit echtem Hover-Tooltip (Datum + Intensität, auch per Tastatur)
+  und Farbrampe, die im Dark-Theme von dunkel nach hell läuft (vorher versank die dunkelste Stufe im
+  Schwarz). Y-Achsen beschriftet ("Geschätztes 1RM (kg)", "Volumen (kg)", "Sätze"), X-Achse mit
+  Mindestabstand gegen überlappende Datumsangaben.
+- **Gruppen-Challenges**: Rangliste des Tages (Platz 1-3 in Gold/Silber/Bronze, danach Zahl) inkl.
+  fettem Fortschritt "cur/target"; Tooltips für Play ("Challenge starten/fortsetzen/bewerten"),
+  Anfechten, Verlauf und Deaktivieren.
+
+### Fixed
+- Dropdowns zeigten teils den rohen Wert statt des Namens (z.B. die Datenbank-ID im
+  Maximalkraft-Verlauf). Die betroffenen Selects (Übung, Workout-Auswahl, Satz-Typ, Einheiten,
+  Sprache, Übung anlegen, Gruppenziel) übergeben jetzt ihre Labels.
+
 ## [0.41.0] - 2026-09-20
 
 ### Added

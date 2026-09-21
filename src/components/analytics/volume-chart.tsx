@@ -50,8 +50,8 @@ export function VolumeChart() {
           tickLine={false}
           axisLine={false}
           tickMargin={8}
-          width={60}
-          label={{ value: unitLabel, angle: -90, position: "insideLeft", fill: "var(--muted-foreground)", fontSize: 11 }}
+          width={72}
+          label={{ value: `${t("Volumen")} (${unitLabel})`, angle: -90, position: "insideLeft", offset: 4, style: { textAnchor: "middle" }, fill: "var(--muted-foreground)", fontSize: 11 }}
         />
         <ChartTooltip
           content={

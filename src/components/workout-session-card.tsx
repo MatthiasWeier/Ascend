@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { FOCUS_LABEL } from "@/lib/muscle-focus";
 import { cn } from "@/lib/utils";
+import { BoldNumbers } from "@/components/bold-numbers";
 import { useWeightUnit } from "@/components/weight-unit-context";
 import { useLocale } from "@/components/locale-provider";
 import { ImageLightbox } from "@/components/image-lightbox";
@@ -102,8 +103,8 @@ export function WorkoutSessionCard({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             {authorName && <span className="text-sm font-medium">{authorName}</span>}
-            <span className="text-xs text-muted-foreground">
-              {new Date(date).toLocaleDateString(dateLocale, { day: "2-digit", month: "short" })}
+            <span className="text-sm font-semibold">
+              {new Date(date).toLocaleDateString(dateLocale, { weekday: "short", day: "2-digit", month: "short" })}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -142,23 +143,22 @@ export function WorkoutSessionCard({
             type="button"
             onClick={() => setExpanded((v) => !v)}
             aria-expanded={expanded}
-            className="flex w-full items-center justify-between gap-2 rounded-lg bg-secondary/50 px-3 py-2 text-left text-sm transition-colors hover:bg-secondary"
+            className="flex min-h-12 w-full items-center justify-between gap-2 rounded-lg bg-secondary/50 px-3 py-2.5 text-left text-sm transition-colors hover:bg-secondary"
           >
-            <span>
-              <span className="font-medium">
-                {new Set(sets.map((s) => s.exercise.name)).size === 1
-                  ? t("1 Übung")
-                  : t("{n} Übungen", { n: new Set(sets.map((s) => s.exercise.name)).size })}
-              </span>
-              <span className="text-muted-foreground">
-                {" · "}
-                {sets.length === 1 ? t("1 Satz") : t("{n} Sätze", { n: sets.length })}
-                {prSetIds && sets.some((s) => prSetIds.has(s.id)) ? " · 🏆" : ""}
-              </span>
+            <span className="text-base">
+              <BoldNumbers
+                text={[
+                  new Set(sets.map((s) => s.exercise.name)).size === 1
+                    ? t("1 Übung")
+                    : t("{n} Übungen", { n: new Set(sets.map((s) => s.exercise.name)).size }),
+                  sets.length === 1 ? t("1 Satz") : t("{n} Sätze", { n: sets.length }),
+                ].join(" · ")}
+              />
+              {prSetIds && sets.some((s) => prSetIds.has(s.id)) ? " · 🏆" : ""}
             </span>
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              {expanded ? t("Details ausblenden") : t("Details einblenden")}
-              <ChevronDown className={cn("size-4 transition-transform", expanded && "rotate-180")} />
+            <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+              <span>{expanded ? t("Details ausblenden") : t("Details einblenden")}</span>
+              <ChevronDown className={cn("size-5 transition-transform", expanded && "rotate-180")} />
             </span>
           </button>
         )}

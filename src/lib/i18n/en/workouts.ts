@@ -28,7 +28,6 @@ export const workouts: Record<string, string> = {
   "Workout bearbeiten": "Edit workout",
   "Pause:": "Rest:",
   "Sätze": "Sets",
-  "Übung wählen, Werte eintragen. ✓ startet die Pause.": "Pick an exercise, enter values. ✓ starts the rest timer.",
   "Vorlage laden": "Load template",
   "Vorlagen verwalten": "Manage templates",
   "Löschen lässt sich kurz danach rückgängig machen.": "Deleting can be undone for a moment.",

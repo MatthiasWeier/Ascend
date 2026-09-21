@@ -48,7 +48,7 @@ function useSteps(): Step[] {
       body: t("Hier hältst du jedes Training fest."),
       bullets: [
         t("Übung wählen, Wiederholungen und Gewicht eintragen"),
-        t("Mit ✓ startet automatisch der Pausen-Timer"),
+        t("Mit „Satz & Pause“ startet automatisch der Pausen-Timer"),
         t("Vorlagen sparen Zeit bei Routine-Workouts"),
         t("Dein Entwurf wird automatisch gespeichert - auch wenn du kurz die App wechselst"),
       ],

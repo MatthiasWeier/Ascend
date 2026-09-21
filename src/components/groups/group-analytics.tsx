@@ -63,7 +63,14 @@ export function GroupAnalytics({ groupId }: { groupId: string }) {
                   minTickGap={24}
                   tickFormatter={(v) => new Date(v).toLocaleDateString(dateLocale, { day: "2-digit", month: "2-digit" })}
                 />
-                <YAxis tickLine={false} axisLine={false} tickMargin={8} width={32} allowDecimals={false} />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  width={48}
+                  allowDecimals={false}
+                  label={{ value: t("Sätze"), angle: -90, position: "insideLeft", offset: 4, style: { textAnchor: "middle" }, fill: "var(--muted-foreground)", fontSize: 11 }}
+                />
                 <ChartTooltip
                   content={
                     <ChartTooltipContent
@@ -93,7 +100,15 @@ export function GroupAnalytics({ groupId }: { groupId: string }) {
             <ChartContainer config={activityConfig} className="aspect-auto h-64 w-full">
               <BarChart data={data.memberActivity} layout="vertical" margin={{ left: 8, right: 8 }}>
                 <CartesianGrid horizontal={false} />
-                <XAxis type="number" tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
+                <XAxis
+                  type="number"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  allowDecimals={false}
+                  height={40}
+                  label={{ value: t("Workouts"), position: "insideBottom", offset: 0, fill: "var(--muted-foreground)", fontSize: 11 }}
+                />
                 <YAxis
                   type="category"
                   dataKey="userName"

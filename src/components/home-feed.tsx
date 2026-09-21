@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Check, ChevronDown, Dumbbell, Image as ImageIcon, MessageSquare, Trophy, XCircle } from "lucide-react";
 import { FOCUS_LABEL } from "@/lib/muscle-focus";
 import { ImageLightbox } from "@/components/image-lightbox";
+import { BoldNumbers } from "@/components/bold-numbers";
 import { PostComments } from "@/components/groups/post-comments";
 import { WorkoutSessionCard } from "@/components/workout-session-card";
 import { FeedList } from "@/components/feed-list";
@@ -95,14 +96,17 @@ function SharedWorkoutRow({ item }: { item: Extract<ActivityItem, { workoutSessi
           <Dumbbell className="size-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <p>
-            <span className="font-medium">{item.userName}</span> {t("hat ein Workout gepostet")}
+          <p className="text-muted-foreground">
+            <span className="text-base font-semibold text-foreground">{item.userName}</span> {t("hat ein Workout gepostet")}
           </p>
           {exercises > 0 && (
-            <p className="text-muted-foreground">
-              {exercises === 1 ? t("1 Übung") : t("{n} Übungen", { n: exercises })}
-              {" · "}
-              {lines.length === 1 ? t("1 Satz") : t("{n} Sätze", { n: lines.length })}
+            <p className="mt-0.5 text-sm text-foreground/80">
+              <BoldNumbers
+                text={[
+                  exercises === 1 ? t("1 Übung") : t("{n} Übungen", { n: exercises }),
+                  lines.length === 1 ? t("1 Satz") : t("{n} Sätze", { n: lines.length }),
+                ].join(" · ")}
+              />
               {focusText && ` · ${focusText}`}
             </p>
           )}
@@ -122,10 +126,10 @@ function SharedWorkoutRow({ item }: { item: Extract<ActivityItem, { workoutSessi
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
-            className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-secondary"
+            className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
-            {open ? t("Details ausblenden") : t("Details einblenden")}
-            <ChevronDown className={`size-4 transition-transform ${open ? "rotate-180" : ""}`} />
+            <span>{open ? t("Details ausblenden") : t("Details einblenden")}</span>
+            <ChevronDown className={`size-5 transition-transform ${open ? "rotate-180" : ""}`} />
           </button>
         )}
       </div>
@@ -156,11 +160,20 @@ function GroupItemRow({ item }: { item: ActivityItem }) {
   } else if (item.kind === "CHALLENGE_COMPLETED") {
     Icon = Check;
     iconColor = "text-success";
-    text = t("hat \"{name}\" geschafft ({cur}/{target})", { name: item.templateName, cur: item.currentReps, target: item.targetRepsSnapshot });
+    text = (
+      <BoldNumbers
+        text={t("hat \"{name}\" geschafft ({cur}/{target})", { name: item.templateName, cur: item.currentReps, target: item.targetRepsSnapshot })}
+      />
+    );
   } else if (item.kind === "CHALLENGE_ENDED_EARLY") {
     Icon = XCircle;
     iconColor = "text-destructive";
-    text = t("hat \"{name}\" abgebrochen ({cur}/{target})", { name: item.templateName, cur: item.currentReps, target: item.targetRepsSnapshot });
+    text = (
+      <BoldNumbers
+        className="text-destructive"
+        text={t("hat \"{name}\" abgebrochen ({cur}/{target})", { name: item.templateName, cur: item.currentReps, target: item.targetRepsSnapshot })}
+      />
+    );
   }
 
   const accent =
@@ -188,8 +201,8 @@ function GroupItemRow({ item }: { item: ActivityItem }) {
         <Icon className="size-4" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className={item.kind === "CHAT_TEXT" ? "line-clamp-3" : "truncate"}>
-          <span className="font-medium">{item.userName}</span> {text}
+        <p className={cn("text-foreground/80", item.kind === "CHAT_TEXT" ? "line-clamp-3" : "truncate")}>
+          <span className="font-semibold text-foreground">{item.userName}</span> {text}
         </p>
         {item.kind === "CHAT_PHOTO" && item.imageUrl && (
           <ImageLightbox className="mt-1.5" thumbClassName="max-h-64" src={item.imageUrl} alt={t("Gruppen-Foto")} />

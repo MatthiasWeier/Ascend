@@ -129,7 +129,14 @@ export function PostComposer({
             {t("Alle deine Workouts sind bereits geteilt.")}
           </p>
         ) : (
-          <Select value={sessionId} onValueChange={(v) => setSessionId(v as string)}>
+          <Select
+            value={sessionId}
+            onValueChange={(v) => setSessionId(v as string)}
+            items={shareable.map((s) => ({
+              value: s.id,
+              label: `${new Date(s.date).toLocaleDateString(dateLocale, { day: "2-digit", month: "short" })} — ${t("{n} Sätze", { n: s.sets.length })}`,
+            }))}
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder={t("Workout wählen")} />
             </SelectTrigger>

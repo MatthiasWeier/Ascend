@@ -69,7 +69,11 @@ export function OneRmChart() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
-      <Select value={exerciseId} onValueChange={(v) => setExerciseId(v as string)}>
+      <Select
+        value={exerciseId}
+        onValueChange={(v) => setExerciseId(v as string)}
+        items={(exercises ?? []).map((ex) => ({ value: ex.id, label: ex.name }))}
+      >
         <SelectTrigger className="w-full sm:w-64">
           <SelectValue placeholder={t("Übung wählen")} />
         </SelectTrigger>
@@ -119,14 +123,15 @@ export function OneRmChart() {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
+                minTickGap={28}
                 tickFormatter={(v) => new Date(v).toLocaleDateString(dateLocale, { day: "2-digit", month: "2-digit" })}
               />
               <YAxis
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                width={52}
-                label={{ value: unitLabel, angle: -90, position: "insideLeft", fill: "var(--muted-foreground)", fontSize: 11 }}
+                width={64}
+                label={{ value: `${t("Geschätztes 1RM")} (${unitLabel})`, angle: -90, position: "insideLeft", offset: 4, style: { textAnchor: "middle" }, fill: "var(--muted-foreground)", fontSize: 11 }}
               />
               <ChartTooltip
                 content={

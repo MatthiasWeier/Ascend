@@ -330,6 +330,10 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <Select
+            items={[
+              { value: "KG", label: t("Kilogramm (kg)") },
+              { value: "LBS", label: t("Pfund (lbs)") },
+            ]}
             value={weightUnit.unit}
             onValueChange={(v) => weightUnit.setUnit(v as WeightUnit)}
           >
@@ -352,7 +356,14 @@ export default function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Select value={locale} onValueChange={(v) => setLocale(v as Locale)}>
+          <Select
+            items={[
+              { value: "de", label: "Deutsch" },
+              { value: "en", label: "English" },
+            ]}
+            value={locale}
+            onValueChange={(v) => setLocale(v as Locale)}
+          >
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>

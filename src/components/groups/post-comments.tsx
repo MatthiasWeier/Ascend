@@ -280,7 +280,7 @@ export function PostComments({
         type="button"
         onClick={toggleOpen}
         aria-expanded={open}
-        className="flex w-fit items-center gap-1.5 rounded-full px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+        className="flex min-h-9 w-fit items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
       >
         <MessageCircle className="size-4" />
         {label && <span className="text-foreground">{label} ·</span>}

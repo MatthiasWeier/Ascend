@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Check, Dumbbell, Image as ImageIcon, MessageSquare, Pencil, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, Dumbbell, Image as ImageIcon, MessageSquare, Pencil, Trash2, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,6 +21,7 @@ import { useLocale } from "@/components/locale-provider";
 import { FOCUS_LABEL } from "@/lib/muscle-focus";
 import { PostComments } from "@/components/groups/post-comments";
 import { ImageLightbox } from "@/components/image-lightbox";
+import { BoldNumbers } from "@/components/bold-numbers";
 
 const TYPE_FILTERS = [
   { value: "ALL" as const, label: "Alle", icon: null },
@@ -69,18 +70,21 @@ function SharedWorkoutBody({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex items-center justify-between gap-2 text-left text-sm"
+        className="flex min-h-10 items-center justify-between gap-2 rounded-md text-left text-sm hover:bg-secondary/40"
       >
         <span>
-          <span className="font-medium">
+          <span className="font-semibold">
             {header.replace(/^Workout vom (.+)$/, (_, date: string) => t("Workout vom {date}", { date }))}
           </span>
           {exercises > 0 && (
-            <span className="text-muted-foreground">
+            <span className="text-foreground/80">
               {" · "}
-              {exercises === 1 ? t("1 Übung") : t("{n} Übungen", { n: exercises })}
-              {" · "}
-              {lines.length === 1 ? t("1 Satz") : t("{n} Sätze", { n: lines.length })}
+              <BoldNumbers
+                text={[
+                  exercises === 1 ? t("1 Übung") : t("{n} Übungen", { n: exercises }),
+                  lines.length === 1 ? t("1 Satz") : t("{n} Sätze", { n: lines.length }),
+                ].join(" · ")}
+              />
               {focuses.length > 0 &&
                 ` · ${focuses
                   .map((f) => t("{focus}-Fokus", { focus: t((FOCUS_LABEL as Record<string, string>)[f] ?? f) }))
@@ -88,8 +92,9 @@ function SharedWorkoutBody({
             </span>
           )}
         </span>
-        <span className="shrink-0 text-xs text-muted-foreground">
-          {open ? t("Details ausblenden") : t("Details einblenden")}
+        <span className="flex shrink-0 items-center gap-1.5 px-2 text-sm font-medium text-muted-foreground">
+          <span>{open ? t("Details ausblenden") : t("Details einblenden")}</span>
+          <ChevronDown className={cn("size-5 transition-transform", open && "rotate-180")} />
         </span>
       </button>
       {photoIds.length > 0 && (
@@ -411,7 +416,7 @@ export function GroupFeed({
                   <button
                     type="button"
                     onClick={() => setAuthorFilter({ id: post.user.id, name: post.user.name })}
-                    className="font-medium text-foreground hover:underline"
+                    className="text-sm font-semibold text-foreground hover:underline"
                   >
                     {post.user.name}
                   </button>

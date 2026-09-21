@@ -242,6 +242,7 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
                   <div className="flex flex-1 flex-col gap-1.5">
                     <Label>{t("Einheit")}</Label>
                     <Select
+                      items={GOAL_UNITS.map((u) => ({ value: u, label: t(GOAL_UNIT_LABEL[u]) }))}
                       value={unit}
                       onValueChange={(v) => {
                         setUnit(v as GoalUnitValue);

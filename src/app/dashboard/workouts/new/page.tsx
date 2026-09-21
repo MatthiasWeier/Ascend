@@ -687,7 +687,7 @@ export default function NewWorkoutPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">{t("Sätze")}</CardTitle>
-            <CardDescription>{t("Übung wählen, Werte eintragen. ✓ startet die Pause.")}</CardDescription>
+            <CardDescription>{t("Übung wählen, Werte eintragen. „Satz & Pause“ startet die Pause.")}</CardDescription>
             <CardAction className="flex items-center gap-1.5">
               {templates.length > 0 && (
                 <Select onValueChange={loadTemplate}>
@@ -886,6 +886,7 @@ export default function NewWorkoutPage() {
                         <Select
                           value={row.setType}
                           onValueChange={(v) => updateRow(row.key, { setType: v as SetType })}
+                          items={(Object.keys(SET_TYPE_LABEL) as SetType[]).map((st) => ({ value: st, label: t(SET_TYPE_LABEL[st]) }))}
                         >
                           <SelectTrigger className="h-10! w-[116px]">
                             <SelectValue />
@@ -916,12 +917,12 @@ export default function NewWorkoutPage() {
                         <Button
                           type="button"
                           variant={row.done ? "default" : "outline"}
-                          size="icon"
-                          className={cn("ml-auto size-10", row.done && "bg-success text-success-foreground hover:bg-success/90")}
+                          className={cn("ml-auto h-10 gap-1.5 px-3", row.done && "bg-success text-success-foreground hover:bg-success/90")}
                           onClick={() => markDone(row.key)}
                           title={t("Satz fertig - startet die Pause")}
                         >
                           <Check className="size-4" />
+                          {row.done ? t("Erledigt") : t("Satz & Pause")}
                         </Button>
                         <Button
                           type="button"
@@ -940,6 +941,8 @@ export default function NewWorkoutPage() {
                           size="icon"
                           className="size-10 text-muted-foreground hover:text-destructive"
                           onClick={() => removeRow(row.key)}
+                          title={t("Satz entfernen")}
+                          aria-label={t("Satz entfernen")}
                         >
                           <Trash2 className="size-4" />
                         </Button>
@@ -958,7 +961,14 @@ export default function NewWorkoutPage() {
                 );
               })}
             </>
-            <Button type="button" variant="outline" onClick={addRow} disabled={exercises.length === 0}>
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="w-full border-dashed border-primary/60 text-primary hover:bg-primary/10 hover:text-primary"
+              onClick={addRow}
+              disabled={exercises.length === 0}
+            >
               <Plus className="size-4" />
               {t("Satz hinzufügen")}
             </Button>

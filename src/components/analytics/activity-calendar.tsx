@@ -9,8 +9,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { WorkoutSessionCard } from "@/components/workout-session-card";
-import { VIZ_SEQUENTIAL } from "@/lib/viz-colors";
 import { useLocale } from "@/components/locale-provider";
+import { cn } from "@/lib/utils";
 
 type Day = { date: string; intensity: number };
 
@@ -30,13 +30,7 @@ type DaySession = {
   }[];
 };
 
-const LEVEL_COLORS = [
-  "var(--muted)",
-  VIZ_SEQUENTIAL[1],
-  VIZ_SEQUENTIAL[2],
-  VIZ_SEQUENTIAL[3],
-  VIZ_SEQUENTIAL[4],
-];
+const LEVEL_COLORS = ["var(--muted)", "var(--heat-1)", "var(--heat-2)", "var(--heat-3)", "var(--heat-4)"];
 
 // Month/weekday labels come from the active locale inside the component.
 
@@ -62,6 +56,12 @@ export function ActivityCalendar({
   const [days, setDays] = useState<Day[] | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [daySessions, setDaySessions] = useState<DaySession[] | null>(null);
+  const [tip, setTip] = useState<{ date: string; intensity: number; x: number; y: number } | null>(null);
+
+  function showTip(el: HTMLElement, day: { date: string; intensity: number }) {
+    const r = el.getBoundingClientRect();
+    setTip({ date: day.date, intensity: day.intensity, x: r.left + r.width / 2, y: r.top });
+  }
 
   useEffect(() => {
     setDays(null);
@@ -156,10 +156,17 @@ export function ActivityCalendar({
                   <button
                     key={di}
                     type="button"
-                    disabled={!day.inYear || day.intensity <= 0}
-                    title={`${day.date}: ${day.inYear ? t("Intensität {n}", { n: day.intensity }) : ""}`}
-                    onClick={() => openDay(day.date)}
-                    className="size-[13px] rounded-[3px] disabled:cursor-default enabled:cursor-pointer enabled:ring-offset-1 enabled:hover:ring-1 enabled:hover:ring-foreground/40"
+                    tabIndex={day.inYear ? 0 : -1}
+                    aria-label={day.inYear ? `${day.date}: ${day.intensity > 0 ? t("Intensität {n}", { n: day.intensity }) : t("Kein Workout")}` : undefined}
+                    onMouseEnter={(e) => day.inYear && showTip(e.currentTarget, day)}
+                    onFocus={(e) => day.inYear && showTip(e.currentTarget, day)}
+                    onMouseLeave={() => setTip(null)}
+                    onBlur={() => setTip(null)}
+                    onClick={() => day.inYear && day.intensity > 0 && openDay(day.date)}
+                    className={cn(
+                      "size-[13px] rounded-[3px] hover:ring-1 hover:ring-foreground/50",
+                      day.inYear && day.intensity > 0 ? "cursor-pointer" : "cursor-default"
+                    )}
                     style={{
                       backgroundColor: day.inYear ? LEVEL_COLORS[levelFor(day.intensity)] : "transparent",
                     }}
@@ -177,6 +184,27 @@ export function ActivityCalendar({
         ))}
         {t("Mehr")}
       </div>
+
+      {tip && (
+        <div
+          role="tooltip"
+          className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-md bg-popover px-2.5 py-1.5 text-xs text-popover-foreground shadow-md ring-1 ring-foreground/10"
+          style={{ left: tip.x, top: tip.y - 6 }}
+        >
+          <p className="font-medium">
+            {new Date(`${tip.date}T00:00:00.000Z`).toLocaleDateString(dateLocale, {
+              weekday: "short",
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+              timeZone: "UTC",
+            })}
+          </p>
+          <p className="text-muted-foreground">
+            {tip.intensity > 0 ? t("Intensität {n}", { n: tip.intensity }) : t("Kein Workout")}
+          </p>
+        </div>
+      )}
 
       <Dialog open={selectedDate != null} onOpenChange={(open) => !open && setSelectedDate(null)}>
         <DialogContent>
