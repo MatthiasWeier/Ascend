@@ -29,6 +29,27 @@ enum Muscle {
   CALVES
 }
 
+enum BodyPart {
+  NECK
+  SHOULDER
+  ELBOW
+  FOREARM
+  WRIST
+  FINGERS
+  CHEST
+  UPPER_BACK
+  LOWER_BACK
+  HIP
+  KNEE
+  ANKLE
+}
+
+enum InjurySeverity {
+  MILD
+  MODERATE
+  SEVERE
+}
+
 enum MuscleRole {
   PRIMARY
   SECONDARY
@@ -71,6 +92,7 @@ model User {
   weightUnit   WeightUnit @default(KG)
   avatarUrl    String?
   musclePreferences MusclePreference[]
+  injuries          Injury[]
   // Set when the first-run tutorial was finished or skipped; null = show it.
   tutorialCompletedAt DateTime?
   // TOTP (RFC 6238) two-factor auth. totpSecret is set as soon as setup
@@ -691,4 +713,21 @@ model MusclePreference {
   wish   Int
 
   @@unique([userId, muscle])
+}
+
+// Something that hurts right now. Exercises loading that body part are
+// warned about while logging; moderate/severe ones also vanish from the
+// Workout Brain's suggestions. Stops counting once healed or past endsAt.
+model Injury {
+  id         String         @id @default(cuid())
+  userId     String
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bodyPart   BodyPart
+  severity   InjurySeverity
+  note       String?
+  startedAt  DateTime       @default(now())
+  endsAt     DateTime?
+  resolvedAt DateTime?
+
+  @@index([userId, resolvedAt])
 }

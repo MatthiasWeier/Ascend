@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   Mountain,
+  PersonStanding,
   ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,7 @@ const navItems = [
   { href: "/dashboard", label: "Feed", icon: LayoutDashboard },
   { href: "/dashboard/workouts/new", label: "Eintragen", icon: PlusCircle },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/dashboard/body", label: "Körper", icon: PersonStanding },
   { href: "/dashboard/groups", label: "Gruppen", icon: Users },
 ];
 

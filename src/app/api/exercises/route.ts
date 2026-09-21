@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { exerciseLoadedParts } from "@/lib/injuries";
 
 const muscleEnum = z.enum([
   "CHEST",
@@ -53,7 +54,9 @@ export async function GET() {
     include: { muscles: { select: { muscle: true, role: true } } },
   });
 
-  return NextResponse.json({ exercises });
+  return NextResponse.json({
+    exercises: exercises.map((e) => ({ ...e, loadedParts: exerciseLoadedParts(e.name, e.focus, e.muscles) })),
+  });
 }
 
 export async function POST(request: Request) {

@@ -5,6 +5,21 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.45.0] - 2026-09-21
+
+### Added
+- **Verletzungen** (Etappe 3): in den Einstellungen Körperstelle (Nacken, Schulter, Ellbogen, Unterarm,
+  Handgelenk, Finger, Brust, Rücken, Hüfte, Knie, Fuß), Schweregrad (leicht/mittel/schwer), Notiz und
+  optionales Enddatum eintragen; "Ausgeheilt" beendet sie. Jede Übung kennt die Körperstellen, die sie belastet
+  (aus ihren Muskeln plus Gelenklasten wie Handgelenke beim Liegestütz). Beim Eintragen bekommt eine betroffene
+  Übung eine Warnung (auch in der Übungsauswahl); bei mittel/schwer verschwindet sie zusätzlich aus dem Workout
+  Brain, ein Fokus ohne verbliebene Übungen wird übersprungen und die Brain-Karte nennt die Rücksicht.
+  Die Karte zeigt jetzt zu jedem Vorschlag Beispielübungen.
+- **Körper-Seite** (Etappe 4, neuer Menüpunkt "Körper"): selbstgebaute, drehbare 3D-Figur (three.js, 14 Muskeln als
+  Ellipsoide), eingefärbt in 5 Stufen von grau (kaum) bis rot (viel) nach gewichteten Sätzen pro Woche
+  (7/14/30 Tage). Blau = Muskel-Wunsch, orange = von Verletzung betroffen. Tippen wählt einen Muskel (Details,
+  Wunsch setzen), Ziehen dreht, Vorne/Hinten/Drehen-Buttons; ohne WebGL gibt es die Muskelliste.
+
 ## [0.44.0] - 2026-09-21
 
 ### Added

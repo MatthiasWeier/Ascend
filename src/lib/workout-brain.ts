@@ -2,6 +2,9 @@ import { prisma } from "@/lib/prisma";
 import type { Muscle, MuscleFocus } from "@prisma/client";
 import { MUSCLE_FOCUS, MUSCLE_LABEL } from "@/lib/muscles";
 import { getMuscleStats } from "@/lib/muscle-stats";
+import { getActiveInjuries } from "@/lib/injuries-server";
+import { BODY_PART_LABEL, blocksSuggestions, exerciseLoadedParts } from "@/lib/injuries";
+import { resolveExerciseMuscles } from "@/lib/muscles";
 import { FOCUS_LABEL, ALL_FOCUSES, computeLoadPercents } from "@/lib/muscle-focus";
 import type { TFunction } from "@/lib/i18n";
 
@@ -43,6 +46,8 @@ export type BrainSuggestion = {
   // Set when a muscle the user wants to train more is what's suggested.
   suggestedMuscle: Muscle | null;
   exampleExercises: string[];
+  // Set when exercises are held back because of an injury.
+  injuryNote: string | null;
   headline: string;
   detail: string;
 };
@@ -88,6 +93,22 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
 
   // Muscle wishes ("Bizeps mehr"): a wished muscle is due again after 3 days
   // ("mehr") or 2 days ("viel mehr"); the most overdue one steers the focus.
+  // Injuries: exercises loading an injured body part (moderate/severe) are
+  // never suggested, and a focus with nothing left to do is skipped.
+  const [injuries, catalogue] = await Promise.all([
+    getActiveInjuries(userId),
+    prisma.exercise.findMany({
+      where: { OR: [{ isDefault: true }, { createdById: userId }] },
+      select: { id: true, name: true, focus: true, muscles: { select: { muscle: true, role: true } } },
+    }),
+  ]);
+  const blockedParts = new Set(injuries.filter((i) => blocksSuggestions(i.severity)).map((i) => i.bodyPart));
+  const isBlocked = (e: (typeof catalogue)[number]) =>
+    exerciseLoadedParts(e.name, e.focus, e.muscles).some((p) => blockedParts.has(p));
+  const usableExercises = catalogue.filter((e) => !isBlocked(e));
+  const primaryMusclesOf = (e: (typeof catalogue)[number]) =>
+    resolveExerciseMuscles(e.focus, e.muscles).filter((r) => r.role === "PRIMARY").map((r) => r.muscle);
+
   const wishes = await prisma.musclePreference.findMany({ where: { userId } });
   const muscleStats = wishes.length > 0 ? await getMuscleStats(userId) : [];
   const dueWishes = wishes
@@ -103,6 +124,7 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
       };
     })
     .filter((w) => w.ratio >= 1)
+    .filter((w) => blockedParts.size === 0 || usableExercises.some((e) => primaryMusclesOf(e).includes(w.muscle)))
     .sort((a, b) => b.ratio - a.ratio);
 
   // Balance-Ziele are a hard constraint, not just a preference: a focus the
@@ -111,6 +133,10 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
   const excludedFocuses = new Set(ALL_FOCUSES.filter((f) => targetByFocus.get(f) === 0));
   let eligibleFocuses = ALL_FOCUSES.filter((f) => !excludedFocuses.has(f));
   if (eligibleFocuses.length === 0) eligibleFocuses = ALL_FOCUSES; // every focus zeroed out - nonsensical, ignore rather than suggest nothing
+  if (blockedParts.size > 0) {
+    const open = eligibleFocuses.filter((f) => usableExercises.some((e) => e.focus === f));
+    if (open.length > 0) eligibleFocuses = open;
+  }
 
   function gapDays(focus: MuscleFocus): number {
     const lastDate = lastTrainedByFocus.get(focus);
@@ -275,28 +301,33 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
   // exercises that train it - favouring ones the user already does.
   const wishMuscle = isOverloaded ? undefined : dueWishes.find((w) => w.focus === effectiveFocus)?.muscle;
   let exampleExercises: string[] = [];
-  if (wishMuscle) {
-    const [candidates, usage] = await Promise.all([
-      prisma.exercise.findMany({
-        where: {
-          muscles: { some: { muscle: wishMuscle, role: "PRIMARY" } },
-          OR: [{ isDefault: true }, { createdById: userId }],
-        },
-        select: { id: true, name: true },
-      }),
-      prisma.workoutSet.groupBy({ by: ["exerciseId"], where: { session: { userId } }, _count: { _all: true } }),
-    ]);
+  if (!isOverloaded) {
+    const pool = usableExercises.filter((e) =>
+      wishMuscle ? primaryMusclesOf(e).includes(wishMuscle) : e.focus === effectiveFocus
+    );
+    const usage = await prisma.workoutSet.groupBy({
+      by: ["exerciseId"],
+      where: { session: { userId } },
+      _count: { _all: true },
+    });
     const used = new Map(usage.map((u) => [u.exerciseId, u._count._all]));
-    exampleExercises = candidates
-      .sort((a, b) => (used.get(b.id) ?? 0) - (used.get(a.id) ?? 0) || a.name.localeCompare(b.name))
+    exampleExercises = pool
+      .sort((x, y) => (used.get(y.id) ?? 0) - (used.get(x.id) ?? 0) || x.name.localeCompare(y.name))
       .slice(0, 3)
       .map((e) => e.name);
   }
+  const injuryNote =
+    blockedParts.size > 0
+      ? t("Rücksicht auf: {parts} - betroffene Übungen werden nicht vorgeschlagen.", {
+          parts: Array.from(blockedParts).map((p) => t(BODY_PART_LABEL[p])).join(", "),
+        })
+      : null;
 
   return {
     suggestedFocus: effectiveFocus,
     suggestedMuscle: wishMuscle ?? null,
     exampleExercises,
+    injuryNote,
     focusDaysSince,
     isOverloaded,
     recentAvgExertion,

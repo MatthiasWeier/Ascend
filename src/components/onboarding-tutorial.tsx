@@ -10,6 +10,7 @@ import {
   Camera,
   LayoutDashboard,
   Mountain,
+  PersonStanding,
   PlusCircle,
   Rocket,
   Settings,
@@ -102,6 +103,16 @@ function useSteps(): Step[] {
       title: t("Workout Brain"),
       body: t("Die Karte auf der Startseite schlägt vor, was du als Nächstes trainieren solltest - damit keine Muskelgruppe zu kurz kommt."),
       where: { icon: LayoutDashboard, label: t("Feed") },
+    },
+    {
+      icon: PersonStanding,
+      title: t("Körper & Muskeln"),
+      body: t("Eine drehbare 3D-Figur zeigt, welche Muskeln du zuletzt wie stark trainiert hast - grau ist wenig, rot ist viel."),
+      bullets: [
+        t("Tippe einen Muskel an und sag, ob du ihn öfter trainieren willst - das Workout Brain schlägt ihn dann öfter vor"),
+        t("Verletzungen trägst du in den Einstellungen ein: betroffene Übungen werden gewarnt und nicht mehr vorgeschlagen"),
+      ],
+      where: { icon: PersonStanding, label: t("Körper") },
     },
     {
       icon: Users,

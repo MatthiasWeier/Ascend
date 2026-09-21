@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Trash2, Plus, Check, Timer, X, Copy, BookmarkPlus, FolderOpen, StickyNote, Camera } from "lucide-react";
+import { Trash2, Plus, Check, Timer, TriangleAlert, X, Copy, BookmarkPlus, FolderOpen, StickyNote, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,12 +44,15 @@ import { WarmupCalculatorDialog } from "@/components/warmup-calculator-dialog";
 import { useWeightUnit } from "@/components/weight-unit-context";
 import { useLocale } from "@/components/locale-provider";
 import { roundForDisplay, displayToKg, type WeightUnit } from "@/lib/weight-units";
+import { BODY_PART_LABEL, injuryConflicts } from "@/lib/injuries";
+import type { BodyPart, InjurySeverity } from "@prisma/client";
 
 type Exercise = {
   id: string;
   name: string;
   type: "REPS" | "HOLD";
   focus: MuscleFocus;
+  loadedParts?: BodyPart[];
 };
 
 type LastValues = Record<
@@ -173,6 +176,16 @@ export default function NewWorkoutPage() {
   const [templateName, setTemplateName] = useState("");
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [mostUsedExerciseIds, setMostUsedExerciseIds] = useState<string[]>([]);
+  const [injuries, setInjuries] = useState<{ bodyPart: BodyPart; severity: InjurySeverity }[]>([]);
+
+  useEffect(() => {
+    fetch("/api/injuries")
+      .then((r) => r.json())
+      .then((data: { injuries: { bodyPart: BodyPart; severity: InjurySeverity }[] }) => setInjuries(data.injuries))
+      .catch(() => {});
+  }, []);
+
+  const hitsFor = (e: Exercise | undefined) => (e?.loadedParts ? injuryConflicts(e.loadedParts, injuries) : []);
 
   useEffect(() => {
     Promise.all([
@@ -819,6 +832,14 @@ export default function NewWorkoutPage() {
                         row.done ? "border-success/40 bg-success/5" : "border-border bg-secondary/40"
                       )}
                     >
+                      {hitsFor(ex).length > 0 && (
+                        <p className="flex items-center gap-1.5 rounded-md bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-500">
+                          <TriangleAlert className="size-3.5 shrink-0" />
+                          {t("Belastet deine Verletzung: {parts}", {
+                            parts: hitsFor(ex).map((i) => t(BODY_PART_LABEL[i.bodyPart])).join(", "),
+                          })}
+                        </p>
+                      )}
                       {last && (
                         <p className="text-xs text-muted-foreground">
                           {t("Letztes Mal:")} {formatLastValue(last, weightUnit.format, weightUnit.unitLabel)}
@@ -827,7 +848,7 @@ export default function NewWorkoutPage() {
                       <div className="flex flex-wrap items-center gap-3">
                         <ExerciseCombobox
                           className="h-10"
-                          exercises={exercises}
+                          exercises={exercises.map((e) => ({ id: e.id, name: e.name, warn: hitsFor(e).length > 0 }))}
                           value={row.exerciseId}
                           onChange={(id) => handleExerciseChange(row.key, id)}
                         />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +15,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useT } from "@/components/locale-provider";
 
-type ComboExercise = { id: string; name: string };
+type ComboExercise = { id: string; name: string; warn?: boolean };
 
 export function ExerciseCombobox({
   exercises,
@@ -69,6 +69,7 @@ export function ExerciseCombobox({
                     className={cn("size-4 shrink-0", ex.id === value ? "opacity-100" : "opacity-0")}
                   />
                   {ex.name}
+                  {ex.warn && <TriangleAlert className="ml-auto size-3.5 shrink-0 text-amber-500" aria-label="⚠" />}
                 </CommandItem>
               ))}
             </CommandGroup>

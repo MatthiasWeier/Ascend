@@ -29,6 +29,7 @@ import type { MuscleFocus } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ReplayTutorialButton } from "@/components/onboarding-tutorial";
 import { MuscleWishes } from "@/components/muscle-wishes";
+import { InjuriesCard } from "@/components/injuries-card";
 import { DeleteAccountDialog } from "@/components/delete-account-dialog";
 import { PushNotificationToggle } from "@/components/push-notification-toggle";
 import { DataExport, DataImport, CalendarFeed } from "@/components/data-portability";
@@ -278,6 +279,18 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <MuscleWishes />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("Verletzungen")}</CardTitle>
+          <CardDescription>
+            {t("Was tut gerade weh? Betroffene Übungen bekommen beim Eintragen eine Warnung und fliegen aus den Vorschlägen des Workout Brains.")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <InjuriesCard />
         </CardContent>
       </Card>
 
