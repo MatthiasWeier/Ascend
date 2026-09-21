@@ -3,7 +3,7 @@ import type { MuscleFocus } from "@prisma/client";
 
 export type ActivityItem =
   | {
-      kind: "WORKOUT_SHARE" | "CHAT_TEXT" | "CHAT_PHOTO";
+      kind: "WORKOUT_SHARE" | "CHAT_TEXT" | "CHAT_PHOTO" | "CLIMBING";
       timestamp: Date;
       userId: string;
       userName: string;
@@ -106,8 +106,14 @@ export async function getRecentGroupActivity(userId: string, limit = 20): Promis
 
   const items: ActivityItem[] = [
     ...posts.map((p) => {
-      const kind: "WORKOUT_SHARE" | "CHAT_TEXT" | "CHAT_PHOTO" =
-        p.type === "WORKOUT_SHARE" ? "WORKOUT_SHARE" : p.type === "PHOTO" ? "CHAT_PHOTO" : "CHAT_TEXT";
+      const kind: "WORKOUT_SHARE" | "CHAT_TEXT" | "CHAT_PHOTO" | "CLIMBING" =
+        p.type === "WORKOUT_SHARE"
+          ? "WORKOUT_SHARE"
+          : p.type === "PHOTO"
+            ? "CHAT_PHOTO"
+            : p.type === "CLIMBING"
+              ? "CLIMBING"
+              : "CHAT_TEXT";
       return {
         kind,
         timestamp: p.createdAt,

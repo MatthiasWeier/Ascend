@@ -5,6 +5,17 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.43.0] - 2026-09-21
+
+### Fixed
+- **Klettertage erschienen nicht im Feed**: Ein neuer Klettertag löste nur eine Benachrichtigung aus, hatte
+  aber keinen Feed-Eintrag. Jetzt erscheint er als eigener Beitrag (`PostType.CLIMBING`, Inhalt als JSON,
+  pro Gruppe/Person/Tag einer) im Gruppen-Feed und auf der Startseite (Filter "Workouts" bzw. "Klettern"),
+  mit Gesamtzahl und Grad-Aufschlüsselung, kommentierbar. Nachträgliches Bearbeiten des Tages aktualisiert
+  den Beitrag, Leeren des Tages entfernt ihn; die Benachrichtigung kommt nur bei einem neuen Beitrag und
+  führt direkt dorthin. Gilt für den Klettertag-Dialog und "Send eintragen" (Routen zählen mit). Die Klettertage
+  der letzten 30 Tage wurden einmalig nachgetragen (ohne Benachrichtigung).
+
 ## [0.42.0] - 2026-09-21
 
 ### Changed

@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, Dumbbell, Image as ImageIcon, MessageSquare, Trophy, XCircle } from "lucide-react";
+import { Check, ChevronDown, Dumbbell, Image as ImageIcon, MessageSquare, Mountain, Trophy, XCircle } from "lucide-react";
 import { FOCUS_LABEL } from "@/lib/muscle-focus";
 import { ImageLightbox } from "@/components/image-lightbox";
 import { BoldNumbers } from "@/components/bold-numbers";
+import { ClimbingBody } from "@/components/climbing-body";
 import { PostComments } from "@/components/groups/post-comments";
 import { WorkoutSessionCard } from "@/components/workout-session-card";
 import { FeedList } from "@/components/feed-list";
@@ -47,6 +48,7 @@ const TYPE_LABELS: Record<TypeFilter, string> = {
 function typeOf(item: ActivityItem): TypeFilter {
   switch (item.kind) {
     case "WORKOUT_SHARE":
+    case "CLIMBING":
       return "workouts";
     case "CHAT_TEXT":
       return "messages";
@@ -154,6 +156,9 @@ function GroupItemRow({ item }: { item: ActivityItem }) {
   if (item.kind === "CHAT_PHOTO") {
     Icon = ImageIcon;
     text = t("hat ein Foto gepostet");
+  } else if (item.kind === "CLIMBING") {
+    Icon = Mountain;
+    text = t("hat einen Klettertag eingetragen");
   } else if (item.kind === "CHAT_TEXT") {
     Icon = MessageSquare;
     text = t("hat geschrieben: \"{text}\"", { text: item.content ?? "" });
@@ -179,7 +184,9 @@ function GroupItemRow({ item }: { item: ActivityItem }) {
   const accent =
     item.kind === "CHAT_PHOTO"
       ? "border-l-sky-500 bg-sky-500/5"
-      : item.kind === "CHALLENGE_COMPLETED"
+      : item.kind === "CLIMBING"
+        ? "border-l-emerald-500 bg-emerald-500/5"
+        : item.kind === "CHALLENGE_COMPLETED"
         ? "border-l-success bg-success/5"
         : item.kind === "CHALLENGE_ENDED_EARLY"
           ? "border-l-destructive bg-destructive/5"
@@ -204,6 +211,7 @@ function GroupItemRow({ item }: { item: ActivityItem }) {
         <p className={cn("text-foreground/80", item.kind === "CHAT_TEXT" ? "line-clamp-3" : "truncate")}>
           <span className="font-semibold text-foreground">{item.userName}</span> {text}
         </p>
+        {item.kind === "CLIMBING" && <ClimbingBody content={item.content} className="mt-1" />}
         {item.kind === "CHAT_PHOTO" && item.imageUrl && (
           <ImageLightbox className="mt-1.5" thumbClassName="max-h-64" src={item.imageUrl} alt={t("Gruppen-Foto")} />
         )}

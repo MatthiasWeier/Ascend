@@ -33,7 +33,7 @@ export async function PATCH(
   if (post.userId !== session.user.id) {
     return NextResponse.json({ error: "Keine Berechtigung" }, { status: 403 });
   }
-  if (post.type === "WORKOUT_SHARE") {
+  if (post.type === "WORKOUT_SHARE" || post.type === "CLIMBING") {
     return NextResponse.json({ error: "Workout-Shares lassen sich nicht bearbeiten" }, { status: 400 });
   }
 
@@ -78,7 +78,7 @@ export async function DELETE(
 
   const isAuthor = post.userId === session.user.id;
   const isLeaderModeratingMessage =
-    membership.role === "LEADER" && post.type !== "WORKOUT_SHARE" && !isAuthor;
+    membership.role === "LEADER" && post.type !== "WORKOUT_SHARE" && post.type !== "CLIMBING" && !isAuthor;
   if (!isAuthor && !isLeaderModeratingMessage) {
     return NextResponse.json({ error: "Keine Berechtigung" }, { status: 403 });
   }

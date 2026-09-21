@@ -298,6 +298,7 @@ enum PostType {
   PHOTO
   WORKOUT_SHARE
   TEXT
+  CLIMBING
 }
 
 // Feed items inside a group: progress photos, shared workouts, text updates
@@ -318,10 +319,15 @@ model GroupPost {
   workoutSessionId String?
   workoutSession   WorkoutSession? @relation(fields: [workoutSessionId], references: [id], onDelete: SetNull)
 
+  // CLIMBING posts: the Berlin day (YYYY-MM-DD) this climbing day mirrors,
+  // content is a JSON summary. One post per group, user and day.
+  climbingDate String?
+
   reactions PostReaction[]
   comments  PostComment[]
 
   @@unique([groupId, workoutSessionId])
+  @@unique([groupId, userId, climbingDate])
   @@index([groupId, createdAt])
 }
 

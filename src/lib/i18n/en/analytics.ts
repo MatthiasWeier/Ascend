@@ -78,7 +78,6 @@ export const analytics: Record<string, string> = {
   "Noch keine Workouts in diesem Zeitraum.": "No workouts in this period yet.",
   "Aktivität pro Mitglied": "Activity per member",
   "Geloggte Workouts, letzte {days} Tage.": "Logged workouts, last {days} days.",
-  "{name} war bouldern ({n} Boulder)": "{name} went bouldering ({n} boulders)",
   "Klettertag": "Climbing day",
   "Konnte den Tag nicht laden.": "Couldn't load the day.",
   "Boulder-Tag aktualisiert!": "Boulder day updated!",
@@ -86,4 +85,8 @@ export const analytics: Record<string, string> = {
   "Tag leeren": "Clear day",
   "Änderungen speichern ({n} Boulder)": "Save changes ({n} boulders)",
   "Außerdem an diesem Tag: {n} weitere Sends (Routen/andere Grade), die hier unverändert bleiben.": "Also on this day: {n} more sends (routes/other grades) that stay unchanged here.",
+  "{name} war klettern ({n} Sends)": "{name} went climbing ({n} sends)",
+  "hat einen Klettertag eingetragen": "logged a climbing day",
+  "{n} Sends": "{n} sends",
+  "1 Send": "1 send",
 };

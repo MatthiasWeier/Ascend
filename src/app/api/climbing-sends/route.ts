@@ -3,7 +3,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { germanDateKey } from "@/lib/german-time";
-import { BOULDER_DAY_GRADES, DATE_KEY_RE, getSendsOnDay } from "@/lib/climbing-day";
+import { BOULDER_DAY_GRADES, DATE_KEY_RE, getSendsOnDay, shareClimbingDay } from "@/lib/climbing-day";
 
 const sendSchema = z.object({
   style: z.enum(["BOULDER", "ROUTE"]),
@@ -74,6 +74,8 @@ export async function POST(request: Request) {
   const send = await prisma.climbingSend.create({
     data: { userId: session.user.id, ...rest, ...(date ? { date: new Date(date) } : {}) },
   });
+
+  await shareClimbingDay(session.user.id, germanDateKey(send.date));
 
   return NextResponse.json({ send }, { status: 201 });
 }

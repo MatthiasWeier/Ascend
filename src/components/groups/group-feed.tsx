@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Check, ChevronDown, Dumbbell, Image as ImageIcon, MessageSquare, Pencil, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, Dumbbell, Image as ImageIcon, Mountain, MessageSquare, Pencil, Trash2, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,18 +22,20 @@ import { FOCUS_LABEL } from "@/lib/muscle-focus";
 import { PostComments } from "@/components/groups/post-comments";
 import { ImageLightbox } from "@/components/image-lightbox";
 import { BoldNumbers } from "@/components/bold-numbers";
+import { ClimbingBody } from "@/components/climbing-body";
 
 const TYPE_FILTERS = [
   { value: "ALL" as const, label: "Alle", icon: null },
   { value: "TEXT" as const, label: "Text", icon: MessageSquare },
   { value: "WORKOUT_SHARE" as const, label: "Workout", icon: Dumbbell },
   { value: "PHOTO" as const, label: "Foto", icon: ImageIcon },
+  { value: "CLIMBING" as const, label: "Klettern", icon: Mountain },
 ];
 type TypeFilter = (typeof TYPE_FILTERS)[number]["value"];
 
 type Post = {
   id: string;
-  type: "PHOTO" | "WORKOUT_SHARE" | "TEXT";
+  type: "PHOTO" | "WORKOUT_SHARE" | "TEXT" | "CLIMBING";
   content: string | null;
   imageUrl: string | null;
   createdAt: string;
@@ -402,8 +404,8 @@ export function GroupFeed({
         <FeedList>
           {visiblePosts.map((post) => {
             const isOwn = post.user.id === authSession?.user?.id;
-            const canDelete = !post.pending && (isOwn || (isLeader && post.type !== "WORKOUT_SHARE"));
-            const canEdit = !post.pending && isOwn && post.type !== "WORKOUT_SHARE";
+            const canDelete = !post.pending && (isOwn || (isLeader && post.type !== "WORKOUT_SHARE" && post.type !== "CLIMBING"));
+            const canEdit = !post.pending && isOwn && post.type !== "WORKOUT_SHARE" && post.type !== "CLIMBING";
             const isEditing = editingId === post.id;
             return (
             <Card
@@ -464,6 +466,8 @@ export function GroupFeed({
                   </div>
                 )}
 
+                {post.type === "CLIMBING" && <ClimbingBody content={post.content} />}
+
                 {isEditing ? (
                   <div className="flex flex-col gap-2">
                     <Textarea
@@ -484,7 +488,8 @@ export function GroupFeed({
                   </div>
                 ) : (
                   post.content &&
-                  post.type !== "WORKOUT_SHARE" && <p className="text-sm">{post.content}</p>
+                  post.type !== "WORKOUT_SHARE" &&
+                  post.type !== "CLIMBING" && <p className="text-sm">{post.content}</p>
                 )}
 
                 <div className={cn("flex flex-wrap items-center gap-1", post.pending && "pointer-events-none")}>

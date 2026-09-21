@@ -35,7 +35,7 @@ function describe(n: Item, t: TFunction) {
     case "WORKOUT_POST":
       return { icon: Dumbbell, text: t("{name} hat ein Workout gepostet", { name: n.actorName }) };
     case "CLIMBING":
-      return { icon: Mountain, text: t("{name} war bouldern ({n} Boulder)", { name: n.actorName, n: n.snippet ?? "" }) };
+      return { icon: Mountain, text: t("{name} war klettern ({n} Sends)", { name: n.actorName, n: n.snippet ?? "" }) };
     case "CHALLENGE_DONE":
       return {
         icon: Trophy,

@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { notifyUsers } from "@/lib/notify";
-import { BOULDER_DAY_GRADES, DATE_KEY_RE, getSendsOnDay } from "@/lib/climbing-day";
+import { BOULDER_DAY_GRADES, DATE_KEY_RE, getSendsOnDay, shareClimbingDay } from "@/lib/climbing-day";
 
 const batchSchema = z.object({
   date: z.string().regex(DATE_KEY_RE), // YYYY-MM-DD (German calendar day being logged)
@@ -42,34 +41,8 @@ export async function POST(request: Request) {
     }),
   ]);
 
-  // Tell the crew about a new climbing day (not about later edits of it) -
-  // only in groups where the user opted into sharing their training.
-  const total = entries.reduce((sum, e) => sum + e.count, 0);
-  if (existing.length === 0 && total > 0 && style === "BOULDER") {
-    const [memberships, actor] = await Promise.all([
-      prisma.groupMember.findMany({
-        where: { userId, autoShareWorkouts: true },
-        select: {
-          groupId: true,
-          group: { select: { name: true, members: { where: { userId: { not: userId } }, select: { userId: true } } } },
-        },
-      }),
-      prisma.user.findUnique({ where: { id: userId }, select: { name: true } }),
-    ]);
-    const name = actor?.name ?? "Jemand";
-    for (const m of memberships) {
-      notifyUsers(m.group.members.map((mem) => mem.userId), {
-        type: "CLIMBING",
-        actorId: userId,
-        actorName: name,
-        groupName: m.group.name,
-        snippet: String(total),
-        url: `/dashboard/groups/${m.groupId}`,
-        pushTitle: m.group.name,
-        pushBody: `${name} war bouldern (${total} Boulder) 🧗`,
-      }).catch(() => {});
-    }
-  }
+  // Show the day in the feed of the groups where this user shares training.
+  await shareClimbingDay(userId, dateKey);
 
   return NextResponse.json({ sends }, { status: 201 });
 }
