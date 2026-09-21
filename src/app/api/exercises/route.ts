@@ -3,6 +3,23 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+const muscleEnum = z.enum([
+  "CHEST",
+  "SHOULDERS",
+  "BICEPS",
+  "TRICEPS",
+  "FOREARMS",
+  "LATS",
+  "UPPER_BACK",
+  "LOWER_BACK",
+  "ABS",
+  "OBLIQUES",
+  "GLUTES",
+  "QUADS",
+  "HAMSTRINGS",
+  "CALVES",
+]);
+
 const createExerciseSchema = z.object({
   name: z.string().min(1).max(80),
   description: z.string().max(500).optional(),
@@ -10,6 +27,8 @@ const createExerciseSchema = z.object({
   focus: z.enum(["PUSH", "PULL", "LEGS", "CORE", "GRIP"]),
   isBodyweight: z.boolean().default(false),
   groupId: z.string().optional(),
+  primaryMuscles: z.array(muscleEnum).max(14).default([]),
+  secondaryMuscles: z.array(muscleEnum).max(14).default([]),
 });
 
 export async function GET() {
@@ -31,6 +50,7 @@ export async function GET() {
       ],
     },
     orderBy: { name: "asc" },
+    include: { muscles: { select: { muscle: true, role: true } } },
   });
 
   return NextResponse.json({ exercises });
@@ -47,7 +67,7 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
-  const { groupId, ...rest } = parsed.data;
+  const { groupId, primaryMuscles, secondaryMuscles, ...rest } = parsed.data;
 
   if (groupId) {
     const membership = await prisma.groupMember.findUnique({
@@ -69,6 +89,12 @@ export async function POST(request: Request) {
       isDefault: false,
       createdById: session.user.id,
       groupId: groupId ?? null,
+      muscles: {
+        create: [
+          ...primaryMuscles.map((muscle) => ({ muscle, role: "PRIMARY" as const })),
+          ...secondaryMuscles.filter((m) => !primaryMuscles.includes(m)).map((muscle) => ({ muscle, role: "SECONDARY" as const })),
+        ],
+      },
     },
   });
 

@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import type { MuscleFocus } from "@prisma/client";
+import type { Muscle, MuscleFocus } from "@prisma/client";
+import { MUSCLE_FOCUS, MUSCLE_LABEL } from "@/lib/muscles";
+import { getMuscleStats } from "@/lib/muscle-stats";
 import { FOCUS_LABEL, ALL_FOCUSES, computeLoadPercents } from "@/lib/muscle-focus";
 import type { TFunction } from "@/lib/i18n";
 
@@ -38,6 +40,9 @@ export type BrainSuggestion = {
   skinDaysSince: number | null;
   skinRecovered: boolean;
   isSwap: boolean;
+  // Set when a muscle the user wants to train more is what's suggested.
+  suggestedMuscle: Muscle | null;
+  exampleExercises: string[];
   headline: string;
   detail: string;
 };
@@ -81,6 +86,25 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
   const targetByFocus = new Map(balanceGoals.map((g) => [g.focus, g.targetPercent]));
   const actualByFocus = computeLoadPercents(sets.map((s) => ({ ...s, focus: s.exercise.focus })));
 
+  // Muscle wishes ("Bizeps mehr"): a wished muscle is due again after 3 days
+  // ("mehr") or 2 days ("viel mehr"); the most overdue one steers the focus.
+  const wishes = await prisma.musclePreference.findMany({ where: { userId } });
+  const muscleStats = wishes.length > 0 ? await getMuscleStats(userId) : [];
+  const dueWishes = wishes
+    .map((w) => {
+      const stat = muscleStats.find((s) => s.muscle === w.muscle);
+      const interval = w.wish >= 2 ? 2 : 3;
+      const daysSince = stat?.daysSince ?? null;
+      return {
+        muscle: w.muscle,
+        focus: MUSCLE_FOCUS[w.muscle],
+        daysSince,
+        ratio: (daysSince ?? 30) / interval,
+      };
+    })
+    .filter((w) => w.ratio >= 1)
+    .sort((a, b) => b.ratio - a.ratio);
+
   // Balance-Ziele are a hard constraint, not just a preference: a focus the
   // user explicitly set to 0% (injury, "no legs ever", whatever) must never
   // be suggested, no matter how overdue it looks by recency alone.
@@ -115,6 +139,9 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
     const recovered = candidates.filter((f) => !isFatigueRecovering(f));
     const pool = recovered.length > 0 ? recovered : candidates;
 
+    const wishFocus = dueWishes.find((w) => pool.includes(w.focus));
+    if (wishFocus) return wishFocus.focus;
+
     let bestDeficitFocus: MuscleFocus | null = null;
     let bestDeficit = BALANCE_DEFICIT_THRESHOLD;
     for (const focus of pool) {
@@ -145,6 +172,19 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
   const isBalanceDriven = suggestedDeficit != null && suggestedDeficit > BALANCE_DEFICIT_THRESHOLD;
 
   function describeSuggested() {
+    const wish = dueWishes.find((w) => w.focus === suggestedFocus);
+    if (wish) {
+      return {
+        headline: t(MUSCLE_LABEL[wish.muscle]),
+        detail:
+          wish.daysSince == null
+            ? t("{muscle} steht auf deiner Wunschliste - du hast ihn noch nie trainiert.", { muscle: t(MUSCLE_LABEL[wish.muscle]) })
+            : t("{muscle} steht auf deiner Wunschliste - zuletzt vor {n} Tagen trainiert.", {
+                muscle: t(MUSCLE_LABEL[wish.muscle]),
+                n: wish.daysSince,
+              }),
+      };
+    }
     if (isBalanceDriven) {
       return {
         headline: focusName(suggestedFocus),
@@ -231,8 +271,32 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
     ({ headline, detail } = describeSuggested());
   }
 
+  // Which wished muscle (if any) this suggestion serves, plus a few
+  // exercises that train it - favouring ones the user already does.
+  const wishMuscle = isOverloaded ? undefined : dueWishes.find((w) => w.focus === effectiveFocus)?.muscle;
+  let exampleExercises: string[] = [];
+  if (wishMuscle) {
+    const [candidates, usage] = await Promise.all([
+      prisma.exercise.findMany({
+        where: {
+          muscles: { some: { muscle: wishMuscle, role: "PRIMARY" } },
+          OR: [{ isDefault: true }, { createdById: userId }],
+        },
+        select: { id: true, name: true },
+      }),
+      prisma.workoutSet.groupBy({ by: ["exerciseId"], where: { session: { userId } }, _count: { _all: true } }),
+    ]);
+    const used = new Map(usage.map((u) => [u.exerciseId, u._count._all]));
+    exampleExercises = candidates
+      .sort((a, b) => (used.get(b.id) ?? 0) - (used.get(a.id) ?? 0) || a.name.localeCompare(b.name))
+      .slice(0, 3)
+      .map((e) => e.name);
+  }
+
   return {
     suggestedFocus: effectiveFocus,
+    suggestedMuscle: wishMuscle ?? null,
+    exampleExercises,
     focusDaysSince,
     isOverloaded,
     recentAvgExertion,

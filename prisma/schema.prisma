@@ -11,6 +11,29 @@ enum ExerciseType {
   HOLD   // static hold, time-based (e.g. plank, front lever)
 }
 
+// Fine-grained muscle groups; MuscleFocus stays as the coarse bucket.
+enum Muscle {
+  CHEST
+  SHOULDERS
+  BICEPS
+  TRICEPS
+  FOREARMS
+  LATS
+  UPPER_BACK
+  LOWER_BACK
+  ABS
+  OBLIQUES
+  GLUTES
+  QUADS
+  HAMSTRINGS
+  CALVES
+}
+
+enum MuscleRole {
+  PRIMARY
+  SECONDARY
+}
+
 enum MuscleFocus {
   PUSH
   PULL
@@ -47,6 +70,7 @@ model User {
   // group posts); this only controls what unit the UI shows/accepts.
   weightUnit   WeightUnit @default(KG)
   avatarUrl    String?
+  musclePreferences MusclePreference[]
   // Set when the first-run tutorial was finished or skipped; null = show it.
   tutorialCompletedAt DateTime?
   // TOTP (RFC 6238) two-factor auth. totpSecret is set as soon as setup
@@ -113,6 +137,7 @@ model Exercise {
   groupId     String?
   group       Group?  @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
+  muscles           ExerciseMuscle[]
   sets              WorkoutSet[]
   templateEntries   WorkoutTemplateEntry[]
   challengeTemplate ChallengeTemplate?
@@ -642,4 +667,28 @@ model WorkoutPhoto {
 
   @@index([sessionId])
   @@index([userId, sessionId])
+}
+
+// Which muscles an exercise trains, and how much (primary/secondary).
+model ExerciseMuscle {
+  id         String     @id @default(cuid())
+  exerciseId String
+  exercise   Exercise   @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  muscle     Muscle
+  role       MuscleRole
+
+  @@unique([exerciseId, muscle])
+  @@index([muscle])
+}
+
+// "I'm not happy with my biceps": the Workout Brain suggests muscles with a
+// wish more often. 1 = more, 2 = much more; no row = fine as it is.
+model MusclePreference {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  muscle Muscle
+  wish   Int
+
+  @@unique([userId, muscle])
 }

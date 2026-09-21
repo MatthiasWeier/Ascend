@@ -1,8 +1,10 @@
 import { BedDouble, Hand, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { BrainSuggestion } from "@/lib/workout-brain";
+import { getT } from "@/lib/i18n/server";
 
-export function BrainCard({ suggestion }: { suggestion: BrainSuggestion }) {
+export async function BrainCard({ suggestion }: { suggestion: BrainSuggestion }) {
+  const { t } = await getT();
   const Icon = suggestion.isOverloaded ? BedDouble : suggestion.isSwap ? Hand : Sparkles;
 
   return (
@@ -17,6 +19,12 @@ export function BrainCard({ suggestion }: { suggestion: BrainSuggestion }) {
           </p>
           <p className="text-lg font-semibold leading-tight">{suggestion.headline}</p>
           <p className="text-sm text-muted-foreground">{suggestion.detail}</p>
+          {suggestion.exampleExercises.length > 0 && (
+            <p className="mt-1 text-sm">
+              <span className="text-muted-foreground">{t("Zum Beispiel:")} </span>
+              <span className="font-medium">{suggestion.exampleExercises.join(" · ")}</span>
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>

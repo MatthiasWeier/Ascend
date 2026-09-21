@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { PrismaClient, ExerciseType, MuscleFocus } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { defaultMuscleRows } from "../src/lib/muscles";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -100,6 +101,21 @@ async function main() {
     });
   }
   console.log(`Seeded ${exercises.length} exercises.`);
+
+  // Muscle mapping for the default exercises (idempotent: rewritten each run).
+  let mapped = 0;
+  for (const exercise of exercises) {
+    const rows = defaultMuscleRows(exercise.name);
+    if (!rows) {
+      console.warn(`No muscle mapping for "${exercise.name}" - falls back to its focus.`);
+      continue;
+    }
+    const row = await prisma.exercise.findUniqueOrThrow({ where: { name: exercise.name }, select: { id: true } });
+    await prisma.exerciseMuscle.deleteMany({ where: { exerciseId: row.id } });
+    await prisma.exerciseMuscle.createMany({ data: rows.map((r) => ({ exerciseId: row.id, ...r })) });
+    mapped++;
+  }
+  console.log(`Mapped muscles for ${mapped} exercises.`);
 
   for (const template of challengeTemplates) {
     const exercise = await prisma.exercise.findUniqueOrThrow({ where: { name: template.exerciseName } });

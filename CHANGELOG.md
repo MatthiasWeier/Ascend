@@ -5,6 +5,20 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.44.0] - 2026-09-21
+
+### Added
+- **Muskel-Modell** (Etappe 1 der Muskel-/Verletzungs-Guideline): 14 Muskelgruppen (Brust, Schultern, Bizeps,
+  Trizeps, Unterarme, Latissimus, oberer/unterer Rücken, Bauch, seitliche Bauchmuskeln, Gesäß, Quadrizeps,
+  Beinbeuger, Waden). Alle 53 Standardübungen sind mit Haupt-/Nebenmuskeln hinterlegt (`ExerciseMuscle`,
+  `prisma/seed.ts`); eigene Übungen wählen ihre Muskeln beim Anlegen (Tippen: Haupt → Neben → weg), ohne
+  Auswahl gilt eine Schätzung aus dem Fokus. `getMuscleStats` liefert Last und "zuletzt trainiert" pro Muskel.
+- **Muskel-Wünsche** (Etappe 2): in den Einstellungen pro Muskel "Passt / Mehr / Viel mehr". Das Workout Brain
+  schlägt einen gewünschten Muskel wieder vor, sobald er länger als 3 Tage ("Mehr") bzw. 2 Tage ("Viel mehr")
+  nicht trainiert wurde, mit Begründung und drei Beispielübungen (bevorzugt deine eigenen).
+
+Geplant: Verletzungen (Etappe 3), drehbarer 3D-Körper mit Heatmap (Etappe 4).
+
 ## [0.43.0] - 2026-09-21
 
 ### Fixed

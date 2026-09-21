@@ -28,6 +28,7 @@ import { FOCUS_LABEL, ALL_FOCUSES } from "@/lib/muscle-focus";
 import type { MuscleFocus } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ReplayTutorialButton } from "@/components/onboarding-tutorial";
+import { MuscleWishes } from "@/components/muscle-wishes";
 import { DeleteAccountDialog } from "@/components/delete-account-dialog";
 import { PushNotificationToggle } from "@/components/push-notification-toggle";
 import { DataExport, DataImport, CalendarFeed } from "@/components/data-portability";
@@ -265,6 +266,18 @@ export default function SettingsPage() {
               </LineChart>
             </ChartContainer>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("Muskel-Wünsche")}</CardTitle>
+          <CardDescription>
+            {t("Womit bist du unzufrieden? Wünsche dir mehr Training für einen Muskel - das Workout Brain schlägt ihn dann öfter vor.")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <MuscleWishes />
         </CardContent>
       </Card>
 

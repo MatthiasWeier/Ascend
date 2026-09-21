@@ -25,6 +25,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useT } from "@/components/locale-provider";
+import { ALL_MUSCLES, MUSCLE_LABEL } from "@/lib/muscles";
+import { cn } from "@/lib/utils";
+import type { Muscle } from "@prisma/client";
 
 const FOCUS_OPTIONS = [
   { value: "PUSH", label: "Push" },
@@ -52,6 +55,18 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
   const [groupId, setGroupId] = useState<string>("personal");
   const [groups, setGroups] = useState<{ id: string; name: string }[]>([]);
   const [saving, setSaving] = useState(false);
+  // Tap a muscle: not trained -> primary -> secondary -> not trained.
+  const [muscleRoles, setMuscleRoles] = useState<Partial<Record<Muscle, "PRIMARY" | "SECONDARY">>>({});
+
+  function cycleMuscle(m: Muscle) {
+    setMuscleRoles((prev) => {
+      const next = { ...prev };
+      if (!prev[m]) next[m] = "PRIMARY";
+      else if (prev[m] === "PRIMARY") next[m] = "SECONDARY";
+      else delete next[m];
+      return next;
+    });
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -72,6 +87,8 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
         type,
         focus,
         isBodyweight,
+        primaryMuscles: ALL_MUSCLES.filter((m) => muscleRoles[m] === "PRIMARY"),
+        secondaryMuscles: ALL_MUSCLES.filter((m) => muscleRoles[m] === "SECONDARY"),
         groupId: groupId === "personal" ? undefined : groupId,
       }),
     });
@@ -85,6 +102,7 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
     toast.success(t("Übung angelegt!"));
     setName("");
     setDescription("");
+    setMuscleRoles({});
     setOpen(false);
     onCreated(data.exercise);
   }
@@ -149,6 +167,32 @@ export function CreateExerciseDialog({ onCreated }: { onCreated: (exercise: Crea
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>{t("Trainierte Muskeln")}</Label>
+            <p className="text-xs text-muted-foreground">
+              {t("Tippen: Hauptmuskel, nochmal: Nebenmuskel, nochmal: entfernen. Ohne Auswahl wird der Fokus verwendet.")}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {ALL_MUSCLES.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => cycleMuscle(m)}
+                  className={cn(
+                    "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                    muscleRoles[m] === "PRIMARY" && "border-primary bg-primary text-primary-foreground",
+                    muscleRoles[m] === "SECONDARY" && "border-primary/50 bg-primary/15 text-primary",
+                    !muscleRoles[m] && "border-border bg-secondary/40 text-muted-foreground hover:bg-secondary"
+                  )}
+                >
+                  {t(MUSCLE_LABEL[m])}
+                  {muscleRoles[m] === "PRIMARY" && " ●"}
+                  {muscleRoles[m] === "SECONDARY" && " ○"}
+                </button>
+              ))}
             </div>
           </div>
 
