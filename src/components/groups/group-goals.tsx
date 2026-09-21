@@ -52,6 +52,12 @@ type GroupGoal = {
 
 type Exercise = { id: string; name: string; type: "REPS" | "HOLD" };
 
+const RANK_STYLE = [
+  "bg-amber-400 text-amber-950", // 1st
+  "bg-slate-300 text-slate-900", // 2nd
+  "bg-orange-400 text-orange-950", // 3rd
+];
+
 function formatAmount(n: number, dateLocale: string) {
   return n.toLocaleString(dateLocale, { maximumFractionDigits: 1 });
 }
@@ -390,7 +396,14 @@ function GoalCard({
             </div>
           </div>
           {isLeader && (
-            <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive" onClick={onDelete}>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground hover:text-destructive"
+              title={t("Ziel löschen")}
+              aria-label={t("Ziel löschen")}
+              onClick={onDelete}
+            >
               <X className="size-4" />
             </Button>
           )}
@@ -407,20 +420,36 @@ function GoalCard({
         </div>
 
         {goal.contributors.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {goal.contributors.map((c) => (
-              <span
-                key={c.userId}
-                className={cn(
-                  "rounded-full px-2 py-0.5 text-[11px]",
-                  c.isMe ? "bg-primary/15 text-primary" : "bg-secondary text-secondary-foreground"
-                )}
-              >
-                {c.userName}
-                {c.isMe && ` (${t("du")})`}: {formatAmount(c.amount, dateLocale)}
-              </span>
-            ))}
-          </div>
+          <ol className="flex flex-col gap-1.5">
+            {[...goal.contributors]
+              .sort((a, b) => b.amount - a.amount)
+              .map((c, i, sorted) => (
+                <li key={c.userId} className="flex items-center gap-2 text-sm">
+                  <span
+                    title={t("Platz {n}", { n: i + 1 })}
+                    className={cn(
+                      "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold",
+                      RANK_STYLE[i] ?? "bg-secondary text-foreground"
+                    )}
+                  >
+                    {i + 1}
+                  </span>
+                  <span className={cn("w-24 shrink-0 truncate", c.isMe && "font-semibold text-primary")}>
+                    {c.userName}
+                    {c.isMe && ` (${t("du")})`}
+                  </span>
+                  <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-secondary">
+                    <span
+                      className="block h-full rounded-full bg-primary/70"
+                      style={{ width: `${sorted[0].amount > 0 ? Math.max(4, (c.amount / sorted[0].amount) * 100) : 0}%` }}
+                    />
+                  </span>
+                  <span className="w-14 shrink-0 text-right font-bold tabular-nums text-primary">
+                    {formatAmount(c.amount, dateLocale)}
+                  </span>
+                </li>
+              ))}
+          </ol>
         )}
 
         {goal.exerciseId ? (

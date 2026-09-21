@@ -18,6 +18,9 @@ nothing is guaranteed stable yet.
   und Farbrampe, die im Dark-Theme von dunkel nach hell läuft (vorher versank die dunkelste Stufe im
   Schwarz). Y-Achsen beschriftet ("Geschätztes 1RM (kg)", "Volumen (kg)", "Sätze"), X-Achse mit
   Mindestabstand gegen überlappende Datumsangaben.
+- **Gruppenziele**: Beitragende als Rangliste (Platz 1-3 in Gold/Silber/Bronze, Balken, fetter Betrag).
+- **Kletter-Pyramide** mit Achsentiteln, **Balance-Radar**-Tooltip in %, **Boulder-Kalender** mit Tooltip pro Tag;
+  Tooltips für Gruppe umbenennen/verlassen und Ziel löschen.
 - **Gruppen-Challenges**: Rangliste des Tages (Platz 1-3 in Gold/Silber/Bronze, danach Zahl) inkl.
   fettem Fortschritt "cur/target"; Tooltips für Play ("Challenge starten/fortsetzen/bewerten"),
   Anfechten, Verlauf und Deaktivieren.

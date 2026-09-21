@@ -58,8 +58,22 @@ export function ClimbingPyramid() {
           <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
             <BarChart data={grades} layout="vertical" margin={{ left: 8, right: 16 }}>
               <CartesianGrid horizontal={false} />
-              <XAxis type="number" tickLine={false} axisLine={false} allowDecimals={false} />
-              <YAxis dataKey="grade" type="category" tickLine={false} axisLine={false} width={48} />
+              <XAxis
+                type="number"
+                tickLine={false}
+                axisLine={false}
+                allowDecimals={false}
+                height={40}
+                label={{ value: t("Anzahl Sends"), position: "insideBottom", offset: 0, fill: "var(--muted-foreground)", fontSize: 11 }}
+              />
+              <YAxis
+                dataKey="grade"
+                type="category"
+                tickLine={false}
+                axisLine={false}
+                width={72}
+                label={{ value: t("Schwierigkeitsgrad"), angle: -90, position: "insideLeft", offset: 4, style: { textAnchor: "middle" }, fill: "var(--muted-foreground)", fontSize: 11 }}
+              />
               <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`${value}×`, t("Anzahl")]} />} />
               <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                 <LabelList dataKey="count" position="right" className="fill-foreground text-xs" />

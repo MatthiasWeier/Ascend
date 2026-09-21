@@ -83,6 +83,8 @@ export function BoulderCalendar() {
             <button
               key={i}
               type="button"
+              title={`${new Date(dateKey).toLocaleDateString(dateLocale, { weekday: "short", day: "2-digit", month: "short", timeZone: "UTC" })}: ${marked ? t("Klettertag eingetragen - klicken zum Bearbeiten") : t("Klicken, um einen Klettertag einzutragen")}`}
+              aria-label={`${dateKey}: ${marked ? t("Klettertag eingetragen - klicken zum Bearbeiten") : t("Klicken, um einen Klettertag einzutragen")}`}
               onClick={() => setSelectedDate(dateKey)}
               className={cn(
                 "flex aspect-square flex-col items-center justify-center gap-0.5 rounded-lg text-sm transition-colors hover:bg-accent",

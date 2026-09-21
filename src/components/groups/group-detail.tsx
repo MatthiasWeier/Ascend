@@ -248,7 +248,17 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                   if (open) setRenameValue(group.name);
                 }}
               >
-                <DialogTrigger render={<Button variant="ghost" size="icon-sm" className="text-muted-foreground" />}>
+                <DialogTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-muted-foreground"
+                      title={t("Gruppe umbenennen")}
+                      aria-label={t("Gruppe umbenennen")}
+                    />
+                  }
+                >
                   <Pencil className="size-3.5" />
                 </DialogTrigger>
                 <DialogContent>
@@ -281,7 +291,17 @@ export function GroupDetail({ groupId }: { groupId: string }) {
           <InviteButton inviteCode={group.inviteCode} />
           {!isLeader && (
             <AlertDialog>
-              <AlertDialogTrigger render={<Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" />}>
+              <AlertDialogTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive"
+                    title={t("Gruppe verlassen")}
+                    aria-label={t("Gruppe verlassen")}
+                  />
+                }
+              >
                 <LogOut className="size-4" />
               </AlertDialogTrigger>
               <AlertDialogContent>

@@ -169,4 +169,11 @@ export const groups: Record<string, string> = {
   "Satz entfernen": "Remove set",
   "Übung wählen, Werte eintragen. „Satz & Pause“ startet die Pause.": "Pick an exercise, enter values. \"Set & rest\" starts the rest timer.",
   "Mit „Satz & Pause“ startet automatisch der Pausen-Timer": "\"Set & rest\" starts the rest timer automatically",
+  "Anzahl Sends": "Number of sends",
+  "Schwierigkeitsgrad": "Difficulty grade",
+  "Klettertag eingetragen - klicken zum Bearbeiten": "Climbing day logged - click to edit",
+  "Klicken, um einen Klettertag einzutragen": "Click to log a climbing day",
+  "Ziel löschen": "Delete goal",
+  "Platz {n}": "Rank {n}",
+  "Gruppe verlassen": "Leave group",
 };

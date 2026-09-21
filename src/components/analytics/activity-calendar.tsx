@@ -95,7 +95,7 @@ export function ActivityCalendar({
 
     const weeks: { date: string; intensity: number; inYear: boolean }[][] = [];
     const monthMarkers: { weekIndex: number; label: string }[] = [];
-    let cursor = new Date(start);
+    const cursor = new Date(start);
     let weekIndex = 0;
     let lastMonth = -1;
 

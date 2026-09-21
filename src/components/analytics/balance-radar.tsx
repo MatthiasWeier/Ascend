@@ -54,7 +54,9 @@ export function BalanceRadar() {
     <div className="flex flex-col gap-2">
       <ChartContainer config={chartConfig} className="aspect-square h-72 w-full">
         <RadarChart data={data.map((d) => ({ ...d, label: t(d.label) }))}>
-          <ChartTooltip content={<ChartTooltipContent />} />
+          <ChartTooltip
+            content={<ChartTooltipContent formatter={(value, name) => [`${Math.round(Number(value))} %`, String(name)]} />}
+          />
           <PolarAngleAxis dataKey="label" tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
           <PolarGrid />
           <PolarRadiusAxis angle={90} tick={false} axisLine={false} />
