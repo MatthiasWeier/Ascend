@@ -6,6 +6,10 @@ services:
       POSTGRES_USER: ascend
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ascend}
       POSTGRES_DB: ascend
+    # A install this size never needs Postgres's defaults (128MB buffers,
+    # 100 connections) - the app's pool tops out around 10. Capped low on
+    # purpose; raise shared_buffers if you outgrow it.
+    command: postgres -c shared_buffers=64MB -c max_connections=30
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:
@@ -15,6 +19,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    # Hard ceiling so a runaway query can't eat the host's RAM - normal
+    # usage here sits well under 50MB. Raise it if you see OOM kills
+    # (`docker inspect ascend-db-1 | grep OOMKilled`) rather than data loss.
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   # One-shot: applies pending Prisma migrations, then exits. `app` waits for
   # this to succeed before starting - no more SSH-ing in to run migrations
@@ -41,6 +52,11 @@ services:
       DATABASE_URL: postgresql://ascend:${POSTGRES_PASSWORD:-ascend}@db:5432/ascend
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_TRUST_HOST: "true"
+      # Safety cap on Node's heap, not a target - the app runs around
+      # 150-200MB RSS in practice. Without this, V8 sizes its heap off the
+      # *host's* total memory, which can look alarming in `docker stats` and
+      # (during a big spike) drag a small host into swap.
+      NODE_OPTIONS: "--max-old-space-size=384"
       # Impressum/Datenschutz content - see .env.example. Unset is fine, the
       # legal pages just say so instead of showing fake data.
       OPERATOR_NAME: ${OPERATOR_NAME:-}
@@ -79,6 +95,12 @@ services:
       timeout: 5s
       start_period: 15s
       retries: 3
+    # Same idea as the db's limit: normal usage is ~150-200MB, this just
+    # stops a leak or a burst of uploads from taking down the whole host.
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
 volumes:
   db-data:

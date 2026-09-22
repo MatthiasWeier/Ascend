@@ -75,6 +75,8 @@ export const BodyViewer = forwardRef<
     mount.appendChild(renderer.domElement);
     renderer.domElement.style.touchAction = "none";
     renderer.domElement.style.display = "block";
+    renderer.domElement.style.width = "100%";
+    renderer.domElement.style.height = "100%";
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 30);

@@ -49,6 +49,14 @@ disk as above.
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for reverse proxy / HTTPS setup,
 backups, the healthcheck, and Prometheus metrics.
 
+> **Resource usage:** at rest, the app container sits around 150-200MB RAM
+> and Postgres around 30-50MB - both are capped (512M / 256M) in
+> `docker-compose.yml` so neither can run away with the host's memory.
+> `docker stats` showing a much bigger number next to them (e.g. the
+> host's full RAM) just means no limit was set yet, not that anything is
+> actually using that much - see [DEPLOYMENT.md](./DEPLOYMENT.md#resource-usage).
+> The one real spike is the **build** (`docker compose build`/`up --build`),
+> which needs real headroom for `pnpm build` - 2GB+ free is a safe minimum.
 > On a small VM (2 vCPU / 2GB RAM or less), don't run `pnpm dev` and
 > `docker compose build` at the same time - both are memory-hungry and can
 > thrash the box into unresponsiveness. Stop the dev server first, or add

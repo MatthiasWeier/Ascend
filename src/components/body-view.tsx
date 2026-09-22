@@ -6,11 +6,13 @@ import { RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BodyViewer, type BodyViewerHandle } from "@/components/body-viewer";
+import { ReportInjuryDialog } from "@/components/report-injury-dialog";
 import { useT } from "@/components/locale-provider";
 import { HEAT_COLORS } from "@/lib/body-model";
 import { ALL_MUSCLES, MUSCLE_LABEL } from "@/lib/muscles";
+import { BODY_PART_LABEL, SEVERITY_LABEL, MUSCLE_BODY_PARTS } from "@/lib/injuries";
 import { cn } from "@/lib/utils";
-import type { Muscle } from "@prisma/client";
+import type { BodyPart, InjurySeverity, Muscle } from "@prisma/client";
 
 type MuscleData = {
   muscle: Muscle;
@@ -20,6 +22,8 @@ type MuscleData = {
   wish: number;
   injured: boolean;
 };
+
+type InjuryRow = { id: string; bodyPart: BodyPart; severity: InjurySeverity; note: string | null };
 
 const WINDOWS = [7, 14, 30];
 const LEVEL_LABEL = ["Kaum trainiert", "Wenig", "Mittel", "Viel", "Sehr viel"];
@@ -31,26 +35,42 @@ const WISHES = [
 
 // The body map: 3D mannequin coloured by how much each muscle was trained
 // (grey = barely, red = a lot), plus a list with the same data as a fallback
-// and for reading exact numbers.
-export function BodyView() {
+// and for reading exact numbers. `apiUrl` points it at a teammate's data
+// instead of the viewer's own; `readOnly` then hides wishes and reporting.
+export function BodyView({ apiUrl = "/api/body", readOnly = false }: { apiUrl?: string; readOnly?: boolean }) {
   const t = useT();
   const viewer = useRef<BodyViewerHandle>(null);
   const [days, setDays] = useState(14);
   const [data, setData] = useState<MuscleData[] | null>(null);
+  const [injuries, setInjuries] = useState<InjuryRow[]>([]);
   const [selected, setSelected] = useState<Muscle | null>(null);
   const [webglMissing, setWebglMissing] = useState(false);
   const [spinning, setSpinning] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`/api/body?days=${days}`)
+    fetch(`${apiUrl}?days=${days}`)
       .then((r) => r.json())
-      .then((res: { muscles: MuscleData[] }) => !cancelled && setData(res.muscles))
+      .then((res: { muscles: MuscleData[]; injuries: InjuryRow[] }) => {
+        if (cancelled) return;
+        setData(res.muscles);
+        setInjuries(res.injuries ?? []);
+      })
       .catch(() => !cancelled && setData([]));
     return () => {
       cancelled = true;
     };
-  }, [days]);
+  }, [apiUrl, days]);
+
+  function reload() {
+    fetch(`${apiUrl}?days=${days}`)
+      .then((r) => r.json())
+      .then((res: { muscles: MuscleData[]; injuries: InjuryRow[] }) => {
+        setData(res.muscles);
+        setInjuries(res.injuries ?? []);
+      })
+      .catch(() => {});
+  }
 
   const visuals = useMemo(
     () => (data ?? []).map((m) => ({ muscle: m.muscle, level: m.level, wish: m.wish, injured: m.injured })),
@@ -125,11 +145,11 @@ export function BodyView() {
               {t("3D wird von diesem Browser nicht unterstützt - unten findest du alle Muskeln als Liste.")}
             </p>
           ) : data == null ? (
-            <Skeleton className="h-[420px] w-full sm:h-[520px]" />
+            <Skeleton className="h-[360px] w-full sm:h-[440px] lg:h-[520px]" />
           ) : (
             <BodyViewer
               ref={viewer}
-              className="h-[420px] w-full cursor-grab touch-none active:cursor-grabbing sm:h-[520px]"
+              className="h-[360px] w-full cursor-grab touch-none active:cursor-grabbing sm:h-[440px] lg:h-[520px]"
               visuals={visuals}
               selected={selected}
               onSelect={(m) => {
@@ -182,35 +202,49 @@ export function BodyView() {
                           : t("Zuletzt: vor {n} Tagen", { n: current.daysSince })}
                   </span>
                 </p>
-                {current.injured && (
-                  <p className="rounded-md bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-500">
-                    {t("Von einer aktiven Verletzung betroffen.")}
-                  </p>
-                )}
-                <div>
-                  <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t("Wie zufrieden bist du?")}</p>
-                  <div className="flex flex-wrap gap-1" role="group">
-                    {WISHES.map((w) => (
-                      <button
-                        key={w.value}
-                        type="button"
-                        aria-pressed={current.wish === w.value}
-                        onClick={() => setWish(current.muscle, w.value)}
-                        className={cn(
-                          "min-h-9 rounded-full border px-3 text-xs font-medium transition-colors",
-                          current.wish === w.value
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border bg-secondary/40 text-muted-foreground hover:bg-secondary"
-                        )}
-                      >
-                        {t(w.label)}
-                      </button>
-                    ))}
+                {(() => {
+                  const parts = new Set(MUSCLE_BODY_PARTS[current.muscle]);
+                  const matching = injuries.filter((i) => parts.has(i.bodyPart));
+                  return matching.length > 0 ? (
+                    <div className="flex flex-col gap-1.5">
+                      {matching.map((i) => (
+                        <div key={i.id} className="rounded-md bg-amber-500/10 px-2 py-1.5 text-xs text-amber-500">
+                          <p className="font-medium">
+                            {t(BODY_PART_LABEL[i.bodyPart])} · {t(SEVERITY_LABEL[i.severity])}
+                          </p>
+                          {i.note && <p className="mt-0.5 text-amber-500/90">{i.note}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null;
+                })()}
+                {!readOnly && <ReportInjuryDialog muscle={current.muscle} onSaved={reload} />}
+                {!readOnly && (
+                  <div>
+                    <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t("Wie zufrieden bist du?")}</p>
+                    <div className="flex flex-wrap gap-1" role="group">
+                      {WISHES.map((w) => (
+                        <button
+                          key={w.value}
+                          type="button"
+                          aria-pressed={current.wish === w.value}
+                          onClick={() => setWish(current.muscle, w.value)}
+                          className={cn(
+                            "min-h-9 rounded-full border px-3 text-xs font-medium transition-colors",
+                            current.wish === w.value
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-secondary/40 text-muted-foreground hover:bg-secondary"
+                          )}
+                        >
+                          {t(w.label)}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="mt-1.5 text-xs text-muted-foreground">
+                      {t("\"Mehr\" bringt den Muskel öfter ins Workout Brain.")}
+                    </p>
                   </div>
-                  <p className="mt-1.5 text-xs text-muted-foreground">
-                    {t("\"Mehr\" bringt den Muskel öfter ins Workout Brain.")}
-                  </p>
-                </div>
+                )}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
@@ -248,6 +282,21 @@ export function BodyView() {
           </ul>
         </div>
       </div>
+
+      {injuries.length > 0 && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+          <p className="mb-2 text-sm font-semibold text-amber-500">{t("Aktive Verletzungen")}</p>
+          <ul className="flex flex-col gap-1.5">
+            {injuries.map((i) => (
+              <li key={i.id} className="text-sm">
+                <span className="font-medium">{t(BODY_PART_LABEL[i.bodyPart])}</span>{" "}
+                <span className="text-muted-foreground">· {t(SEVERITY_LABEL[i.severity])}</span>
+                {i.note && <span className="text-muted-foreground"> - {i.note}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

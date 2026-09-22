@@ -5,6 +5,36 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.47.0] - 2026-09-22
+
+### Added
+- **Sidebar einklappbar**: die linke Navigation lässt sich auf einen Icon-Streifen einklappen (Merkt sich das pro
+  Gerät); Admin/Einstellungen/Impressum/Datenschutz/Versionsnummer sind jetzt an die Ansicht angeheftet (sticky) und
+  immer sichtbar, ohne dass man im Feed erst runterscrollen muss.
+- **Verletzung direkt am Körper melden**: auf der Körper-Seite hat jede Muskel-Detailansicht jetzt einen
+  "Verletzung melden"-Button, vorbelegt mit den zur Muskel passenden Körperstellen.
+- **Tägliche Verletzungs-Abfrage**: für jede länger als einen Tag aktive Verletzung fragt der Feed einmal pro Tag
+  "Immer noch verletzt?" - "Ja" öffnet eine 1-10-Schmerz-Skala, "Nein" markiert sie als ausgeheilt
+  (`InjuryCheckin`, ein Eintrag pro Tag und Verletzung).
+- **Körper-Ansicht der Gruppe**: in der Mitgliederliste zeigt "Körper ansehen" die 3D-Ansicht eines Teammitglieds -
+  Trainingslast nur aus Workouts, die in dieser Gruppe geteilt wurden (nie die private Historie), plus aktive
+  Verletzungen inkl. Notiz. Eigene Wünsche bleiben privat und werden dort nie gezeigt.
+- Verletzungsnotizen sind jetzt auch in der eigenen Körper-Ansicht als eigene Karte sichtbar, nicht nur in den
+  Einstellungen.
+
+### Fixed
+- **3D-Körperansicht am Handy kaum sichtbar**: der Renderer wurde mit `updateStyle=false` skaliert, wodurch die
+  Canvas-Fläche auf hochauflösenden (Retina-)Bildschirmen ein Vielfaches der sichtbaren Fläche groß wurde und der
+  überstehende Teil einfach abgeschnitten war - besonders auf dem Handy auffällig. Die Canvas-Größe folgt jetzt
+  explizit dem Container.
+- **RAM-Verbrauch eingeordnet und gedeckelt**: der Verbrauch im Betrieb war schon vorher niedrig (App ~150-200MB,
+  Datenbank ~30-50MB) - `docker stats` zeigte nur deshalb mehrere GB "Limit" an, weil keins gesetzt war (das
+  Limit-Feld zeigt dann einfach den gesamten Host-RAM). Beide Container haben jetzt ein hartes Speicherlimit
+  (512M/256M), die App einen Node-Heap-Deckel, und Postgres läuft mit knapperen `shared_buffers`/
+  `max_connections`. Die eine echte Verbrauchsspitze ist der **Build** (`docker compose build`), der jetzt ebenfalls
+  gedeckelt ist (2GB) statt bei zu wenig freiem RAM die VM zum Hängen zu bringen. Details in
+  [DEPLOYMENT.md](./DEPLOYMENT.md#resource-usage).
+
 ## [0.46.0] - 2026-09-22
 
 ### Added

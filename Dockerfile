@@ -15,6 +15,11 @@ COPY . .
 # Dummy value: schema generation needs the var to be set, but never connects to a database.
 ENV DATABASE_URL="postgresql://user:password@localhost:5432/db"
 RUN pnpm prisma generate
+# Without a cap, V8 sizes its build-time heap off the *host's* total memory,
+# which can spike well past what a small VM has free and hang it (swap
+# thrashing, not an OOM kill - see git history). 2GB is comfortably enough
+# for Next's build and leaves headroom for Postgres running alongside it.
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN pnpm build
 
 # Runs `prisma migrate deploy` against a real DATABASE_URL at container

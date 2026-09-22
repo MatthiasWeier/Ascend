@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { Bell, CalendarDays, ClipboardCopy, ClipboardList, Crown, LogOut, Pencil, UserX } from "lucide-react";
+import { Bell, CalendarDays, ClipboardCopy, ClipboardList, Crown, LogOut, Pencil, PersonStanding, UserX } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,7 @@ import { GroupChallenges } from "@/components/groups/group-challenges";
 import { GroupGoals } from "@/components/groups/group-goals";
 import { GroupAnalytics } from "@/components/groups/group-analytics";
 import { ActivityCalendar } from "@/components/analytics/activity-calendar";
+import { BodyView } from "@/components/body-view";
 import { useLocale } from "@/components/locale-provider";
 import type { TFunction } from "@/lib/i18n";
 
@@ -100,6 +101,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
   const [transferringTo, setTransferringTo] = useState<string | null>(null);
   const [nudging, setNudging] = useState<string | null>(null);
   const [calendarMember, setCalendarMember] = useState<{ id: string; name: string } | null>(null);
+  const [bodyMember, setBodyMember] = useState<{ id: string; name: string } | null>(null);
   const [templatesMember, setTemplatesMember] = useState<{ id: string; name: string } | null>(null);
   const [memberTemplates, setMemberTemplates] = useState<MemberTemplate[] | null>(null);
   const [copyingId, setCopyingId] = useState<string | null>(null);
@@ -396,6 +398,17 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                       variant="ghost"
                       size="icon-sm"
                       className="text-muted-foreground"
+                      title={t("Körper ansehen")}
+                      onClick={() => setBodyMember({ id: m.id, name: m.name })}
+                    >
+                      <PersonStanding className="size-4" />
+                    </Button>
+                  )}
+                  {m.id !== authSession?.user?.id && (
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-muted-foreground"
                       title={t("Vorlagen ansehen")}
                       onClick={() => openTemplates({ id: m.id, name: m.name })}
                     >
@@ -476,6 +489,18 @@ export function GroupDetail({ groupId }: { groupId: string }) {
               }
               editable={false}
             />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={bodyMember != null} onOpenChange={(open) => !open && setBodyMember(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{t("Körper von {name}", { name: bodyMember?.name ?? "" })}</DialogTitle>
+            <DialogDescription>{t("Nur Training, das in dieser Gruppe geteilt wurde, plus aktive Verletzungen.")}</DialogDescription>
+          </DialogHeader>
+          {bodyMember && (
+            <BodyView apiUrl={`/api/groups/${groupId}/members/${bodyMember.id}/body`} readOnly />
           )}
         </DialogContent>
       </Dialog>

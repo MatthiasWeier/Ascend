@@ -87,6 +87,33 @@ Exposes `ascend_users_total`, `ascend_workout_sessions_total`,
 `ascend_workout_sets_total`, `ascend_groups_total`, and
 `ascend_process_uptime_seconds`.
 
+## Resource usage
+
+What actually uses RAM, and what to do if it worries you:
+
+- **`app` at runtime** (the Next.js server): ~150-200MB RSS in normal use,
+  growing a bit with concurrent users/uploads. Capped at 512M in
+  `docker-compose.yml` (`deploy.resources.limits.memory`) and given a Node
+  heap ceiling (`NODE_OPTIONS=--max-old-space-size=384`) so it can't grow
+  past that on its own - without the ceiling, V8 sizes its heap off the
+  *host's* total memory, which is what makes `docker stats` show a
+  container "wanting" several GB when it isn't actually using them.
+- **`db` at runtime** (Postgres): ~30-50MB for a install this size, with
+  `shared_buffers`/`max_connections` turned down from Postgres's defaults
+  (128MB/100) to 64MB/30 and a 256M container limit.
+- **The build** (`docker compose build`, or `up --build`): the one real
+  spike - compiling and type-checking a Next.js app needs real memory,
+  capped at 2GB in the Dockerfile (`NODE_OPTIONS` in the `builder` stage) so
+  it fails loudly on a too-small box instead of hanging it via swap
+  thrashing. This is a one-time cost per deploy, not a steady drain -
+  budget 2GB+ free RAM for it, then the app settles back to the numbers
+  above once it's running.
+
+Raise any of these (`docker-compose.yml`'s `deploy.resources.limits.memory`
+and `NODE_OPTIONS`, or the Dockerfile's build-time `NODE_OPTIONS`) if your
+install is bigger than this or you see OOM kills
+(`docker inspect ascend-app-1 --format '{{.State.OOMKilled}}'`).
+
 ## Rate limits
 
 Login/registration limits are tunable via env vars (defaults shown):

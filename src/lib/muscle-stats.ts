@@ -15,14 +15,27 @@ const LOOKBACK_DAYS = 90;
 
 // Per-muscle training picture: how much load in the last `windowDays` and
 // when each muscle was last worked at all (looking back 90 days). Warm-up
-// sets don't count.
-export async function getMuscleStats(userId: string, windowDays = 14): Promise<MuscleStat[]> {
+// sets don't count. With `sharedInGroupId`, only sessions the user actually
+// shared into that group count - used for a teammate's view, never their
+// private full history.
+export async function getMuscleStats(
+  userId: string,
+  windowDays = 14,
+  options?: { sharedInGroupId?: string }
+): Promise<MuscleStat[]> {
   const now = new Date();
   const since = new Date(now.getTime() - LOOKBACK_DAYS * DAY_MS);
   const windowStart = now.getTime() - windowDays * DAY_MS;
 
   const sets = await prisma.workoutSet.findMany({
-    where: { session: { userId, date: { gte: since } }, setType: { not: "WARMUP" } },
+    where: {
+      session: {
+        userId,
+        date: { gte: since },
+        ...(options?.sharedInGroupId ? { sharedPosts: { some: { groupId: options.sharedInGroupId } } } : {}),
+      },
+      setType: { not: "WARMUP" },
+    },
     select: {
       session: { select: { date: true } },
       exercise: { select: { focus: true, muscles: { select: { muscle: true, role: true } } } },

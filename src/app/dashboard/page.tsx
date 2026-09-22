@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { AddClimbingDayButton } from "@/components/add-climbing-day-button";
 import { BrainCard } from "@/components/brain-card";
 import { DailyChallengeReminder } from "@/components/daily-challenge-reminder";
+import { InjuryCheckinReminder } from "@/components/injury-checkin-reminder";
 import { HomeFeed } from "@/components/home-feed";
 import { MiniActivity } from "@/components/mini-activity";
 import { SideGoals } from "@/components/side-goals";
@@ -110,8 +111,9 @@ export default async function DashboardPage() {
       <div className="mx-auto max-w-2xl px-4 py-6 xl:max-w-6xl">
         <div className="flex flex-col gap-6 xl:grid xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-start xl:gap-8">
           <div className="flex min-w-0 flex-col gap-6">
-            <div className="xl:hidden">
+            <div className="flex flex-col gap-3 xl:hidden">
               <DailyChallengeReminder pending={pendingChallenges} />
+              <InjuryCheckinReminder />
             </div>
 
             <div className="flex items-center justify-between">
@@ -168,6 +170,7 @@ export default async function DashboardPage() {
           <aside className="hidden xl:sticky xl:top-20 xl:flex xl:flex-col xl:gap-4">
             <BrainCard suggestion={suggestion} />
             <DailyChallengeReminder pending={pendingChallenges} />
+            <InjuryCheckinReminder />
             <MiniActivity sessions={recentDays.map((d) => ({ date: d.date, sets: d._count.sets }))} />
             <SideGoals userId={userId} groups={groups} />
           </aside>

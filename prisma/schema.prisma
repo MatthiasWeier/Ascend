@@ -729,5 +729,21 @@ model Injury {
   endsAt     DateTime?
   resolvedAt DateTime?
 
+  checkins InjuryCheckin[]
+
   @@index([userId, resolvedAt])
+}
+
+// Daily "still hurts?" answer for an active injury - dateKey is the
+// Europe/Berlin calendar day, same convention as daily challenges. Never
+// asked on the day the injury was reported.
+model InjuryCheckin {
+  id        String   @id @default(cuid())
+  injuryId  String
+  injury    Injury   @relation(fields: [injuryId], references: [id], onDelete: Cascade)
+  dateKey   String
+  painLevel Int
+  createdAt DateTime @default(now())
+
+  @@unique([injuryId, dateKey])
 }
