@@ -164,6 +164,9 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   Workout (Übungen, Gewicht, Wdh) dieses Tages
 - ✅ Kletter-Pyramide + Boulder-Tages-Kalender (Zähler pro Schwierigkeit,
   "5x 6er, 3x 4er")
+- ✅ **Klettertage planen**: pro Gruppe ein Tag (heute oder später) mit optionaler Uhrzeit/Ort anlegen,
+  Mitglieder sagen mit eigenem optionalem Ziel und Trainingsfokus (Slab/Power/Technik/Ausdauer/Kraft/Mental) zu -
+  im persönlichen Kalender über alle Gruppen hinweg als grün markierter Tag sichtbar
 
 ### Gruppen
 - ✅ Erstellen, Beitreten per Invite-Link

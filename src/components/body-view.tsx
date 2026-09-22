@@ -46,30 +46,43 @@ export function BodyView({ apiUrl = "/api/body", readOnly = false }: { apiUrl?: 
   const [selected, setSelected] = useState<Muscle | null>(null);
   const [webglMissing, setWebglMissing] = useState(false);
   const [spinning, setSpinning] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch(`${apiUrl}?days=${days}`)
-      .then((r) => r.json())
-      .then((res: { muscles: MuscleData[]; injuries: InjuryRow[] }) => {
-        if (cancelled) return;
+  // Shared by the initial load and every reload (wish/report changes) - a
+  // non-2xx response used to fall through to `.then` anyway (fetch only
+  // rejects on a network error, never on 4xx/5xx) and get treated as valid
+  // data, leaving the skeleton spinning forever on e.g. a 403.
+  function load(cancelledRef?: { current: boolean }) {
+    setError(null);
+    return fetch(`${apiUrl}?days=${days}`)
+      .then(async (r) => {
+        if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error ?? "Fehler");
+        return r.json() as Promise<{ muscles: MuscleData[]; injuries: InjuryRow[] }>;
+      })
+      .then((res) => {
+        if (cancelledRef?.current) return;
         setData(res.muscles);
         setInjuries(res.injuries ?? []);
       })
-      .catch(() => !cancelled && setData([]));
+      .catch(() => {
+        if (cancelledRef?.current) return;
+        setData([]);
+        setError(t("Konnte den Körper nicht laden."));
+      });
+  }
+
+  useEffect(() => {
+    const cancelledRef = { current: false };
+    setData(null);
+    load(cancelledRef);
     return () => {
-      cancelled = true;
+      cancelledRef.current = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiUrl, days]);
 
   function reload() {
-    fetch(`${apiUrl}?days=${days}`)
-      .then((r) => r.json())
-      .then((res: { muscles: MuscleData[]; injuries: InjuryRow[] }) => {
-        setData(res.muscles);
-        setInjuries(res.injuries ?? []);
-      })
-      .catch(() => {});
+    load();
   }
 
   const visuals = useMemo(
@@ -94,6 +107,11 @@ export function BodyView({ apiUrl = "/api/body", readOnly = false }: { apiUrl?: 
 
   return (
     <div className="flex flex-col gap-4">
+      {error && (
+        <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {error}
+        </p>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex gap-1" role="group" aria-label={t("Zeitraum")}>
           {WINDOWS.map((w) => (

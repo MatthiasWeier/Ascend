@@ -5,6 +5,28 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.50.0] - 2026-09-22
+
+### Added
+- **Klettertage planen und Kumpels einladen**: neuer Gruppen-Tab "Klettern" - für heute oder später einen
+  Klettertag anlegen (Uhrzeit, Ort, eigenes Ziel, Trainingsfokus wie Slab/Power/Technik/Ausdauer/Kraft/Mental -
+  alles optional außer dem Datum). Die Gruppe wird benachrichtigt. Mitglieder sehen, wer kommt, und sagen mit
+  eigenem optionalem Ziel/Fokus zu oder ab; wer geplant hat, kann Zeit/Ort ändern oder den Tag absagen.
+  Der persönliche Kletter-Kalender (Analytics > Klettern) markiert geplante Tage grün mit einem Berg-Symbol über
+  alle Gruppen hinweg - ein Klick auf einen zukünftigen Tag öffnet die Zu-/Absage-Ansicht statt des
+  Boulder-Log-Dialogs (der bleibt für heute/vergangene Tage wie gehabt); ohne geplanten Tag lässt sich von dort
+  direkt einer anlegen (mit Gruppenauswahl, falls man in mehreren ist).
+- **Bewertung fehlt nicht mehr, wenn eine Challenge übers Workout geschafft wird**: schließt man eine Daily
+  Challenge automatisch durch geloggte Workout-Reps ab (statt über den Challenge-Dialog), fragt der Feed jetzt
+  trotzdem "wie schwer war's" (5 Smileys, wie gewohnt) - vorher blieb das unsichtbar, bis man zufällig den
+  Gruppen-Tab "Challenges" öffnete.
+
+### Fixed
+- **Körper-Ansicht eines Gruppenmitglieds**: der Dialog hatte keine Höhenbegrenzung/Scroll, wodurch er bei der
+  3D-Ansicht + Muskelliste + Verletzungen leicht über den sichtbaren Bereich hinausragen und abgeschnitten wirken
+  konnte. Außerdem schlug ein Laden-Fehlschlag (z.B. 403) den Ladezustand tot statt eine Meldung zu zeigen - beide
+  behoben (Dialog scrollt jetzt selbst, Ladefehler zeigen eine Fehlermeldung statt endlos zu laden).
+
 ## [0.49.0] - 2026-09-22
 
 ### Fixed

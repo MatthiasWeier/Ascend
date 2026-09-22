@@ -40,6 +40,7 @@ import { GroupGoals } from "@/components/groups/group-goals";
 import { GroupAnalytics } from "@/components/groups/group-analytics";
 import { ActivityCalendar } from "@/components/analytics/activity-calendar";
 import { BodyView } from "@/components/body-view";
+import { GroupClimbingMeetups } from "@/components/groups/group-climbing-meetups";
 import { useLocale } from "@/components/locale-provider";
 import type { TFunction } from "@/lib/i18n";
 
@@ -79,7 +80,7 @@ function onlineStatusLabel(
 
 type MemberTemplate = { id: string; name: string; entries: { exerciseId: string; exercise: { name: string } }[] };
 
-const VALID_TABS = ["feed", "challenges", "goals", "analytics", "members"] as const;
+const VALID_TABS = ["feed", "challenges", "goals", "climbing", "analytics", "members"] as const;
 
 export function GroupDetail({ groupId }: { groupId: string }) {
   const router = useRouter();
@@ -330,6 +331,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
           <TabsTrigger value="feed">{t("Feed")}</TabsTrigger>
           <TabsTrigger value="challenges">{t("Challenges")}</TabsTrigger>
           <TabsTrigger value="goals">{t("Ziele")}</TabsTrigger>
+          <TabsTrigger value="climbing">{t("Klettern")}</TabsTrigger>
           <TabsTrigger value="analytics">{t("Analytics")}</TabsTrigger>
           <TabsTrigger value="members">{t("Mitglieder")}</TabsTrigger>
         </TabsList>
@@ -344,6 +346,10 @@ export function GroupDetail({ groupId }: { groupId: string }) {
 
         <TabsContent value="goals">
           <GroupGoals groupId={groupId} isLeader={isLeader} />
+        </TabsContent>
+
+        <TabsContent value="climbing">
+          <GroupClimbingMeetups groupId={groupId} />
         </TabsContent>
 
         <TabsContent value="analytics">
@@ -494,13 +500,13 @@ export function GroupDetail({ groupId }: { groupId: string }) {
       </Dialog>
 
       <Dialog open={bodyMember != null} onOpenChange={(open) => !open && setBodyMember(null)}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-h-[92dvh] max-w-3xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t("Körper von {name}", { name: bodyMember?.name ?? "" })}</DialogTitle>
             <DialogDescription>{t("Nur Training, das in dieser Gruppe geteilt wurde, plus aktive Verletzungen.")}</DialogDescription>
           </DialogHeader>
           {bodyMember && (
-            <BodyView apiUrl={`/api/groups/${groupId}/members/${bodyMember.id}/body`} readOnly />
+            <BodyView key={bodyMember.id} apiUrl={`/api/groups/${groupId}/members/${bodyMember.id}/body`} readOnly />
           )}
         </DialogContent>
       </Dialog>

@@ -42,3 +42,50 @@ export async function getPendingDailyChallenges(userId: string): Promise<Pending
       templateName: g.groupDailyChallenge.challengeTemplate.name,
     }));
 }
+
+export type ChallengeToRate = {
+  attemptId: string;
+  groupName: string;
+  templateName: string;
+  currentReps: number;
+  targetRepsSnapshot: number;
+};
+
+// Today's attempts still waiting on a difficulty rating - including ones
+// completed automatically from workout reps (challenge-workout-sync.ts),
+// which never go through the execution dialog that normally prompts for
+// this. Same eligibility as POST /api/challenge-attempts/[id]/rate: either
+// terminal (COMPLETED/ENDED_EARLY) or at least half the target.
+export async function getChallengesNeedingRating(userId: string): Promise<ChallengeToRate[]> {
+  const today = todayGermanDateKey();
+
+  const attempts = await prisma.dailyChallengeAttempt.findMany({
+    where: {
+      dateKey: today,
+      difficultyRating: null,
+      userChallengeGoal: { userId },
+    },
+    include: {
+      userChallengeGoal: {
+        include: {
+          groupDailyChallenge: {
+            include: {
+              group: { select: { name: true } },
+              challengeTemplate: { select: { name: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return attempts
+    .filter((a) => a.status !== "IN_PROGRESS" || a.currentReps >= a.targetRepsSnapshot * 0.5)
+    .map((a) => ({
+      attemptId: a.id,
+      groupName: a.userChallengeGoal.groupDailyChallenge.group.name,
+      templateName: a.userChallengeGoal.groupDailyChallenge.challengeTemplate.name,
+      currentReps: a.currentReps,
+      targetRepsSnapshot: a.targetRepsSnapshot,
+    }));
+}

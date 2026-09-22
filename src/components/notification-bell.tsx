@@ -13,7 +13,7 @@ import type { TFunction } from "@/lib/i18n";
 
 type Item = {
   id: string;
-  type: "COMMENT" | "REPLY" | "NUDGE" | "WORKOUT_POST" | "CHALLENGE_DONE" | "CLIMBING";
+  type: "COMMENT" | "REPLY" | "NUDGE" | "WORKOUT_POST" | "CHALLENGE_DONE" | "CLIMBING" | "CLIMBING_INVITE";
   actorName: string;
   groupName: string;
   snippet: string | null;
@@ -36,6 +36,11 @@ function describe(n: Item, t: TFunction) {
       return { icon: Dumbbell, text: t("{name} hat ein Workout gepostet", { name: n.actorName }) };
     case "CLIMBING":
       return { icon: Mountain, text: t("{name} war klettern ({n} Sends)", { name: n.actorName, n: n.snippet ?? "" }) };
+    case "CLIMBING_INVITE":
+      return {
+        icon: Mountain,
+        text: t("{name} plant einen Klettertag am {date} - wer kommt mit?", { name: n.actorName, date: n.snippet ?? "" }),
+      };
     case "CHALLENGE_DONE":
       return {
         icon: Trophy,
@@ -165,7 +170,7 @@ export function NotificationBell() {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className={cn("block", !n.readAt && "font-medium")}>{text}</span>
-                    {n.snippet && n.type !== "CHALLENGE_DONE" && n.type !== "CLIMBING" && (
+                    {n.snippet && n.type !== "CHALLENGE_DONE" && n.type !== "CLIMBING" && n.type !== "CLIMBING_INVITE" && (
                       <span className="mt-0.5 line-clamp-2 block text-xs text-muted-foreground">“{n.snippet}”</span>
                     )}
                     <span className="mt-0.5 block text-xs text-muted-foreground">

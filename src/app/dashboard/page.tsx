@@ -4,13 +4,14 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getBrainSuggestion } from "@/lib/workout-brain";
 import { computePrSetIds } from "@/lib/personal-records";
-import { getPendingDailyChallenges } from "@/lib/pending-challenges";
+import { getPendingDailyChallenges, getChallengesNeedingRating } from "@/lib/pending-challenges";
 import { getRecentGroupActivity } from "@/lib/group-activity";
 import { computeCurrentStreak } from "@/lib/streak";
 import { Button } from "@/components/ui/button";
 import { AddClimbingDayButton } from "@/components/add-climbing-day-button";
 import { BrainCard } from "@/components/brain-card";
 import { DailyChallengeReminder } from "@/components/daily-challenge-reminder";
+import { ChallengeRatingReminder } from "@/components/challenge-rating-reminder";
 import { InjuryCheckinReminder } from "@/components/injury-checkin-reminder";
 import { HomeFeed } from "@/components/home-feed";
 import { MiniActivity } from "@/components/mini-activity";
@@ -26,7 +27,7 @@ export default async function DashboardPage() {
 
   const twelveWeeksAgo = new Date(Date.now() - 12 * 7 * 24 * 60 * 60 * 1000);
 
-  const [suggestion, sessions, prSetIds, pendingChallenges, groupActivity, streak, user, memberships, recentDays] =
+  const [suggestion, sessions, prSetIds, pendingChallenges, challengesToRate, groupActivity, streak, user, memberships, recentDays] =
     await Promise.all([
       getBrainSuggestion(userId, t),
       prisma.workoutSession.findMany({
@@ -40,6 +41,7 @@ export default async function DashboardPage() {
       }),
       computePrSetIds(userId),
       getPendingDailyChallenges(userId),
+      getChallengesNeedingRating(userId),
       getRecentGroupActivity(userId, 60),
       computeCurrentStreak(userId),
       prisma.user.findUnique({ where: { id: userId }, select: { bodyWeightKg: true } }),
@@ -113,6 +115,7 @@ export default async function DashboardPage() {
           <div className="flex min-w-0 flex-col gap-6">
             <div className="flex flex-col gap-3 xl:hidden">
               <DailyChallengeReminder pending={pendingChallenges} />
+              <ChallengeRatingReminder pending={challengesToRate} />
               <InjuryCheckinReminder />
             </div>
 
@@ -170,6 +173,7 @@ export default async function DashboardPage() {
           <aside className="hidden xl:sticky xl:top-20 xl:flex xl:flex-col xl:gap-4">
             <BrainCard suggestion={suggestion} />
             <DailyChallengeReminder pending={pendingChallenges} />
+            <ChallengeRatingReminder pending={challengesToRate} />
             <InjuryCheckinReminder />
             <MiniActivity sessions={recentDays.map((d) => ({ date: d.date, sets: d._count.sets }))} />
             <SideGoals userId={userId} groups={groups} />

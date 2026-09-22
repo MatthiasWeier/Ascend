@@ -138,6 +138,8 @@ model User {
   workoutDraft      WorkoutDraft?
   workoutPhotos     WorkoutPhoto[]
   postComments      PostComment[]
+  climbingMeetupsCreated     ClimbingMeetup[]
+  climbingMeetupAttendances  ClimbingMeetupParticipant[]
 }
 
 // Catalog of exercises. Seeded with defaults; users/groups can add their own.
@@ -317,6 +319,7 @@ model Group {
   customExercises Exercise[]
   dailyChallenges GroupDailyChallenge[]
   goals           GroupGoal[]
+  climbingMeetups ClimbingMeetup[]
 }
 
 enum GroupRole {
@@ -746,4 +749,52 @@ model InjuryCheckin {
   createdAt DateTime @default(now())
 
   @@unique([injuryId, dateKey])
+}
+
+// Focus areas a member wants to train that day - free-standing tags, not
+// tied to any one exercise (unlike MuscleFocus/Muscle, which are about
+// strength training).
+enum ClimbingFocus {
+  SLAB
+  POWER
+  TECHNIK
+  AUSDAUER
+  KRAFT
+  MENTAL
+}
+
+// A planned climbing day for a group - "who's in on {date}", not a log of
+// what was actually climbed (that's ClimbingSend/the boulder-day dialog,
+// and only ever for today-or-earlier). One per group per day.
+model ClimbingMeetup {
+  id          String   @id @default(cuid())
+  groupId     String
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  // Europe/Berlin calendar day, today or in the future (see germanDateKey).
+  dateKey     String
+  time        String?
+  location    String?
+  createdAt   DateTime @default(now())
+
+  participants ClimbingMeetupParticipant[]
+
+  @@unique([groupId, dateKey])
+  @@index([dateKey])
+}
+
+// One member's RSVP to a meetup - the row itself means "I'm coming"; goal
+// and focuses are both optional extras, never required to join.
+model ClimbingMeetupParticipant {
+  id       String           @id @default(cuid())
+  meetupId String
+  meetup   ClimbingMeetup   @relation(fields: [meetupId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal     String?
+  focuses  ClimbingFocus[]
+  joinedAt DateTime         @default(now())
+
+  @@unique([meetupId, userId])
 }
