@@ -3,7 +3,6 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getGroupMembership } from "@/lib/group-auth";
-import { rateLimit } from "@/lib/rate-limit";
 import { notifyUsers } from "@/lib/notify";
 
 const createSchema = z.object({
@@ -69,11 +68,6 @@ export async function POST(
   const post = await loadPost(groupId, postId);
   if (!post) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  const { allowed } = rateLimit(`comment:${session.user.id}`, 20, 60 * 1000);
-  if (!allowed) {
-    return NextResponse.json({ error: "Zu viele Kommentare - kurz warten." }, { status: 429 });
   }
 
   const parsed = createSchema.safeParse(await request.json().catch(() => null));

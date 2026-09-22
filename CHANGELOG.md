@@ -5,6 +5,15 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.48.0] - 2026-09-22
+
+### Removed
+- **Alle Rate-Limits entfernt.** Registrierung, Login (Brute-Force-Lockout), Anstupsen, Daily-Challenge-Reps,
+  Gruppen-Kommentare und Pump-Pic-Uploads liefen zuvor über einen In-Memory-Limiter - für dieses selbstgehostete
+  Setup mit einer kleinen, vertrauten Gruppe unnötig. `lib/rate-limit.ts` und die zugehörigen `LOGIN_RATE_LIMIT_*`/
+  `REGISTER_RATE_LIMIT_*`-Env-Vars sind komplett raus (Doku/`.env.example`/`docker-compose.yml` entsprechend
+  bereinigt). Achtung: das nimmt auch den Login-Brute-Force-Schutz raus - für dieses Setup eine bewusste Abwägung.
+
 ## [0.47.0] - 2026-09-22
 
 ### Added

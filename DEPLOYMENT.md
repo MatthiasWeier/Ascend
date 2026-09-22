@@ -114,13 +114,3 @@ and `NODE_OPTIONS`, or the Dockerfile's build-time `NODE_OPTIONS`) if your
 install is bigger than this or you see OOM kills
 (`docker inspect ascend-app-1 --format '{{.State.OOMKilled}}'`).
 
-## Rate limits
-
-Login/registration limits are tunable via env vars (defaults shown):
-
-```
-LOGIN_RATE_LIMIT_MAX=10
-LOGIN_RATE_LIMIT_WINDOW_MS=900000
-REGISTER_RATE_LIMIT_MAX=5
-REGISTER_RATE_LIMIT_WINDOW_MS=3600000
-```

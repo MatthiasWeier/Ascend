@@ -224,9 +224,6 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   `.env.example` (`VAPID_*`); ohne die ist der Toggle einfach ausgeblendet
 
 ### Security & Ops
-- ✅ Rate Limiting (Registrierung, Login-Brute-Force-Lockout, Daily-Challenge-
-  Aktionen) - in-memory, passend für die Single-Container-Deployment;
-  Login-/Registrierungs-Limits per Env-Var konfigurierbar
 - ✅ Strukturiertes JSON-Logging (`lib/logger.ts`, sichtbar via
   `docker compose logs app`) + eigene Error-Boundaries
 - ✅ Automatische DB-Migrationen beim Start (`migrate`-Service in

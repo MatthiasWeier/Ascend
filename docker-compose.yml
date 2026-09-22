@@ -70,11 +70,6 @@ services:
       VAPID_SUBJECT: ${VAPID_SUBJECT:-}
       # Prometheus /api/metrics - unset leaves the endpoint disabled (404).
       METRICS_TOKEN: ${METRICS_TOKEN:-}
-      # Login/registration rate limits - see .env.example for the defaults.
-      LOGIN_RATE_LIMIT_MAX: ${LOGIN_RATE_LIMIT_MAX:-}
-      LOGIN_RATE_LIMIT_WINDOW_MS: ${LOGIN_RATE_LIMIT_WINDOW_MS:-}
-      REGISTER_RATE_LIMIT_MAX: ${REGISTER_RATE_LIMIT_MAX:-}
-      REGISTER_RATE_LIMIT_WINDOW_MS: ${REGISTER_RATE_LIMIT_WINDOW_MS:-}
       # Set to "true" to close signups to everyone except people with an
       # invite link (see README).
       INVITE_ONLY: ${INVITE_ONLY:-}
