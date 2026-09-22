@@ -70,9 +70,14 @@ services:
       VAPID_SUBJECT: ${VAPID_SUBJECT:-}
       # Prometheus /api/metrics - unset leaves the endpoint disabled (404).
       METRICS_TOKEN: ${METRICS_TOKEN:-}
-      # Set to "true" to close signups to everyone except people with an
-      # invite link (see README).
-      INVITE_ONLY: ${INVITE_ONLY:-}
+      # Rate limits (login lockout, registration) - only take effect once
+      # the admin turns "Rate Limits" on in Admin > Instanz-Einstellungen.
+      # Defaults shown in .env.example - only set these if you want
+      # different numbers.
+      LOGIN_RATE_LIMIT_MAX: ${LOGIN_RATE_LIMIT_MAX:-}
+      LOGIN_RATE_LIMIT_WINDOW_MS: ${LOGIN_RATE_LIMIT_WINDOW_MS:-}
+      REGISTER_RATE_LIMIT_MAX: ${REGISTER_RATE_LIMIT_MAX:-}
+      REGISTER_RATE_LIMIT_WINDOW_MS: ${REGISTER_RATE_LIMIT_WINDOW_MS:-}
       # S3/MinIO storage backend - unset uses local disk (uploads-data
       # volume below). See .env.example.
       S3_ENDPOINT: ${S3_ENDPOINT:-}

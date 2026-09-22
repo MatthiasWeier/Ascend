@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, getClientIp, envInt } from "@/lib/rate-limit";
+import { getAppSettings } from "@/lib/app-settings";
 
 const registerSchema = z.object({
   name: z.string().min(1).max(100),
@@ -14,13 +16,27 @@ const registerSchema = z.object({
   inviteCode: z.string().optional(),
 });
 
-// Lets the register page know whether to require an invite code, without
-// exposing anything else - see INVITE_ONLY in .env.example.
+// Lets the register page know whether to require an invite code - see
+// "Offene Registrierung" in Admin > Instanz-Einstellungen.
 export async function GET() {
-  return NextResponse.json({ inviteOnly: process.env.INVITE_ONLY === "true" });
+  const settings = await getAppSettings();
+  return NextResponse.json({ inviteOnly: !settings.registrationOpen });
 }
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  const { allowed, retryAfterSec } = await checkRateLimit(
+    `register:${ip}`,
+    envInt("REGISTER_RATE_LIMIT_MAX", 5),
+    envInt("REGISTER_RATE_LIMIT_WINDOW_MS", 60 * 60 * 1000)
+  );
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Zu viele Registrierungen. Versuch's später nochmal." },
+      { status: 429, headers: { "Retry-After": String(retryAfterSec) } }
+    );
+  }
+
   const body = await request.json();
   const parsed = registerSchema.safeParse(body);
   if (!parsed.success) {
@@ -28,15 +44,16 @@ export async function POST(request: Request) {
   }
   const { name, username, password, inviteCode } = parsed.data;
 
-  // With INVITE_ONLY set, signing up requires a real invite code - closes
-  // the instance to the public while still letting the operator's friends
-  // in via a group invite link.
+  // With open registration turned off, signing up requires a real invite
+  // code - closes the instance to the public while still letting the
+  // operator's friends in via a group invite link.
   let inviteGroupId: string | null = null;
   if (inviteCode) {
     const group = await prisma.group.findUnique({ where: { inviteCode }, select: { id: true } });
     inviteGroupId = group?.id ?? null;
   }
-  if (process.env.INVITE_ONLY === "true" && !inviteGroupId) {
+  const settings = await getAppSettings();
+  if (!settings.registrationOpen && !inviteGroupId) {
     return NextResponse.json(
       { error: "Registrierung ist nur mit einem gültigen Einladungslink möglich" },
       { status: 403 }

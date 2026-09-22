@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { verifyTotpToken } from "@/lib/totp";
 import { consumeBackupCode } from "@/lib/totp-backup-codes";
+import { checkRateLimit, envInt } from "@/lib/rate-limit";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
@@ -22,6 +23,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const totpToken = credentials?.totpToken as string | undefined;
         const userAgent = request.headers.get("user-agent");
         if (!username || !password) return null;
+
+        // Lock out after repeated failures against a given username -
+        // brute-force protection. Doesn't distinguish "locked" from "wrong
+        // password" in the response so it can't be used to enumerate which
+        // usernames are close to locking. Only active when the admin has
+        // turned rate limiting on (Admin > Instanz-Einstellungen).
+        const { allowed } = await checkRateLimit(
+          `login:${username.toLowerCase()}`,
+          envInt("LOGIN_RATE_LIMIT_MAX", 10),
+          envInt("LOGIN_RATE_LIMIT_WINDOW_MS", 15 * 60 * 1000)
+        );
+        if (!allowed) return null;
 
         const user = await prisma.user.findUnique({ where: { username } });
         if (!user) return null;

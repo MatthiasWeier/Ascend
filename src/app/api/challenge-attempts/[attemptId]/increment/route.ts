@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { contributeChallengeAttemptToGoals } from "@/lib/goal-contributions";
 import { notifyUsers } from "@/lib/notify";
 
@@ -14,6 +15,11 @@ export async function POST(
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { allowed } = await checkRateLimit(`increment:${session.user.id}`, 60, 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json({ error: "Zu viele Anfragen, kurz warten." }, { status: 429 });
   }
 
   const { attemptId } = await params;

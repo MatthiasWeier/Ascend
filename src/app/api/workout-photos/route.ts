@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { extensionForImageType } from "@/lib/uploads";
 import { storageWriteFile } from "@/lib/storage";
 import { photoPath, MAX_PHOTOS_PER_WORKOUT } from "@/lib/workout-photos";
@@ -16,6 +17,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = session.user.id;
+
+  const { allowed } = await checkRateLimit(`workout-photo:${userId}`, 30, 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json({ error: "Zu viele Anfragen, kurz warten." }, { status: 429 });
+  }
 
   const form = await request.formData().catch(() => null);
   const file = form?.get("image");

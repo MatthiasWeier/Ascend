@@ -5,6 +5,16 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.53.0] - 2026-09-22
+
+### Added
+- **Instanz-Einstellungen** (Admin-Seite, nur für Admins): zwei neue Schalter, wirken sofort ohne Redeploy.
+  - **Rate Limits**: schaltet Login-Lockout, Registrierungs-, Kommentar-, Anstups-, Foto-Upload- und
+    Challenge-Rep-Limits als Ganzes an/aus (Standard: aus, wie bisher). Grenzwerte weiterhin per Env-Var
+    tunbar, siehe `.env.example`.
+  - **Offene Registrierung**: ersetzt das bisherige `INVITE_ONLY`-Env-Var - schließt/öffnet die Registrierung
+    zur Laufzeit statt nur beim Deploy.
+
 ## [0.52.0] - 2026-09-22
 
 ### Security

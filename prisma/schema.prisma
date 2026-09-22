@@ -881,3 +881,13 @@ model WorkoutReminder {
 
   @@index([userId])
 }
+
+// Single-row table (id is always "global") for instance-wide switches the
+// admin can flip at runtime instead of editing .env and redeploying. The
+// row is created by its migration, so callers can always assume it exists.
+model AppSettings {
+  id                  String   @id @default("global")
+  rateLimitingEnabled Boolean  @default(false)
+  registrationOpen    Boolean  @default(true)
+  updatedAt           DateTime @updatedAt
+}

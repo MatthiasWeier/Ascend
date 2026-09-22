@@ -109,8 +109,9 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 - ✅ **Sitzungsverwaltung** (Settings): aktive Geräte einsehen, einzeln
   oder alle außer dem aktuellen sofort abmelden - wirkt beim nächsten
   Zugriff des Geräts, nicht erst nach JWT-Ablauf
-- ✅ Invite-only-Modus (`INVITE_ONLY`): Registrierung nur mit gültigem
-  Gruppen-Invite-Link, siehe `.env.example`
+- ✅ **Admin-Einstellungen** (Admin-Seite, nur für Admins): Rate Limits
+  (Login/Registrierung, Brute-Force-Schutz) und offene vs. Invite-only-Registrierung
+  jeweils per Schalter an/aus - wirkt sofort, kein Redeploy nötig
 - ✅ Vollständiger JSON-Datenexport, CSV-Import (Strong/Hevy-kompatibel,
   best effort), abonnierbarer ICS-Kalender-Feed - alles in Settings
 

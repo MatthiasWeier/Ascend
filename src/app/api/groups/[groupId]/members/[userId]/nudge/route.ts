@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getGroupMembership } from "@/lib/group-auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { notifyUsers } from "@/lib/notify";
 
-// Any member can nudge any other member in a shared group.
+// Any member can nudge any other member in a shared group - rate-limited
+// per (from, to) pair so it stays a friendly poke, not spam.
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ groupId: string; userId: string }> }
@@ -25,6 +27,14 @@ export async function POST(
   ]);
   if (!myMembership || !targetMembership) {
     return NextResponse.json({ error: "Not a member" }, { status: 403 });
+  }
+
+  const { allowed, retryAfterSec } = await checkRateLimit(`nudge:${session.user.id}:${userId}`, 1, 60 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: `Schon angestupst - versuch's in ${Math.ceil(retryAfterSec / 60)} Min. nochmal.` },
+      { status: 429 }
+    );
   }
 
   const actor = await prisma.user.findUnique({ where: { id: session.user.id }, select: { name: true } });

@@ -140,6 +140,16 @@ export const settings: Record<string, string> = {
   "Konnte Backup-Codes nicht erneuern.": "Couldn't regenerate backup codes.",
 
   // admin
+  "Verwaltung dieser Instanz.": "Manage this instance.",
+  "Instanz-Einstellungen": "Instance settings",
+  "Nutzer": "Users",
+  "Rate Limits": "Rate limits",
+  "Begrenzt Login-Versuche, Registrierungen und ein paar andere Aktionen pro Nutzer/IP - Schutz gegen Brute-Force und Spam, kostet aber etwas Bequemlichkeit.":
+    "Limits login attempts, registrations, and a few other actions per user/IP - protects against brute-force and spam, at some cost to convenience.",
+  "Offene Registrierung": "Open registration",
+  "Wenn aus, kann sich nur registrieren, wer einen gültigen Gruppen-Einladungslink hat - schließt die Instanz für die Öffentlichkeit.":
+    "When off, only people with a valid group invite link can register - closes the instance to the public.",
+  "Konnte Einstellung nicht speichern.": "Couldn't save the setting.",
   "Zum Admin gemacht.": "Made admin.",
   "Admin-Rechte entfernt.": "Admin rights removed.",
   "2FA für diesen Nutzer zurückgesetzt.": "2FA reset for this user.",
