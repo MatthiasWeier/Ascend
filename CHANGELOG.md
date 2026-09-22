@@ -5,6 +5,24 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.49.0] - 2026-09-22
+
+### Fixed
+- **RAM-Analyse: die 3+GB waren nicht die App.** `docker stats` für `ascend-app-1`/`ascend-db-1` lag die ganze Zeit
+  bei ~100MB/~25MB - die tatsächlichen Verbraucher waren zwei von Ascend unabhängige Docker-Altlasten aus vielen
+  Rebuilds in einer Uptime:
+  - Der **`dockerd`-Prozess selbst** hielt ~1,5GB RSS, die er nach vielen Image-Builds nicht mehr freigegeben hat -
+    ein `systemctl restart docker` (Container kommen über `restart: unless-stopped` von selbst wieder hoch) hat das
+    sofort auf ~100MB zurückgesetzt.
+  - **Verwaister Build-Cache** hatte sich auf 3,4GB Festplatte angesammelt (`docker builder prune -af` behoben).
+  - Das **`migrate`-Image war 2,03GB**, weil es die komplette `builder`-Stage (kompletter Quellcode, gebautes
+    `.next`, alle ~90 Laufzeit-/Dev-Dependencies) mitschleppte, nur um einmalig `prisma migrate deploy`
+    auszuführen. Installiert jetzt nur noch `prisma`+`dotenv` isoliert (nicht mehr `FROM builder`) -
+    **2,03GB → 865MB**. Migration nach dem Umbau erfolgreich getestet (26 Migrationen erkannt, korrekt verbunden).
+  - Das eigentliche App-Image (`ascend-app`) war schon vorher schlank: 323MB, davon 238MB die node:22-alpine-Basis,
+    78MB eigener Anteil - das ist auch das, was jemand beim `docker pull` tatsächlich bekommt.
+  - Details und Diagnose-Befehle in [DEPLOYMENT.md](./DEPLOYMENT.md#resource-usage).
+
 ## [0.48.0] - 2026-09-22
 
 ### Removed

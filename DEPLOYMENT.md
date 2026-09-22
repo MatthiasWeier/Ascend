@@ -114,3 +114,28 @@ and `NODE_OPTIONS`, or the Dockerfile's build-time `NODE_OPTIONS`) if your
 install is bigger than this or you see OOM kills
 (`docker inspect ascend-app-1 --format '{{.State.OOMKilled}}'`).
 
+**If your host itself looks like it's using multiple GB and the two
+containers above don't add up to it, look at Docker itself before the
+app** - two real, unrelated sources we've hit in practice, neither caused
+by Ascend's containers:
+
+- **`dockerd`'s own memory.** After a lot of image builds in one uptime
+  (rebuilding repeatedly while developing, CI doing many builds, etc.), the
+  Docker daemon process itself can end up holding on to a GB or more of RSS
+  that it never gives back to the OS - this is Docker/its allocator, not a
+  leak in the app. `ps aux --sort=-rss | head` will show `dockerd` as the
+  top consumer if this is what's happening. Fix: `sudo systemctl restart
+  docker` (containers come back up on their own via `restart:
+  unless-stopped`, a few seconds of downtime, no live-restore needed for
+  that). We saw this reclaim ~1.5GB on a 3.8GB VM.
+- **Stale build cache**, from the same repeated-builds situation - each
+  `docker compose build`/`up --build` leaves layers behind that only get
+  reclaimed on request. Check with `docker system df` (the `Build Cache`
+  row); clear with `docker builder prune -af`. We've seen this alone hit
+  3+GB of disk (not RAM) after a day of iterating on the Dockerfile.
+- **The `migrate` image**, if you're inspecting `docker images` rather than
+  `docker stats`: it now installs only `prisma`+`dotenv` (not the full
+  ~1.4GB app dependency tree) specifically to keep this small - if you see
+  it back in GB territory, something upstream of it in the Dockerfile
+  changed and pulled it back onto `deps`/`builder`.
+

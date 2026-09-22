@@ -23,11 +23,24 @@ ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN pnpm build
 
 # Runs `prisma migrate deploy` against a real DATABASE_URL at container
-# start, before the app comes up - reuses the builder stage since that
-# already has the full node_modules (the `prisma` CLI is a devDependency,
-# not something the standalone runner image below carries).
-FROM builder AS migrator
+# start, before the app comes up. `migrate deploy` only ever touches
+# prisma/schema+migrations - never the app's source, its build output, or
+# any of its ~90 other runtime/dev dependencies - so this installs just the
+# two packages it actually needs (prisma's CLI + the engine binary it pulls
+# in, and dotenv for prisma.config.ts's `import "dotenv/config"`) instead of
+# reusing `deps`/`builder`'s full ~1.4GB node_modules. Keep these versions
+# in sync with package.json's `prisma`/`dotenv` entries.
+FROM base AS migrator
 WORKDIR /app
+RUN corepack enable
+# pnpm-workspace.yaml's allowBuilds is what lets prisma's postinstall (which
+# downloads its engine binary) run at all - without it pnpm refuses with
+# ERR_PNPM_IGNORED_BUILDS.
+COPY pnpm-workspace.yaml ./
+RUN printf '{"dependencies":{"prisma":"7.9.1","dotenv":"^17.4.2"}}' > package.json \
+  && pnpm install --no-lockfile
+COPY prisma.config.ts ./
+COPY prisma ./prisma
 CMD ["pnpm", "prisma", "migrate", "deploy"]
 
 FROM base AS runner
