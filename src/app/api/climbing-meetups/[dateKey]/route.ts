@@ -10,11 +10,26 @@ const participantSelect = {
     userId: true,
     goal: true,
     focuses: true,
+    remindedAt: true,
     user: { select: { id: true, name: true, avatarUrl: true } },
   },
 } as const;
 
-// Every meetup on this day across the user's groups (usually 0 or 1) - the
+const suggestionSelect = {
+  select: {
+    id: true,
+    dateKey: true,
+    time: true,
+    location: true,
+    note: true,
+    status: true,
+    createdAt: true,
+    suggestedBy: { select: { id: true, name: true } },
+  },
+  orderBy: { createdAt: "desc" as const },
+};
+
+// Every meetup on this day across the user's groups (usually 0-2) - the
 // personal calendar's day-detail view.
 export async function GET(_request: Request, { params }: { params: Promise<{ dateKey: string }> }) {
   const session = await auth();
@@ -37,6 +52,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ dat
           group: { select: { id: true, name: true } },
           createdBy: { select: { id: true, name: true } },
           participants: participantSelect,
+          suggestions: suggestionSelect,
         },
       })
     : [];

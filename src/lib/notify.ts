@@ -9,7 +9,9 @@ export type NotificationType =
   | "WORKOUT_POST"
   | "CHALLENGE_DONE"
   | "CLIMBING"
-  | "CLIMBING_INVITE";
+  | "CLIMBING_INVITE"
+  | "WORKOUT_REMINDER"
+  | "MEETUP_REMINDER";
 
 // Creates the in-app notification (the bell) and, on top, tries a web
 // push. The in-app entry is the reliable part - push depends on the

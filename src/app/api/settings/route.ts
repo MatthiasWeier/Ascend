@@ -11,6 +11,7 @@ const settingsSchema = z.object({
     .array(z.object({ focus: z.enum(["PUSH", "PULL", "LEGS", "CORE", "GRIP"]), targetPercent: z.number().min(0).max(100) }))
     .optional(),
   weightUnit: z.enum(["KG", "LBS"]).optional(),
+  meetupReminderLeadTime: z.enum(["NEVER", "ONE_HOUR_BEFORE", "MORNING_OF", "EVENING_BEFORE"]).optional(),
 });
 
 export async function GET() {
@@ -29,6 +30,7 @@ export async function GET() {
         avatarUrl: true,
         weightUnit: true,
         totpEnabled: true,
+        meetupReminderLeadTime: true,
       },
     }),
     prisma.balanceGoal.findMany({ where: { userId: session.user.id } }),
@@ -55,11 +57,15 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { bodyWeightKg, balanceGoals, weightUnit } = parsed.data;
+  const { bodyWeightKg, balanceGoals, weightUnit, meetupReminderLeadTime } = parsed.data;
   const userId = session.user.id;
 
   if (weightUnit) {
     await prisma.user.update({ where: { id: userId }, data: { weightUnit } });
+  }
+
+  if (meetupReminderLeadTime) {
+    await prisma.user.update({ where: { id: userId }, data: { meetupReminderLeadTime } });
   }
 
   if (bodyWeightKg != null) {

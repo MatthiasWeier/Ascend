@@ -140,6 +140,10 @@ model User {
   postComments      PostComment[]
   climbingMeetupsCreated     ClimbingMeetup[]
   climbingMeetupAttendances  ClimbingMeetupParticipant[]
+  climbingMeetupSuggestions  ClimbingMeetupSuggestion[]
+  workoutReminders           WorkoutReminder[]
+  // How long before a meetup you're in to notify you - NEVER turns it off.
+  meetupReminderLeadTime MeetupReminderLeadTime @default(EVENING_BEFORE)
 }
 
 // Catalog of exercises. Seeded with defaults; users/groups can add their own.
@@ -754,6 +758,11 @@ model InjuryCheckin {
 // Focus areas a member wants to train that day - free-standing tags, not
 // tied to any one exercise (unlike MuscleFocus/Muscle, which are about
 // strength training).
+// Kept as "ClimbingFocus" at the DB/Prisma level (renaming an enum means
+// renaming a type, more migration churn than it's worth) but no longer
+// climbing-only: SLAB..MENTAL are for a CLIMBING meetup, PUSH..GRIP (same
+// values as MuscleFocus) are for a GYM one - lib/climbing-meetups.ts picks
+// the right subset per activity.
 enum ClimbingFocus {
   SLAB
   POWER
@@ -761,27 +770,44 @@ enum ClimbingFocus {
   AUSDAUER
   KRAFT
   MENTAL
+  PUSH
+  PULL
+  LEGS
+  CORE
+  GRIP
 }
 
-// A planned climbing day for a group - "who's in on {date}", not a log of
-// what was actually climbed (that's ClimbingSend/the boulder-day dialog,
-// and only ever for today-or-earlier). One per group per day.
+enum MeetupActivity {
+  CLIMBING
+  GYM
+  OTHER
+}
+
+// A planned training day for a group - "who's in on {date}", not a log of
+// what was actually done (that's ClimbingSend/WorkoutSession). Several can
+// share a day (e.g. a gym session and a climbing session on the same
+// evening), so there's no uniqueness on the date alone.
 model ClimbingMeetup {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   groupId     String
-  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group       Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
   createdById String
-  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdBy   User           @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  activity    MeetupActivity @default(CLIMBING)
+  // Freeform label, mainly for GYM/OTHER ("Beintag", "Schwimmen") - CLIMBING
+  // just says "Klettern" in the UI when empty.
+  title       String?
   // Europe/Berlin calendar day, today or in the future (see germanDateKey).
   dateKey     String
   time        String?
   location    String?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime       @default(now())
 
   participants ClimbingMeetupParticipant[]
+  suggestions  ClimbingMeetupSuggestion[]
 
-  @@unique([groupId, dateKey])
   @@index([dateKey])
+  @@index([groupId, dateKey])
 }
 
 // One member's RSVP to a meetup - the row itself means "I'm coming"; goal
@@ -795,6 +821,63 @@ model ClimbingMeetupParticipant {
   goal     String?
   focuses  ClimbingFocus[]
   joinedAt DateTime         @default(now())
+  // Set once this participant's lead-time reminder has fired for this
+  // meetup - guards against sending it twice (edits to the meetup don't
+  // reset it; a cancelled-and-recreated meetup is a new row anyway).
+  remindedAt DateTime?
 
   @@unique([meetupId, userId])
+}
+
+enum SuggestionStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+// A member's proposed change to a planned meetup ("wie wäre 19 statt 18
+// Uhr?") - any field left null means "no change proposed there". Only
+// whoever created the meetup can accept (applies the change) or decline.
+model ClimbingMeetupSuggestion {
+  id            String           @id @default(cuid())
+  meetupId      String
+  meetup        ClimbingMeetup   @relation(fields: [meetupId], references: [id], onDelete: Cascade)
+  suggestedById String
+  suggestedBy   User             @relation(fields: [suggestedById], references: [id], onDelete: Cascade)
+  dateKey       String?
+  time          String?
+  location      String?
+  note          String?
+  status        SuggestionStatus @default(PENDING)
+  createdAt     DateTime         @default(now())
+
+  @@index([meetupId])
+}
+
+enum MeetupReminderLeadTime {
+  NEVER
+  ONE_HOUR_BEFORE
+  MORNING_OF
+  EVENING_BEFORE
+}
+
+// One weekly recurring slot ("Montag 13:00") to remind a user to train -
+// personal, not tied to any group or meetup. Checked by the in-process
+// scheduler (lib/scheduler.ts); lastFiredDateKey guards against firing
+// twice on the same Europe/Berlin day if the check runs more than once
+// inside the reminder's minute.
+model WorkoutReminder {
+  id      String  @id @default(cuid())
+  userId  String
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // 0=Monday .. 6=Sunday, Europe/Berlin (matches lib/german-time.ts).
+  weekday Int
+  // "HH:MM", Europe/Berlin.
+  time    String
+  label   String?
+  enabled Boolean @default(true)
+  lastFiredDateKey String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

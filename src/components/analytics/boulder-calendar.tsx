@@ -92,8 +92,8 @@ export function BoulderCalendar() {
           const future = isFuture(dateKey);
           const label = future
             ? hasMeetup
-              ? t("Klettertag geplant - klicken für Details")
-              : t("Klicken, um einen Klettertag zu planen")
+              ? t("Termin geplant - klicken für Details")
+              : t("Klicken, um einen Termin zu planen")
             : marked
               ? t("Klettertag eingetragen - klicken zum Bearbeiten")
               : t("Klicken, um einen Klettertag einzutragen");
@@ -123,7 +123,7 @@ export function BoulderCalendar() {
 
       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
         <Mountain className="size-3 text-emerald-600 dark:text-emerald-400" />
-        {t("Klettern - geplant")}
+        {t("Termin geplant")}
       </div>
 
       {selectedDate &&

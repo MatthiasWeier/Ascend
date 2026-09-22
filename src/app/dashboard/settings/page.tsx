@@ -34,6 +34,7 @@ import { MyExercises } from "@/components/my-exercises";
 import { InstallAppCard } from "@/components/install-app";
 import { DeleteAccountDialog } from "@/components/delete-account-dialog";
 import { PushNotificationToggle } from "@/components/push-notification-toggle";
+import { WorkoutReminders } from "@/components/workout-reminders";
 import { DataExport, DataImport, CalendarFeed } from "@/components/data-portability";
 import { ApiKeyManager } from "@/components/api-key-manager";
 import { APP_VERSION } from "@/lib/version";
@@ -353,6 +354,16 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <PushNotificationToggle />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("Workout-Erinnerungen")}</CardTitle>
+          <CardDescription>{t("Wann du ans Training erinnert werden willst - eigene Zeiten und gemeinsame Termine.")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <WorkoutReminders />
         </CardContent>
       </Card>
 

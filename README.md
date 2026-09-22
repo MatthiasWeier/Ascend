@@ -164,9 +164,15 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   Workout (Übungen, Gewicht, Wdh) dieses Tages
 - ✅ Kletter-Pyramide + Boulder-Tages-Kalender (Zähler pro Schwierigkeit,
   "5x 6er, 3x 4er")
-- ✅ **Klettertage planen**: pro Gruppe ein Tag (heute oder später) mit optionaler Uhrzeit/Ort anlegen,
-  Mitglieder sagen mit eigenem optionalem Ziel und Trainingsfokus (Slab/Power/Technik/Ausdauer/Kraft/Mental) zu -
-  im persönlichen Kalender über alle Gruppen hinweg als grün markierter Tag sichtbar
+- ✅ **Termine planen** (Klettern, Gym oder frei benennbar "Sonstiges"): pro Gruppe einen Tag (heute oder später)
+  mit optionalem Titel/Uhrzeit/Ort anlegen, Mitglieder sagen mit eigenem optionalem Ziel und Trainingsfokus zu
+  (Slab/Power/Technik/Ausdauer/Kraft/Mental für Klettern, Push/Pull/Beine/Core/Grip für Gym) - im persönlichen
+  Kalender über alle Gruppen hinweg als grün markierter Tag sichtbar. Mitglieder, die den Termin nicht selbst
+  geplant haben, können eine Änderung (Datum/Uhrzeit/Ort + Notiz) vorschlagen; wer geplant hat, nimmt an oder lehnt ab.
+- ✅ **Erinnerungen** (Einstellungen > Workout-Erinnerungen): eigene wöchentlich wiederkehrende Trainingszeiten
+  ("Montag 13 Uhr, Mittwoch 18 Uhr", unabhängig von Gruppen) sowie ein Vorlauf, wie lange vorher an einen
+  zugesagten Gruppentermin erinnert werden soll (nie / 1 Std. vorher / morgens / am Vorabend) - beides über einen
+  In-Process-Scheduler (`lib/scheduler.ts`, per Next.js Instrumentation-Hook gestartet), kein separater Cron-Dienst nötig
 
 ### Gruppen
 - ✅ Erstellen, Beitreten per Invite-Link

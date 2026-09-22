@@ -3,11 +3,12 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getGroupMembership } from "@/lib/group-auth";
-import { CLIMBING_FOCUSES } from "@/lib/climbing-meetups";
+import { ALL_MEETUP_FOCUSES } from "@/lib/climbing-meetups";
+import type { ClimbingFocus } from "@prisma/client";
 
 const joinSchema = z.object({
   goal: z.string().max(200).optional(),
-  focuses: z.array(z.enum(CLIMBING_FOCUSES as [string, ...string[]])).max(CLIMBING_FOCUSES.length).optional(),
+  focuses: z.array(z.enum(ALL_MEETUP_FOCUSES as [string, ...string[]])).max(ALL_MEETUP_FOCUSES.length).optional(),
 });
 
 async function loadMeetup(groupId: string, meetupId: string) {
@@ -38,13 +39,16 @@ export async function POST(
   }
   const data = {
     goal: parsed.data.goal || null,
-    focuses: (parsed.data.focuses ?? []) as ("SLAB" | "POWER" | "TECHNIK" | "AUSDAUER" | "KRAFT" | "MENTAL")[],
+    focuses: (parsed.data.focuses ?? []) as ClimbingFocus[],
   };
 
   const participant = await prisma.climbingMeetupParticipant.upsert({
     where: { meetupId_userId: { meetupId, userId: session.user.id } },
     create: { meetupId, userId: session.user.id, ...data },
-    update: data,
+    // Re-joining (or editing goal/focus) is a fresh RSVP - if the lead-time
+    // reminder already fired once, let it fire again on genuinely new info
+    // rather than staying silent forever.
+    update: { ...data, remindedAt: null },
   });
   return NextResponse.json({ participant }, { status: 201 });
 }

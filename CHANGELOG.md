@@ -5,6 +5,22 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.51.0] - 2026-09-22
+
+### Added
+- **Termine sind jetzt für jede Aktivität** (Klettern, Gym, Sonstiges mit freiem Titel), nicht mehr nur
+  Klettertage - beim Planen wählt man die Art, optional einen Titel ("Beintag"); der Fokus-Picker zeigt passende
+  Tags (Slab/Power/Technik/Ausdauer/Kraft/Mental fürs Klettern, Push/Pull/Beine/Core/Grip fürs Gym). Mehrere
+  Termine können denselben Tag teilen (z.B. Gym morgens, Klettern abends).
+- **Änderungen vorschlagen**: wer einen Termin nicht selbst geplant hat, kann eine Änderung an Datum/Uhrzeit/Ort
+  vorschlagen (mit Notiz) statt nur zuzusagen oder wegzubleiben. Wer geplant hat, sieht die Vorschläge und nimmt
+  sie an (übernimmt die Änderung sofort, informiert die Gruppe) oder lehnt ab.
+- **Workout-Erinnerungen** (neue Settings-Karte): eigene wöchentlich wiederkehrende Trainingszeiten unabhängig
+  von Gruppen ("Montag 13 Uhr, Mittwoch 18 Uhr", mit optionalem Label, einzeln an/ausschaltbar) sowie ein
+  Vorlauf für zugesagte Gruppentermine (nie / 1 Stunde vorher / morgens / am Vorabend). Beides läuft über einen
+  neuen In-Process-Scheduler (`lib/scheduler.ts`, per Next.js-Instrumentation-Hook beim Serverstart gestartet,
+  prüft minütlich) - kein zusätzlicher Cron-Dienst nötig.
+
 ## [0.50.0] - 2026-09-22
 
 ### Added
