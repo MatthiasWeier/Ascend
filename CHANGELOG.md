@@ -5,6 +5,14 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.52.0] - 2026-09-22
+
+### Security
+- Added baseline HTTP hardening headers (`Strict-Transport-Security`, `X-Content-Type-Options: nosniff`,
+  `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`) to every response. Prompted by a
+  security review; a Content-Security-Policy was deliberately left out for now since a wrong one breaks
+  pages silently rather than loudly and deserves its own browser-tested change.
+
 ## [0.51.0] - 2026-09-22
 
 ### Added
