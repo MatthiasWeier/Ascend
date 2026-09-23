@@ -241,6 +241,80 @@ new thing a user would notice as separate" - the former is patch.
   weight-bearing surface, follow the same "convert only where kg crosses
   the client boundary" rule rather than converting eagerly.
 
+- **In-process reminder scheduler, no separate worker process.**
+  `src/instrumentation.ts`'s `register()` hook (stable in Next.js since v15,
+  no flag needed) calls `startScheduler()` (`lib/scheduler.ts`) once per
+  server process; it runs a 60s `setInterval` tick, not a cron container -
+  matches the single-container philosophy of the rest of the deploy. All
+  time math goes through Berlin wall-clock strings (`lib/german-time.ts`
+  `germanWeekday`/`germanTime`/`wallClockAtOrAfter`/
+  `subtractMinutesFromWallClock`), never a raw UTC `Date` comparison, to
+  dodge DST - same convention as the pre-existing `germanDateKey`.
+  **Gotcha that cost real debugging time:** a Prisma `{ field: { not: X } }`
+  filter on a nullable column compiles to plain SQL `<>`, which never
+  matches a `NULL` row (`NULL <> X` is `NULL`, not true) - a brand-new
+  reminder with `lastFiredDateKey: null` would never be found "due". Spell
+  it out as `OR: [{ field: null }, { field: { not: X } }]` whenever NULL
+  should also count as "not equal". Also: `notifyUsers()` filters the actor
+  out of the recipient list, so a system-generated reminder (not triggered
+  by another user) must pass a sentinel `actorId: "system"` - passing the
+  recipient's own id there silently empties the recipient list and nothing
+  sends.
+- **Admin-configurable instance settings, DB-backed, not env-var-only.**
+  `AppSettings` (`prisma/schema.prisma`) is a single-row table, `id` fixed
+  to `"global"`, seeded by its own migration so app code (`lib/app-settings.ts`)
+  can assume the row always exists (`findUniqueOrThrow`, no get-or-create
+  branch). Currently holds `rateLimitingEnabled` and `registrationOpen`,
+  edited from Admin > Instanz-Einstellungen (`api/admin/settings`,
+  `components/admin-instance-settings.tsx`) and take effect on the very
+  next request - no redeploy. Follow this pattern (not a new env var) for
+  any future switch an admin should be able to flip at runtime. Rate
+  limiting itself (`lib/rate-limit.ts`, in-memory fixed-window buckets) is
+  gated through `checkRateLimit()`, which reads `AppSettings` first and
+  short-circuits to "allowed" when the switch is off - the limiter logic
+  itself is unchanged from before it was made toggleable, only the gate is
+  new.
+- **Muscle/injury tracking.** `lib/muscles.ts`/`lib/muscle-focus.ts`/
+  `lib/muscle-stats.ts` map exercises to muscles with per-muscle load, feed
+  a drawable 3D/SVG body map (`components/body-viewer.tsx`, rendered
+  read-only for teammates via `components/body-view.tsx`) with heat levels;
+  `MusclePreference` ("wishes") steers which muscles the Workout Brain
+  favors. Injuries (`Injury`, `InjuryCheckin` models) drive exercise
+  warnings in the Brain and a recurring self-service check-in reminder
+  (`components/injury-checkin-reminder.tsx`) - separate from, but
+  structurally parallel to, the workout/meetup reminder scheduler above.
+- **Climbing/gym/other meetups with member-proposed changes.**
+  `ClimbingMeetup` (despite the name, generalized to any `MeetupActivity`:
+  CLIMBING/GYM/OTHER, with a free-text `title` for "OTHER") shows as a
+  marked day in the personal calendar across all a user's groups. Anyone
+  who didn't create the meetup can propose a change
+  (`ClimbingMeetupSuggestion`: date/time/location/note) instead of only
+  joining/leaving; the creator accepts (applies the fields, resets every
+  participant's `remindedAt` so the reminder re-arms) or declines. Focus
+  tags shown depend on activity (`FOCUSES_BY_ACTIVITY` in
+  `lib/climbing-meetups.ts`) - climbing gets Slab/Power/Technik/etc., gym
+  gets Push/Pull/Beine/Core/Grip.
+- **Docker RAM discipline - keep it that way.** This ships as a pull-and-run
+  image for self-hosters on small boxes, so container memory is capped
+  deliberately, not left to defaults: `docker-compose.yml` sets
+  `deploy.resources.limits.memory` (app 512M, db 256M),
+  `NODE_OPTIONS=--max-old-space-size=384` for the running app (so V8 doesn't
+  size its heap off the *host's* RAM), and Postgres runs with
+  `-c shared_buffers=64MB -c max_connections=30`. The Dockerfile's
+  `migrate` stage is deliberately `FROM base` (not `FROM deps`/`FROM
+  builder`) with a synthesized package.json installing only `prisma` +
+  `dotenv` - pulling in the full app's `node_modules` just to run
+  `migrate deploy` was most of a ~2GB image for no reason; it's ~865MB now.
+  If you add a new build stage, ask whether it actually needs the full
+  dependency tree before copying it in.
+- **Baseline security headers, deliberately no CSP yet.** `next.config.ts`
+  sets `Strict-Transport-Security`/`X-Content-Type-Options`/`X-Frame-Options`/
+  `Referrer-Policy`/`Permissions-Policy` on every response via `headers()`.
+  No Content-Security-Policy on purpose - `components/ui/chart.tsx` injects
+  an inline `<style>` tag, and a wrong CSP breaks pages silently rather than
+  loudly; add one deliberately later, tested in a browser (report-only
+  first), not blind via curl.
+
 ## Testing conventions
 
 No automated test suite exists yet - verification is manual, over the
