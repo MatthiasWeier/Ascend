@@ -69,3 +69,16 @@ export function subtractMinutesFromWallClock(dateKey: string, time: string, minu
   const newMm = String(totalMinutes % 60).padStart(2, "0");
   return { dateKey: germanDateKey(day), time: `${newHh}:${newMm}` };
 }
+
+// Calendar-day arithmetic on "YYYY-MM-DD" keys (noon-UTC anchor, no DST).
+export function addDaysToDateKey(dateKey: string, days: number): string {
+  const day = new Date(`${dateKey}T12:00:00.000Z`);
+  day.setUTCDate(day.getUTCDate() + days);
+  return day.toISOString().slice(0, 10);
+}
+
+// Whole days from `fromKey` to `toKey` (negative if `toKey` is earlier).
+export function daysBetweenDateKeys(fromKey: string, toKey: string): number {
+  const ms = new Date(`${toKey}T12:00:00.000Z`).getTime() - new Date(`${fromKey}T12:00:00.000Z`).getTime();
+  return Math.round(ms / 86_400_000);
+}

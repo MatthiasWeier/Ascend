@@ -170,6 +170,10 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
   (Slab/Power/Technik/Ausdauer/Kraft/Mental für Klettern, Push/Pull/Beine/Core/Grip für Gym) - im persönlichen
   Kalender über alle Gruppen hinweg als grün markierter Tag sichtbar. Mitglieder, die den Termin nicht selbst
   geplant haben, können eine Änderung (Datum/Uhrzeit/Ort + Notiz) vorschlagen; wer geplant hat, nimmt an oder lehnt ab.
+- ✅ **Sidequests** (Menüpunkt "Quests"): persönliche Ziele mit selbst gewähltem Zieldatum ("Handstand lernen bis Ende
+  2026"), optional mit eigener Progression aus selbst festgelegten Schritten (nichts wird automatisch vorgeschlagen),
+  regelmäßigen Erinnerungen (automatisch je nach Dauer oder fest wählbar) und einem Gruppen-Tab, in dem Mitglieder
+  ihre geteilten Sidequests samt Fortschritt sehen - pro Sidequest abschaltbar
 - ✅ **Erinnerungen** (Einstellungen > Workout-Erinnerungen): eigene wöchentlich wiederkehrende Trainingszeiten
   ("Montag 13 Uhr, Mittwoch 18 Uhr", unabhängig von Gruppen) sowie ein Vorlauf, wie lange vorher an einen
   zugesagten Gruppentermin erinnert werden soll (nie / 1 Std. vorher / morgens / am Vorabend) - beides über einen

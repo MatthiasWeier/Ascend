@@ -294,6 +294,20 @@ new thing a user would notice as separate" - the former is patch.
   tags shown depend on activity (`FOCUSES_BY_ACTIVITY` in
   `lib/climbing-meetups.ts`) - climbing gets Slab/Power/Technik/etc., gym
   gets Push/Pull/Beine/Core/Grip.
+- **Sidequests (`Quest`/`QuestStep`, UI label "Quests"/"Sidequests").**
+  Personal long-term goals with a user-chosen deadline (`targetDateKey`, a
+  Berlin day string), user-authored ordered progression steps (never
+  auto-suggested - that was an explicit requirement) and per-quest
+  `sharedWithGroups` visibility, shown read-only in the group's "Sidequests"
+  tab (`GET /api/groups/[id]/quests`). Not to be confused with the existing
+  *group* goals (`GroupGoal`, tab "Ziele"). Reminders live in
+  `checkQuestReminders()` in `lib/scheduler.ts`: 09:00 Berlin onward, at most
+  one per quest per day (`lastRemindedDateKey`), interval from
+  `reminderIntervalDays()` in `lib/quests.ts` (AUTO scales with the
+  creation->deadline span), plus a final reminder on the deadline day, none
+  after it. The `QUEST_REMINDER` notification snippet is
+  `daysLeft|done|total|title` - title last because it's free text that may
+  contain `|`.
 - **Docker RAM discipline - keep it that way.** This ships as a pull-and-run
   image for self-hosters on small boxes, so container memory is capped
   deliberately, not left to defaults: `docker-compose.yml` sets

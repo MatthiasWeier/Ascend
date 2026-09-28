@@ -3,12 +3,16 @@ import { notifyUsers } from "@/lib/notify";
 import { logger } from "@/lib/logger";
 import {
   todayGermanDateKey,
+  germanDateKey,
   germanWeekday,
   germanTime,
   wallClockAtOrAfter,
   subtractMinutesFromWallClock,
+  addDaysToDateKey,
+  daysBetweenDateKeys,
 } from "@/lib/german-time";
 import { meetupDisplayName } from "@/lib/climbing-meetups";
+import { QUEST_REMINDER_HOUR, reminderIntervalDays } from "@/lib/quests";
 
 const CHECK_INTERVAL_MS = 60_000;
 // Only look this far ahead - keeps the query cheap and means a meetup
@@ -126,7 +130,62 @@ async function checkMeetupReminders() {
   }
 }
 
+// Periodic nudges for personal Sidequests. One reminder per quest per
+// Berlin day at most, from QUEST_REMINDER_HOUR on, never after the deadline
+// day. The interval anchors on the last reminder (or creation), and the
+// deadline day itself always gets a final reminder.
+async function checkQuestReminders() {
+  const nowKey = todayGermanDateKey();
+  if (germanTime() < QUEST_REMINDER_HOUR) return;
+
+  const quests = await prisma.quest.findMany({
+    where: { status: "ACTIVE", reminderCadence: { not: "NEVER" }, targetDateKey: { gte: nowKey } },
+    include: { steps: { select: { doneAt: true } } },
+  });
+
+  for (const quest of quests) {
+    if (quest.lastRemindedDateKey === nowKey) continue;
+    const createdKey = germanDateKey(quest.createdAt);
+    const interval = reminderIntervalDays(quest.reminderCadence, createdKey, quest.targetDateKey);
+    if (interval == null) continue;
+
+    const base = quest.lastRemindedDateKey ?? createdKey;
+    const intervalDue = nowKey >= addDaysToDateKey(base, interval);
+    const deadlineDay = nowKey === quest.targetDateKey && createdKey !== nowKey;
+    if (!intervalDue && !deadlineDay) continue;
+
+    // Claim first; `lastRemindedDateKey: previous` also matches NULL (IS NULL)
+    // for a never-reminded quest, so no OR needed here.
+    const claimed = await prisma.quest.updateMany({
+      where: { id: quest.id, status: "ACTIVE", lastRemindedDateKey: quest.lastRemindedDateKey },
+      data: { lastRemindedDateKey: nowKey },
+    });
+    if (claimed.count === 0) continue;
+
+    const daysLeft = daysBetweenDateKeys(nowKey, quest.targetDateKey);
+    const total = quest.steps.length;
+    const done = quest.steps.filter((s) => s.doneAt).length;
+    const when = daysLeft === 0 ? "Die Frist ist heute" : daysLeft === 1 ? "Noch 1 Tag" : `Noch ${daysLeft} Tage`;
+    await notifyUsers([quest.userId], {
+      type: "QUEST_REMINDER",
+      actorId: "system",
+      actorName: "",
+      groupName: "",
+      // Title last: it's free text and may itself contain "|".
+      snippet: `${daysLeft}|${done}|${total}|${quest.title}`,
+      url: "/dashboard/quests",
+      pushTitle: "Sidequest",
+      pushBody: `"${quest.title}": ${when}${total > 0 ? ` - ${done}/${total} Schritte geschafft` : ""}`,
+    }).catch((err) => logger.warn("quest reminder notify failed", { id: quest.id, error: String(err) }));
+  }
+}
+
 async function tick() {
+  try {
+    await checkQuestReminders();
+  } catch (err) {
+    logger.warn("quest reminder check failed", { error: String(err) });
+  }
   try {
     await checkWorkoutReminders();
   } catch (err) {

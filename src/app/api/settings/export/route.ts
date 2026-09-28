@@ -12,7 +12,7 @@ export async function GET() {
   }
   const userId = session.user.id;
 
-  const [user, workoutSessions, bodyWeightEntries, climbingSends, balanceGoals, workoutTemplates] =
+  const [user, workoutSessions, bodyWeightEntries, climbingSends, balanceGoals, workoutTemplates, quests] =
     await Promise.all([
       prisma.user.findUnique({
         where: { id: userId },
@@ -33,6 +33,7 @@ export async function GET() {
         where: { userId },
         include: { entries: { include: { exercise: { select: { name: true } } }, orderBy: { order: "asc" } } },
       }),
+      prisma.quest.findMany({ where: { userId }, orderBy: { createdAt: "asc" }, include: { steps: { orderBy: { position: "asc" } } } }),
     ]);
 
   const exportData = {
@@ -65,6 +66,15 @@ export async function GET() {
       count: c.count,
     })),
     balanceGoals: balanceGoals.map((g) => ({ focus: g.focus, targetPercent: g.targetPercent })),
+    quests: quests.map((q) => ({
+      title: q.title,
+      description: q.description,
+      targetDateKey: q.targetDateKey,
+      status: q.status,
+      completedAt: q.completedAt,
+      sharedWithGroups: q.sharedWithGroups,
+      steps: q.steps.map((s) => ({ title: s.title, done: s.doneAt != null })),
+    })),
     workoutTemplates: workoutTemplates.map((t) => ({
       name: t.name,
       entries: t.entries.map((e) => ({ exerciseName: e.exercise.name })),

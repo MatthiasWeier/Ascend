@@ -142,6 +142,7 @@ model User {
   climbingMeetupAttendances  ClimbingMeetupParticipant[]
   climbingMeetupSuggestions  ClimbingMeetupSuggestion[]
   workoutReminders           WorkoutReminder[]
+  quests                     Quest[]
   // How long before a meetup you're in to notify you - NEVER turns it off.
   meetupReminderLeadTime MeetupReminderLeadTime @default(EVENING_BEFORE)
 }
@@ -890,4 +891,57 @@ model AppSettings {
   rateLimitingEnabled Boolean  @default(false)
   registrationOpen    Boolean  @default(true)
   updatedAt           DateTime @updatedAt
+}
+
+enum QuestStatus {
+  ACTIVE
+  COMPLETED
+}
+
+// AUTO picks an interval from how far away the deadline is (see
+// lib/quests.ts); the rest are fixed intervals; NEVER turns reminders off.
+enum QuestReminderCadence {
+  AUTO
+  DAILY
+  EVERY_3_DAYS
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  NEVER
+}
+
+// A personal long-term goal ("Handstand lernen bis Ende 2026"), optionally
+// visible to the user's groups. The user sets the deadline and, if wanted,
+// writes their own progression steps - nothing is ever suggested for them.
+model Quest {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  // Berlin calendar day "YYYY-MM-DD", chosen by the user.
+  targetDateKey String
+  sharedWithGroups Boolean @default(true)
+  reminderCadence QuestReminderCadence @default(AUTO)
+  status      QuestStatus @default(ACTIVE)
+  completedAt DateTime?
+  // Berlin day the last reminder went out - guards against double-firing
+  // and anchors the next interval.
+  lastRemindedDateKey String?
+  createdAt   DateTime @default(now())
+  steps       QuestStep[]
+
+  @@index([userId, status])
+}
+
+model QuestStep {
+  id       String   @id @default(cuid())
+  questId  String
+  quest    Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
+  title    String
+  position Int
+  doneAt   DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([questId, position])
 }

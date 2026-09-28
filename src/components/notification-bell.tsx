@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, BellRing, Check, Dumbbell, HandHeart, MessageCircle, Mountain, Reply, Trophy } from "lucide-react";
+import { Bell, BellRing, Check, Dumbbell, Flag, HandHeart, MessageCircle, Mountain, Reply, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,7 +22,9 @@ type Item = {
     | "CLIMBING"
     | "CLIMBING_INVITE"
     | "WORKOUT_REMINDER"
-    | "MEETUP_REMINDER";
+    | "MEETUP_REMINDER"
+    | "QUEST_REMINDER"
+    | "QUEST_DONE";
   actorName: string;
   groupName: string;
   snippet: string | null;
@@ -61,6 +63,25 @@ function describe(n: Item, t: TFunction) {
       return {
         icon: BellRing,
         text: n.snippet ? t("Trainingszeit: {label}", { label: n.snippet }) : t("Deine geplante Trainingszeit ist da."),
+      };
+    case "QUEST_REMINDER": {
+      // "daysLeft|done|total|title" - title last since it may contain "|".
+      const [daysLeft, done, total, ...titleParts] = (n.snippet ?? "").split("|");
+      const title = titleParts.join("|");
+      const days = Number(daysLeft);
+      const when =
+        days <= 0
+          ? t("Frist ist heute")
+          : days === 1
+            ? t("noch 1 Tag")
+            : t("noch {days} Tage", { days });
+      const steps = Number(total) > 0 ? ` · ${t("{done}/{total} Schritte", { done, total })}` : "";
+      return { icon: Flag, text: `${t("Sidequest \"{title}\"", { title })}: ${when}${steps}` };
+    }
+    case "QUEST_DONE":
+      return {
+        icon: Flag,
+        text: t("{name} hat die Sidequest \"{title}\" geschafft", { name: n.actorName, title: n.snippet ?? "" }),
       };
     case "MEETUP_REMINDER": {
       const [activityName] = (n.snippet ?? "").split("|");
@@ -191,7 +212,7 @@ export function NotificationBell() {
                   <span className="min-w-0 flex-1">
                     <span className={cn("block", !n.readAt && "font-medium")}>{text}</span>
                     {n.snippet &&
-                      !["CHALLENGE_DONE", "CLIMBING", "CLIMBING_INVITE", "WORKOUT_REMINDER", "MEETUP_REMINDER"].includes(n.type) && (
+                      !["CHALLENGE_DONE", "CLIMBING", "CLIMBING_INVITE", "WORKOUT_REMINDER", "MEETUP_REMINDER", "QUEST_REMINDER", "QUEST_DONE"].includes(n.type) && (
                       <span className="mt-0.5 line-clamp-2 block text-xs text-muted-foreground">“{n.snippet}”</span>
                     )}
                     <span className="mt-0.5 block text-xs text-muted-foreground">

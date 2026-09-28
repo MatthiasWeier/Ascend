@@ -5,6 +5,20 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.54.0] - 2026-09-28
+
+### Added
+- **Sidequests** (neuer Menüpunkt "Quests"): persönliche Langzeitziele mit selbst gewähltem Zieldatum, z. B.
+  "Handstand lernen bis Ende 2026". Optional mit eigener **Progression** - Zwischenschritte (Pike Push-ups →
+  Beine an der Wand → ... → Handstand-Hold), die nur du festlegst (nichts wird vorgeschlagen), abhakbar und
+  umsortierbar, mit Fortschrittsbalken. Abschließen/Wieder öffnen/Bearbeiten/Löschen.
+- **Erinnerungen** pro Sidequest um 9 Uhr: automatisch je nach Dauer (bis 2 Wochen alle 2 Tage, bis 2 Monate
+  wöchentlich, bis ~6 Monate alle 2 Wochen, darüber monatlich) oder fest (täglich / alle 3 Tage / wöchentlich /
+  alle 2 Wochen / monatlich / nie), dazu eine Erinnerung am Tag der Frist. Läuft im bestehenden Scheduler.
+- **Gruppen-Tab "Sidequests"**: die Gruppe sieht die geteilten Sidequests ihrer Mitglieder inkl. Fortschritt;
+  pro Sidequest abschaltbar ("Für meine Gruppen sichtbar"). Beim Abschließen bekommt die Gruppe eine
+  Benachrichtigung. Sidequests sind auch im JSON-Datenexport enthalten.
+
 ## [0.53.0] - 2026-09-22
 
 ### Added

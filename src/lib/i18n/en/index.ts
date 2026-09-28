@@ -7,6 +7,7 @@ import { settings } from "./settings";
 import { legal } from "./legal";
 import { tutorial } from "./tutorial";
 import { climbingMeetups } from "./climbing-meetups";
+import { quests } from "./quests";
 
 // German source text -> English. Split by area only to keep files
 // reviewable; everything is merged into one flat lookup.
@@ -20,4 +21,5 @@ export const en: Record<string, string> = {
   ...legal,
   ...tutorial,
   ...climbingMeetups,
+  ...quests,
 };

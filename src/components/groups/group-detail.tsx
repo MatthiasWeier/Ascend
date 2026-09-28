@@ -41,6 +41,7 @@ import { GroupAnalytics } from "@/components/groups/group-analytics";
 import { ActivityCalendar } from "@/components/analytics/activity-calendar";
 import { BodyView } from "@/components/body-view";
 import { GroupClimbingMeetups } from "@/components/groups/group-climbing-meetups";
+import { GroupQuests } from "@/components/groups/group-quests";
 import { useLocale } from "@/components/locale-provider";
 import type { TFunction } from "@/lib/i18n";
 
@@ -80,7 +81,7 @@ function onlineStatusLabel(
 
 type MemberTemplate = { id: string; name: string; entries: { exerciseId: string; exercise: { name: string } }[] };
 
-const VALID_TABS = ["feed", "challenges", "goals", "climbing", "analytics", "members"] as const;
+const VALID_TABS = ["feed", "challenges", "goals", "quests", "climbing", "analytics", "members"] as const;
 
 export function GroupDetail({ groupId }: { groupId: string }) {
   const router = useRouter();
@@ -327,10 +328,11 @@ export function GroupDetail({ groupId }: { groupId: string }) {
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as string)}>
-        <TabsList>
+        <TabsList className="max-w-full justify-start overflow-x-auto [&>*]:shrink-0">
           <TabsTrigger value="feed">{t("Feed")}</TabsTrigger>
           <TabsTrigger value="challenges">{t("Challenges")}</TabsTrigger>
           <TabsTrigger value="goals">{t("Ziele")}</TabsTrigger>
+          <TabsTrigger value="quests">{t("Sidequests")}</TabsTrigger>
           <TabsTrigger value="climbing">{t("Klettern")}</TabsTrigger>
           <TabsTrigger value="analytics">{t("Analytics")}</TabsTrigger>
           <TabsTrigger value="members">{t("Mitglieder")}</TabsTrigger>
@@ -346,6 +348,10 @@ export function GroupDetail({ groupId }: { groupId: string }) {
 
         <TabsContent value="goals">
           <GroupGoals groupId={groupId} isLeader={isLeader} />
+        </TabsContent>
+
+        <TabsContent value="quests">
+          <GroupQuests groupId={groupId} />
         </TabsContent>
 
         <TabsContent value="climbing">
