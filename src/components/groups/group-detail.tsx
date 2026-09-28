@@ -328,15 +328,17 @@ export function GroupDetail({ groupId }: { groupId: string }) {
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as string)}>
-        <TabsList className="max-w-full justify-start overflow-x-auto [&>*]:shrink-0">
-          <TabsTrigger value="feed">{t("Feed")}</TabsTrigger>
-          <TabsTrigger value="challenges">{t("Challenges")}</TabsTrigger>
-          <TabsTrigger value="goals">{t("Ziele")}</TabsTrigger>
-          <TabsTrigger value="quests">{t("Sidequests")}</TabsTrigger>
-          <TabsTrigger value="climbing">{t("Klettern")}</TabsTrigger>
-          <TabsTrigger value="analytics">{t("Analytics")}</TabsTrigger>
-          <TabsTrigger value="members">{t("Mitglieder")}</TabsTrigger>
-        </TabsList>
+        <div className="-mx-4 overflow-x-auto overscroll-x-contain px-4 py-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <TabsList className="w-max justify-start [&>*]:shrink-0">
+            <TabsTrigger value="feed">{t("Feed")}</TabsTrigger>
+            <TabsTrigger value="challenges">{t("Challenges")}</TabsTrigger>
+            <TabsTrigger value="goals">{t("Ziele")}</TabsTrigger>
+            <TabsTrigger value="quests">{t("Sidequests")}</TabsTrigger>
+            <TabsTrigger value="climbing">{t("Klettern")}</TabsTrigger>
+            <TabsTrigger value="analytics">{t("Analytics")}</TabsTrigger>
+            <TabsTrigger value="members">{t("Mitglieder")}</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="feed">
           <GroupFeed groupId={groupId} initialAutoShare={group.autoShareWorkouts} isLeader={isLeader} />

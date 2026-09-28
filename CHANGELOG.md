@@ -5,6 +5,12 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.54.1] - 2026-09-28
+
+### Fixed
+- Die Tab-Leiste in der Gruppe (Feed, Challenges, Ziele, Sidequests, ...) ließ sich auf dem Handy nicht
+  wischen; sie sitzt jetzt in einem eigenen horizontal scrollbaren Container (bis zum Bildschirmrand).
+
 ## [0.54.0] - 2026-09-28
 
 ### Added
