@@ -45,7 +45,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ex
   const typeChanged = type != null && type !== exercise.type;
   if (typeChanged) {
     // A goal counts reps or seconds, so its linked exercise can't switch kind.
-    const goals = await prisma.groupGoal.count({ where: { exerciseId } });
+    const goals = await prisma.groupGoal.count({ where: { exercises: { some: { id: exerciseId } } } });
     if (goals > 0) {
       return NextResponse.json({ error: "Die Übung ist mit einem Gruppenziel verknüpft - die Art lässt sich nicht ändern" }, { status: 409 });
     }
@@ -97,7 +97,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
   const [sets, goals, challenges] = await Promise.all([
     prisma.workoutSet.count({ where: { exerciseId } }),
-    prisma.groupGoal.count({ where: { exerciseId } }),
+    prisma.groupGoal.count({ where: { exercises: { some: { id: exerciseId } } } }),
     prisma.challengeTemplate.count({ where: { exerciseId } }),
   ]);
   if (sets > 0) {

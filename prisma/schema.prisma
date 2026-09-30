@@ -170,7 +170,7 @@ model Exercise {
   sets              WorkoutSet[]
   templateEntries   WorkoutTemplateEntry[]
   challengeTemplate ChallengeTemplate?
-  groupGoals        GroupGoal[]
+  groupGoals        GroupGoal[] @relation("GroupGoalExercises")
 
   @@index([groupId])
 }
@@ -525,13 +525,14 @@ model GroupGoal {
   startDate   DateTime?
   deadline    DateTime?
 
-  // Optional link to an Exercise: when set, matching WorkoutSets and
-  // completed DailyChallengeAttempts auto-contribute (see
-  // lib/goal-contributions.ts) instead of requiring manual entry. Must
-  // agree with `unit` (REPS exercise <-> REPS goal, HOLD <-> DURATION_SEC) -
-  // enforced in the API, not here.
-  exerciseId String?
-  exercise   Exercise? @relation(fields: [exerciseId], references: [id])
+  // Optional link to one or more Exercises: when set, matching WorkoutSets
+  // and completed DailyChallengeAttempts for ANY of them auto-contribute
+  // (see lib/goal-contributions.ts) instead of requiring manual entry -
+  // e.g. "3000 push-ups" can track Push-ups, Diamond Push-ups and Pike
+  // Push-ups together. Every linked exercise must agree with `unit` (REPS
+  // exercise <-> REPS goal, HOLD <-> DURATION_SEC) - enforced in the API,
+  // not here.
+  exercises Exercise[] @relation("GroupGoalExercises")
 
   createdById String
   createdBy   User      @relation("GroupGoalCreator", fields: [createdById], references: [id], onDelete: Cascade)
@@ -540,7 +541,6 @@ model GroupGoal {
   contributions GroupGoalContribution[]
 
   @@index([groupId])
-  @@index([exerciseId])
 }
 
 enum ContributionSource {

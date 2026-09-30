@@ -5,7 +5,7 @@ export async function buildGroupGoalsView(groupId: string, viewerId: string) {
   const goals = await prisma.groupGoal.findMany({
     where: { groupId },
     include: {
-      exercise: { select: { id: true, name: true } },
+      exercises: { select: { id: true, name: true } },
       contributions: {
         include: { user: { select: { id: true, name: true } } },
       },
@@ -37,8 +37,8 @@ export async function buildGroupGoalsView(groupId: string, viewerId: string) {
       targetValue: goal.targetValue,
       startDate: goal.startDate,
       deadline: goal.deadline,
-      exerciseId: goal.exerciseId,
-      exerciseName: goal.exercise?.name ?? null,
+      exerciseIds: goal.exercises.map((e) => e.id),
+      exerciseNames: goal.exercises.map((e) => e.name),
       total,
       progress: goal.targetValue > 0 ? Math.min(1, total / goal.targetValue) : 0,
       isComplete: total >= goal.targetValue,

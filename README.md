@@ -208,16 +208,18 @@ Legend: ✅ implemented · 🚧 partial · ⏳ not started
 - ✅ **Challenge-Verlauf**: rückwirkend pro Mitglied sehen, an welchem Tag
   eine Challenge geschafft, aufgegeben oder gar nicht versucht wurde,
   inkl. Prozentanzeige bei nur teilweise geschafften Versuchen
-- ✅ **Gruppen-Analytics**: Gruppen-Volumen (Sätze/Tag, 30 Tage) und
-  Aktivität pro Mitglied als eigener Tab
+- ✅ **Gruppen-Analytics**: Gruppen-Volumen (Sätze/Tag, 30 Tage), Aktivität pro Mitglied sowie Klettertage
+  (wie oft und wann als Gruppe, mit Ort/Uhrzeit/Teilnehmerzahl) und Teilnahme pro Mitglied - eigener Tab
 - ✅ **Kollaborative Gruppenziele**: Leader legt ein gemeinsames Ziel mit
   Ziel-Wert/Einheit (Enum: Wiederholungen/Sekunden/km/Custom, kein
   Freitext)/optionaler Frist an; Fortschrittsbalken zeigt die Summe der
-  ganzen Gruppe plus Beitrag pro Person
+  ganzen Gruppe plus Beitrag pro Person; Titel, Werte und Verknüpfung
+  bleiben für den Leader jederzeit nachträglich bearbeitbar, nicht nur löschbar
 - ✅ **Automatisches Auffüllen von Gruppenzielen**: ein Ziel kann optional
-  mit einer Übung verknüpft werden (`Exercise`-Objekt, kein String) -
-  danach tragen normale Workouts *und* abgeschlossene/abgebrochene Daily
-  Challenges mit dieser Übung automatisch bei (inkl. rückwirkendem
+  mit mehreren Übungen verknüpft werden (`Exercise[]`-Objekte, kein String) -
+  z.B. "3000 Liegestütze" zählt Liegestütze + Diamond + Pike Push-ups zusammen.
+  Danach tragen normale Workouts *und* abgeschlossene/abgebrochene Daily
+  Challenges mit einer der verknüpften Übungen automatisch bei (inkl. rückwirkendem
   Nachtragen der Vergangenheit beim Verknüpfen); manuelles Eintragen bleibt
   nur für nicht verknüpfte Ziele (z.B. km) möglich
 - ✅ **Einführungs-Tutorial**: 12-schrittige Tour direkt nach der Registrierung

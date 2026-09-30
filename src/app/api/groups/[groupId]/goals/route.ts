@@ -14,7 +14,7 @@ const createGoalSchema = z
     targetValue: z.number().positive(),
     startDate: z.string().datetime().optional(),
     deadline: z.string().datetime().optional(),
-    exerciseId: z.string().optional(),
+    exerciseIds: z.array(z.string()).max(20).default([]),
   })
   .refine((v) => v.unit !== "CUSTOM" || !!v.customUnitLabel, {
     message: "customUnitLabel ist bei unit=CUSTOM erforderlich",
@@ -62,20 +62,19 @@ export async function POST(
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
-  // An empty string is not "no exercise" - normalize it away so it can
-  // never reach the DB and violate the exerciseId foreign key.
-  const exerciseId = parsed.data.exerciseId?.trim() || undefined;
+  const exerciseIds = Array.from(new Set(parsed.data.exerciseIds));
 
-  if (exerciseId) {
-    const exercise = await prisma.exercise.findUnique({ where: { id: exerciseId } });
-    if (!exercise) {
+  if (exerciseIds.length > 0) {
+    const exercises = await prisma.exercise.findMany({ where: { id: { in: exerciseIds } } });
+    if (exercises.length !== exerciseIds.length) {
       return NextResponse.json({ error: "Übung nicht gefunden" }, { status: 404 });
     }
-    if (!goalUnitMatchesExerciseType(parsed.data.unit, exercise.type)) {
+    const mismatch = exercises.find((e) => !goalUnitMatchesExerciseType(parsed.data.unit, e.type));
+    if (mismatch) {
       return NextResponse.json(
         {
           error:
-            exercise.type === "HOLD"
+            mismatch.type === "HOLD"
               ? "Diese Übung ist zeitbasiert - die Einheit muss 'Dauer' sein"
               : "Diese Übung zählt in Wiederholungen - die Einheit muss 'Wiederholungen' sein",
         },
@@ -93,17 +92,17 @@ export async function POST(
       targetValue: parsed.data.targetValue,
       startDate: parsed.data.startDate ? new Date(parsed.data.startDate) : undefined,
       deadline: parsed.data.deadline ? new Date(parsed.data.deadline) : undefined,
-      exerciseId: exerciseId ?? null,
+      exercises: { connect: exerciseIds.map((id) => ({ id })) },
       createdById: session.user.id,
     },
   });
 
   let backfilledCount = 0;
-  if (exerciseId) {
+  if (exerciseIds.length > 0) {
     backfilledCount = await backfillGoalFromHistory({
       id: goal.id,
       groupId,
-      exerciseId,
+      exerciseIds,
       unit: goal.unit,
       startDate: goal.startDate,
       deadline: goal.deadline,

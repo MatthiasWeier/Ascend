@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Mountain, MapPin, Clock } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,7 +10,15 @@ import { useLocale } from "@/components/locale-provider";
 
 type VolumePoint = { date: string; totalSets: number };
 type MemberActivity = { userId: string; userName: string; workoutCount: number };
-type AnalyticsData = { days: number; volumeByDay: VolumePoint[]; memberActivity: MemberActivity[] };
+type ClimbingDate = { dateKey: string; time: string | null; location: string | null; participantCount: number };
+type ClimbingAttendance = { userId: string; userName: string; count: number };
+type ClimbingData = { totalCount: number; recentDates: ClimbingDate[]; attendance: ClimbingAttendance[] };
+type AnalyticsData = {
+  days: number;
+  volumeByDay: VolumePoint[];
+  memberActivity: MemberActivity[];
+  climbing: ClimbingData;
+};
 
 export function GroupAnalytics({ groupId }: { groupId: string }) {
   const { t, dateLocale } = useLocale();
@@ -18,6 +27,9 @@ export function GroupAnalytics({ groupId }: { groupId: string }) {
   } satisfies ChartConfig;
   const activityConfig = {
     workoutCount: { label: t("Workouts"), color: "var(--chart-2)" },
+  } satisfies ChartConfig;
+  const climbingConfig = {
+    count: { label: t("Klettertage"), color: "var(--chart-3)" },
   } satisfies ChartConfig;
   const [data, setData] = useState<AnalyticsData | null>(null);
 
@@ -124,6 +136,85 @@ export function GroupAnalytics({ groupId }: { groupId: string }) {
           )}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-1.5 text-base">
+            <Mountain className="size-4 text-primary" />
+            {t("Klettertage")}
+          </CardTitle>
+          <CardDescription>
+            {data.climbing.totalCount === 0
+              ? t("Noch kein Klettertag als Gruppe.")
+              : data.climbing.totalCount === 1
+                ? t("1 Klettertag bisher.")
+                : t("{n} Klettertage bisher.", { n: data.climbing.totalCount })}
+          </CardDescription>
+        </CardHeader>
+        {data.climbing.recentDates.length > 0 && (
+          <CardContent>
+            <ol className="flex flex-col gap-2">
+              {data.climbing.recentDates.map((d) => (
+                <li
+                  key={d.dateKey}
+                  className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border px-3 py-2 text-sm"
+                >
+                  <span className="font-medium">
+                    {new Date(`${d.dateKey}T12:00:00Z`).toLocaleDateString(dateLocale, {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
+                  {d.time && (
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="size-3" />
+                      {d.time}
+                    </span>
+                  )}
+                  {d.location && (
+                    <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="size-3 shrink-0" />
+                      <span className="truncate">{d.location}</span>
+                    </span>
+                  )}
+                  <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+                    {t("{n} dabei", { n: d.participantCount })}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </CardContent>
+        )}
+      </Card>
+
+      {data.climbing.attendance.some((a) => a.count > 0) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Teilnahme pro Mitglied")}</CardTitle>
+            <CardDescription>{t("Wie oft zugesagt und dabei gewesen, über alle Klettertage.")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={climbingConfig} className="aspect-auto h-64 w-full">
+              <BarChart data={data.climbing.attendance} layout="vertical" margin={{ left: 8, right: 8 }}>
+                <CartesianGrid horizontal={false} />
+                <XAxis
+                  type="number"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  allowDecimals={false}
+                  height={40}
+                  label={{ value: t("Klettertage"), position: "insideBottom", offset: 0, fill: "var(--muted-foreground)", fontSize: 11 }}
+                />
+                <YAxis type="category" dataKey="userName" tickLine={false} axisLine={false} tickMargin={8} width={80} />
+                <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`${value}`, t("Klettertage")]} />} />
+                <Bar dataKey="count" fill="var(--color-count)" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

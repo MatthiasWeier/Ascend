@@ -27,11 +27,11 @@ export async function POST(
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
-  const goal = await prisma.groupGoal.findUnique({ where: { id: goalId } });
+  const goal = await prisma.groupGoal.findUnique({ where: { id: goalId }, include: { _count: { select: { exercises: true } } } });
   if (!goal || goal.groupId !== groupId) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  if (goal.exerciseId) {
+  if (goal._count.exercises > 0) {
     return NextResponse.json(
       { error: "Dieses Ziel wird automatisch aus Workouts/Challenges getrackt" },
       { status: 400 }

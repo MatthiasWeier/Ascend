@@ -6,6 +6,7 @@ import { getActiveInjuries } from "@/lib/injuries-server";
 import { BODY_PART_LABEL, blocksSuggestions, exerciseLoadedParts } from "@/lib/injuries";
 import { resolveExerciseMuscles } from "@/lib/muscles";
 import { FOCUS_LABEL, ALL_FOCUSES, computeLoadPercents } from "@/lib/muscle-focus";
+import { makeBodyWeightResolver } from "@/lib/bodyweight";
 import type { TFunction } from "@/lib/i18n";
 
 export { FOCUS_LABEL };
@@ -56,7 +57,7 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
   const now = new Date();
   const focusName = (f: MuscleFocus) => t(FOCUS_LABEL[f]);
 
-  const [sets, balanceGoals] = await Promise.all([
+  const [sets, balanceGoals, resolveBodyWeight] = await Promise.all([
     prisma.workoutSet.findMany({
       where: { session: { userId } },
       select: {
@@ -67,11 +68,12 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
         session: {
           select: { date: true, focusFatigue: { select: { focus: true, rating: true } } },
         },
-        exercise: { select: { focus: true } },
+        exercise: { select: { focus: true, isBodyweight: true } },
       },
       orderBy: { session: { date: "desc" } },
     }),
     prisma.balanceGoal.findMany({ where: { userId } }),
+    makeBodyWeightResolver(userId),
   ]);
 
   // Sets arrive newest-session-first, so the first time a focus is seen
@@ -89,7 +91,14 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
   }
 
   const targetByFocus = new Map(balanceGoals.map((g) => [g.focus, g.targetPercent]));
-  const actualByFocus = computeLoadPercents(sets.map((s) => ({ ...s, focus: s.exercise.focus })));
+  const actualByFocus = computeLoadPercents(
+    sets.map((s) => ({
+      ...s,
+      focus: s.exercise.focus,
+      isBodyweight: s.exercise.isBodyweight,
+      bodyWeightKg: s.exercise.isBodyweight ? resolveBodyWeight(s.session.date) : null,
+    }))
+  );
 
   // Muscle wishes ("Bizeps mehr"): a wished muscle is due again after 3 days
   // ("mehr") or 2 days ("viel mehr"); the most overdue one steers the focus.

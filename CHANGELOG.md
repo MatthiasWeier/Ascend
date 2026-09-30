@@ -5,6 +5,22 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.55.0] - 2026-09-30
+
+### Fixed
+- **Workout Brain / Balance-Ziele rechneten Bodyweight-Übungen praktisch auf 0**: die Trainingslast pro Fokus
+  (Push/Pull/Beine/Core/Grip) wurde als reps*Gewicht berechnet, aber bei Übungen ohne Zusatzgewicht (Liegestütze,
+  Klimmzüge, ...) ist `weightKg` nur das *zusätzliche* Gewicht, oft 0 - wer viele Liegestütze macht, sah trotzdem
+  nur ~1% "Push". Rechnet jetzt wie PRs/1RM das Körpergewicht zum Zeitpunkt des Workouts mit ein.
+
+### Added
+- **Gruppenziele bearbeiten** (Leader): Titel, Ziel-Wert, Einheit, Start/Frist und verknüpfte Übungen sind jetzt
+  nachträglich änderbar, nicht mehr nur löschbar.
+- **Mehrere Übungen pro Gruppenziel verknüpfen**: "3000 Liegestütze im September" kann jetzt Liegestütze, Diamond
+  Push-ups und Pike Push-ups zusammen zählen, statt nur eine exakte Übung.
+- **Gruppen-Analytics: Klettertage** - wie oft und wann die Gruppe klettern war (Datum, Uhrzeit, Ort, Teilnehmerzahl)
+  sowie wie oft jedes Mitglied zugesagt hatte, als Balkendiagramm.
+
 ## [0.54.1] - 2026-09-28
 
 ### Fixed

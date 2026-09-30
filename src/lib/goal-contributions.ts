@@ -34,7 +34,7 @@ export async function contributeWorkoutSetToGoals(params: {
   const goals = await prisma.groupGoal.findMany({
     where: {
       groupId: { in: myGroupIds },
-      exerciseId,
+      exercises: { some: { id: exerciseId } },
       OR: [{ deadline: null }, { deadline: { gte: now } }],
       AND: [{ OR: [{ startDate: null }, { startDate: { lte: now } }] }],
     },
@@ -68,7 +68,7 @@ export async function contributeChallengeAttemptToGoals(params: {
   const goals = await prisma.groupGoal.findMany({
     where: {
       groupId,
-      exerciseId,
+      exercises: { some: { id: exerciseId } },
       unit: "REPS",
       OR: [{ deadline: null }, { deadline: { gte: now } }],
       AND: [{ OR: [{ startDate: null }, { startDate: { lte: now } }] }],
@@ -95,11 +95,12 @@ export async function contributeChallengeAttemptToGoals(params: {
 export async function backfillGoalFromHistory(goal: {
   id: string;
   groupId: string;
-  exerciseId: string;
+  exerciseIds: string[];
   unit: GoalUnit;
   startDate: Date | null;
   deadline: Date | null;
 }): Promise<number> {
+  if (goal.exerciseIds.length === 0) return 0;
   const memberIds = (
     await prisma.groupMember.findMany({ where: { groupId: goal.groupId }, select: { userId: true } })
   ).map((m) => m.userId);
@@ -110,7 +111,7 @@ export async function backfillGoalFromHistory(goal: {
 
   const sets = await prisma.workoutSet.findMany({
     where: {
-      exerciseId: goal.exerciseId,
+      exerciseId: { in: goal.exerciseIds },
       session: {
         userId: { in: memberIds },
         date: { gte: goal.startDate ?? undefined, lte: goal.deadline ?? undefined },
@@ -131,7 +132,7 @@ export async function backfillGoalFromHistory(goal: {
         startedAt: { gte: goal.startDate ?? undefined, lte: goal.deadline ?? undefined },
         userChallengeGoal: {
           userId: { in: memberIds },
-          groupDailyChallenge: { groupId: goal.groupId, challengeTemplate: { exerciseId: goal.exerciseId } },
+          groupDailyChallenge: { groupId: goal.groupId, challengeTemplate: { exerciseId: { in: goal.exerciseIds } } },
         },
       },
       select: { id: true, manualReps: true, userChallengeGoal: { select: { userId: true } } },

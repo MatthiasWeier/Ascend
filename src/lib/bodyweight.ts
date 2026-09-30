@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { germanDateKey } from "@/lib/german-time";
+export { effectiveLoadKg } from "@/lib/effective-load";
 
 // Bodyweight at a point in time: the closest logged entry at-or-before that
 // day, falling back to the closest entry after it, falling back to the
@@ -49,11 +50,4 @@ export async function makeBodyWeightResolver(userId: string) {
     // No entry at-or-before: use the earliest known entry if any, else fallback.
     return entries[0]?.weightKg ?? fallback;
   };
-}
-
-// Effective load for a set: bodyweight (if applicable) + any added weight.
-export function effectiveLoadKg(isBodyweight: boolean, bodyWeightKg: number | null, addedWeightKg: number | null) {
-  const added = addedWeightKg ?? 0;
-  if (!isBodyweight) return added;
-  return (bodyWeightKg ?? 0) + added;
 }

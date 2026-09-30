@@ -60,5 +60,42 @@ export async function GET(
     }))
     .sort((a, b) => b.workoutCount - a.workoutCount);
 
-  return NextResponse.json({ days: DAYS, today: todayGermanDateKey(), volumeByDay, memberActivity });
+  // Climbing days as a group: every past CLIMBING-activity meetup in this
+  // group, not just the last DAYS days - these are sparse (weekly/monthly
+  // at most) and asking "how often overall" is the actual question, not a
+  // recent trend. "Attendance" = RSVP'd via ClimbingMeetupParticipant -
+  // there's no separate check-in, so a confirmed join is what "was there"
+  // means here, same as everywhere else this app treats a join as going.
+  const pastClimbingMeetups = await prisma.climbingMeetup.findMany({
+    where: { groupId, activity: "CLIMBING", dateKey: { lte: todayGermanDateKey() } },
+    select: { dateKey: true, time: true, location: true, participants: { select: { userId: true } } },
+    orderBy: { dateKey: "desc" },
+  });
+
+  const climbingCountByUser = new Map<string, number>();
+  for (const meetup of pastClimbingMeetups) {
+    for (const p of meetup.participants) {
+      climbingCountByUser.set(p.userId, (climbingCountByUser.get(p.userId) ?? 0) + 1);
+    }
+  }
+  const climbingAttendance = members
+    .map((m) => ({
+      userId: m.userId,
+      userName: m.user.name,
+      count: climbingCountByUser.get(m.userId) ?? 0,
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  const climbing = {
+    totalCount: pastClimbingMeetups.length,
+    recentDates: pastClimbingMeetups.slice(0, 20).map((m) => ({
+      dateKey: m.dateKey,
+      time: m.time,
+      location: m.location,
+      participantCount: m.participants.length,
+    })),
+    attendance: climbingAttendance,
+  };
+
+  return NextResponse.json({ days: DAYS, today: todayGermanDateKey(), volumeByDay, memberActivity, climbing });
 }

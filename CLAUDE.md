@@ -294,6 +294,36 @@ new thing a user would notice as separate" - the former is patch.
   tags shown depend on activity (`FOCUSES_BY_ACTIVITY` in
   `lib/climbing-meetups.ts`) - climbing gets Slab/Power/Technik/etc., gym
   gets Push/Pull/Beine/Core/Grip.
+- **`lib/muscle-focus.ts` must stay client-bundle-safe.** It's imported from
+  client feed components (`home-feed.tsx`, `group-feed.tsx`, ...) just for
+  `FOCUS_LABEL`/`ALL_FOCUSES`, so it can never import anything that pulls in
+  `@/lib/prisma` (breaks the browser build with `Module not found: Can't
+  resolve 'util/types'` from the `pg` driver, trace shows up under "Client
+  Component Browser"). `effectiveLoadKg` lives in its own pure
+  `lib/effective-load.ts` for exactly this reason - `lib/bodyweight.ts`
+  re-exports it for backwards compatibility, but `muscle-focus.ts` imports
+  it directly from `effective-load.ts`, not from `bodyweight.ts`. Follow the
+  same split for any other pure helper a client-imported lib file needs from
+  an otherwise server-only module.
+- **`computeLoadPercents` (muscle-focus.ts) needs bodyweight resolved, not
+  just `set.weightKg`.** For an `isBodyweight` exercise (push-ups, pull-ups,
+  ...) `weightKg` on the set is only the *added* weight, frequently
+  null/0 - a user training push-ups heavily used to show ~0% "Push" because
+  `reps * 0 = 0`. Callers must resolve each set's bodyweight-at-session-date
+  (`makeBodyWeightResolver`, same as `lib/personal-records.ts`) and pass
+  `isBodyweight`/`bodyWeightKg` through; `effectiveLoadKg` folds it in. Any
+  new caller of `computeLoadPercents` needs to do this too, not just pass
+  `weightKg` straight through.
+- **`GroupGoal.exercises` is many-to-many (`Exercise[]`), not a single
+  `exerciseId`.** Changed so one goal can track several exercises at once
+  (e.g. "3000 push-ups" = Push-ups + Diamond + Pike Push-ups). Query with
+  `exercises: { some: { id: ... } }`, not a scalar equality check -
+  `goal-contributions.ts`'s `backfillGoalFromHistory` now takes
+  `exerciseIds: string[]`. The migration
+  (`20260930090000_group_goal_multi_exercise`) carries forward every
+  pre-existing single link into the new `_GroupGoalExercises` join table
+  before dropping the old column - don't re-derive that backfill logic, the
+  data is already migrated.
 - **Sidequests (`Quest`/`QuestStep`, UI label "Quests"/"Sidequests").**
   Personal long-term goals with a user-chosen deadline (`targetDateKey`, a
   Berlin day string), user-authored ordered progression steps (never
