@@ -46,6 +46,7 @@ import { useLocale } from "@/components/locale-provider";
 import { roundForDisplay, displayToKg, type WeightUnit } from "@/lib/weight-units";
 import { BODY_PART_LABEL, injuryConflicts } from "@/lib/injuries";
 import type { BodyPart, InjurySeverity } from "@prisma/client";
+import { germanDateKey, todayGermanDateKey } from "@/lib/german-time";
 
 type Exercise = {
   id: string;
@@ -109,6 +110,7 @@ const MAX_PHOTOS = 10;
 // the unit changed in the meantime.
 type DraftData = {
   unit: WeightUnit;
+  date: string;
   rows: SetRow[];
   focusFatigue: Partial<Record<MuscleFocus, number>>;
   skinCondition: number;
@@ -151,6 +153,7 @@ export default function NewWorkoutPage() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [lastValues, setLastValues] = useState<LastValues>({});
   const [rows, setRows] = useState<SetRow[]>([]);
+  const [date, setDate] = useState(todayGermanDateKey());
   const [focusFatigue, setFocusFatigue] = useState<Partial<Record<MuscleFocus, number>>>({});
   const [skinCondition, setSkinCondition] = useState(1);
   const [trackSkin, setTrackSkin] = useState(false);
@@ -198,6 +201,7 @@ export default function NewWorkoutPage() {
       editSessionId
         ? (fetch(`/api/workouts/${editSessionId}`).then((r) => r.json()) as Promise<{
             session?: {
+              date: string;
               notes: string | null;
               perceivedExertion: number | null;
               skinCondition: number | null;
@@ -227,6 +231,7 @@ export default function NewWorkoutPage() {
 
       if (editRes?.session) {
         const s = editRes.session;
+        setDate(germanDateKey(new Date(s.date)));
         setNotes(s.notes ?? "");
         setPhotos(s.photos ?? []);
         if (s.focusFatigue.length > 0) {
@@ -272,6 +277,7 @@ export default function NewWorkoutPage() {
 
   latestDraftRef.current = {
     unit: weightUnit.unit,
+    date,
     rows,
     focusFatigue,
     skinCondition,
@@ -292,6 +298,7 @@ export default function NewWorkoutPage() {
         ? d.rows.map((r) => ({ ...r, key: rowKey++, weightKg: convert(r.weightKg) }))
         : [emptyRow()]
     );
+    setDate(d.date && d.date <= todayGermanDateKey() ? d.date : todayGermanDateKey());
     setFocusFatigue(d.focusFatigue ?? {});
     setSkinCondition(d.skinCondition ?? 1);
     setTrackSkin(!!d.trackSkin);
@@ -323,7 +330,7 @@ export default function NewWorkoutPage() {
       }
     }, 1200);
     return () => clearTimeout(timer);
-  }, [rows, focusFatigue, skinCondition, trackSkin, notes, photos, draftReady, editSessionId]);
+  }, [rows, date, focusFatigue, skinCondition, trackSkin, notes, photos, draftReady, editSessionId]);
 
   useEffect(() => {
     if (editSessionId) return;
@@ -346,6 +353,7 @@ export default function NewWorkoutPage() {
   async function discardDraft() {
     const ids = photos.map((p) => p.id);
     setRows([emptyRow()]);
+    setDate(todayGermanDateKey());
     setNotes("");
     setFocusFatigue({});
     setSkinCondition(1);
@@ -587,6 +595,7 @@ export default function NewWorkoutPage() {
     setLoading(true);
 
     const payload = {
+      date,
       photoIds: photos.map((p) => p.id),
       notes: notes || undefined,
       focusFatigue: trainedFocuses.map((focus) => ({ focus, rating: fatigueFor(focus) })),
@@ -652,9 +661,24 @@ export default function NewWorkoutPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 lg:max-w-3xl">
-      <h1 className="mb-6 text-2xl font-bold tracking-tight">
-        {editSessionId ? t("Workout bearbeiten") : t("Workout eintragen")}
-      </h1>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold tracking-tight">
+          {editSessionId ? t("Workout bearbeiten") : t("Workout eintragen")}
+        </h1>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="workout-date" className="text-sm text-muted-foreground">
+            {t("Datum")}
+          </Label>
+          <Input
+            id="workout-date"
+            type="date"
+            value={date}
+            max={todayGermanDateKey()}
+            onChange={(e) => setDate(e.target.value || todayGermanDateKey())}
+            className="w-auto"
+          />
+        </div>
+      </div>
 
       {restSecondsLeft !== null && (
         <div className="sticky top-2 z-30 mb-4 flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2 shadow-sm animate-in fade-in slide-in-from-top-2">

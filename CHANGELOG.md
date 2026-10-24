@@ -5,6 +5,14 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.55.1] - 2026-10-24
+
+### Added
+- **Workouts rückwirkend eintragen**: beim Eintragen (und nachträglich beim Bearbeiten) lässt sich das Datum
+  frei wählen, nicht mehr nur "jetzt" - für alle, die erst eintragen, wenn sie Zeit haben, nicht während des
+  Trainings. Zukünftige Datums sind gesperrt; Tages-Challenges/Gruppenziele rechnen weiterhin nur für den
+  tatsächlich gewählten Tag mit.
+
 ## [0.55.0] - 2026-09-30
 
 ### Fixed

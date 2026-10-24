@@ -324,6 +324,19 @@ new thing a user would notice as separate" - the former is patch.
   pre-existing single link into the new `_GroupGoalExercises` join table
   before dropping the old column - don't re-derive that backfill logic, the
   data is already migrated.
+- **Workouts can be logged for a past day** (`WorkoutSession.date`,
+  optional `date` field on both `POST /api/workouts` and
+  `PATCH /api/workouts/[sessionId]`, a `"YYYY-MM-DD"` Berlin dateKey -
+  anchored at `T12:00:00.000Z` like every other dateKey→Date conversion
+  here, future dates rejected). This is why
+  `syncWorkoutRepsToChallenges(userId, sessionDate)` has always taken an
+  explicit date rather than assuming "now" - it already no-ops for any
+  non-today date. The one place this *did* need a fix: editing a session's
+  date must re-run that sync for **both** the old and the new date (not
+  just one), since moving a workout off today should zero its reps back
+  out of today's challenge, and moving one onto today should add them -
+  the sync itself re-sums live from the DB, so calling it twice is always
+  safe. Don't reduce that to a single call.
 - **Sidequests (`Quest`/`QuestStep`, UI label "Quests"/"Sidequests").**
   Personal long-term goals with a user-chosen deadline (`targetDateKey`, a
   Berlin day string), user-authored ordered progression steps (never

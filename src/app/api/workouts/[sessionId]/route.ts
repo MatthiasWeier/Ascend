@@ -7,6 +7,8 @@ import { contributeWorkoutSetToGoals } from "@/lib/goal-contributions";
 import { focusFatigueSchema, deriveOverallExertion } from "@/lib/focus-fatigue";
 import { summarizeWorkoutSession } from "@/lib/workout-summary";
 import { attachPhotos, deletePhotoFiles } from "@/lib/workout-photos";
+import { DATE_KEY_RE } from "@/lib/climbing-meetups";
+import { germanDateKey, todayGermanDateKey } from "@/lib/german-time";
 
 const setSchema = z.object({
   exerciseId: z.string(),
@@ -18,6 +20,7 @@ const setSchema = z.object({
 });
 
 const updateSchema = z.object({
+  date: z.string().regex(DATE_KEY_RE).optional(),
   notes: z.string().max(1000).optional(),
   perceivedExertion: z.number().int().min(1).max(10).optional(),
   focusFatigue: focusFatigueSchema,
@@ -77,6 +80,9 @@ export async function PATCH(
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
+  if (parsed.data.date && parsed.data.date > todayGermanDateKey()) {
+    return NextResponse.json({ error: "Das Datum liegt in der Zukunft" }, { status: 400 });
+  }
 
   const oldSetIds = (
     await prisma.workoutSet.findMany({ where: { sessionId }, select: { id: true } })
@@ -96,6 +102,7 @@ export async function PATCH(
     prisma.workoutSession.update({
       where: { id: sessionId },
       data: {
+        date: parsed.data.date ? new Date(`${parsed.data.date}T12:00:00.000Z`) : undefined,
         notes: parsed.data.notes,
         perceivedExertion: deriveOverallExertion(parsed.data.focusFatigue, parsed.data.perceivedExertion),
         skinCondition: parsed.data.skinCondition,
@@ -150,7 +157,14 @@ export async function PATCH(
       )
   );
 
+  // Re-sync for both the old and new date - a workout moved off today (or
+  // onto today) needs today's challenge reps recomputed either way; the
+  // sync itself re-sums live from the DB and no-ops for a non-today date,
+  // so calling it for both is always safe.
   await syncWorkoutRepsToChallenges(session.user.id, existing.date);
+  if (updated && germanDateKey(updated.date) !== germanDateKey(existing.date)) {
+    await syncWorkoutRepsToChallenges(session.user.id, updated.date);
+  }
 
   return NextResponse.json({ session: updated });
 }

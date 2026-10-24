@@ -8,6 +8,8 @@ import { autoShareToGroups } from "@/lib/workout-sharing";
 import { contributeWorkoutSetToGoals } from "@/lib/goal-contributions";
 import { focusFatigueSchema, deriveOverallExertion } from "@/lib/focus-fatigue";
 import { attachPhotos } from "@/lib/workout-photos";
+import { DATE_KEY_RE } from "@/lib/climbing-meetups";
+import { todayGermanDateKey } from "@/lib/german-time";
 
 const setSchema = z.object({
   exerciseId: z.string(),
@@ -19,6 +21,10 @@ const setSchema = z.object({
 });
 
 const workoutSchema = z.object({
+  // Berlin calendar day, e.g. "2026-10-20" - lets a workout be logged for
+  // an earlier day than today (tracking often happens after the fact, not
+  // live). Omitted means "now", same as before this existed.
+  date: z.string().regex(DATE_KEY_RE).optional(),
   notes: z.string().max(1000).optional(),
   perceivedExertion: z.number().int().min(1).max(10).optional(),
   focusFatigue: focusFatigueSchema,
@@ -54,11 +60,16 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const { notes, perceivedExertion, focusFatigue, skinCondition, sets, photoIds } = parsed.data;
+  const { date, notes, perceivedExertion, focusFatigue, skinCondition, sets, photoIds } = parsed.data;
+
+  if (date && date > todayGermanDateKey()) {
+    return NextResponse.json({ error: "Das Datum liegt in der Zukunft" }, { status: 400 });
+  }
 
   const created = await prisma.workoutSession.create({
     data: {
       userId: session.user.id,
+      date: date ? new Date(`${date}T12:00:00.000Z`) : undefined,
       notes,
       perceivedExertion: deriveOverallExertion(focusFatigue, perceivedExertion),
       skinCondition,
