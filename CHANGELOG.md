@@ -5,6 +5,17 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.56.0] - 2026-11-16
+
+### Added
+- **REST-API erweitert**: `/api/v1/today` (Workout-Brain-Empfehlung, was
+  heute trainiert werden sollte, `?lang=de|en`), `/api/v1/calendar` (eigene
+  Workouts + Gruppen-Meetups als JSON, `?from=`/`?to=`),
+  `/api/v1/balance-goals` (Ziel- vs. Ist-Prozent pro Fokus), `/api/v1/groups`,
+  `/api/v1/personal-records` und `/api/v1/body-weight` (GET/POST, ein
+  Eintrag pro Tag). Gedacht fuer eigene Automationen, z.B. Home Assistant.
+  Siehe README.
+
 ## [0.55.1] - 2026-10-24
 
 ### Added

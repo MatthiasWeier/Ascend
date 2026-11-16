@@ -337,6 +337,21 @@ new thing a user would notice as separate" - the former is patch.
   out of today's challenge, and moving one onto today should add them -
   the sync itself re-sums live from the DB, so calling it twice is always
   safe. Don't reduce that to a single call.
+- **External REST API** (`/api/v1/*`, `lib/api-key-auth.ts`): personal
+  access tokens (`ascend_...`, hash-only storage, created/revoked in
+  Settings) resolve to a `userId` via `Authorization: Bearer`, same idea as
+  a session cookie but for scripts/Home Assistant that can't do a browser
+  login. `/api/v1/today` and `/api/v1/balance-goals` reuse
+  `getBrainSuggestion`/`computeLoadPercents` directly rather than
+  re-deriving the logic - `makeT(normalizeLocale(...))` builds a translator
+  from `?lang=` since there's no locale cookie on an API request.
+  `/api/v1/calendar` is deliberately a separate JSON endpoint from the
+  pre-existing ICS feed (`/api/calendar/[token]`, URL-token-authenticated,
+  no API key) - the ICS feed only covers workouts and calendar apps poll it
+  on their own schedule, while this also needs group meetups and is meant
+  for direct automation, not a calendar subscription. Keep new `/api/v1/*`
+  routes read-mostly and side-effect-light (no PR/goal-contribution hooks)
+  - it's a stable automation surface, not a mirror of the internal app API.
 - **Sidequests (`Quest`/`QuestStep`, UI label "Quests"/"Sidequests").**
   Personal long-term goals with a user-chosen deadline (`targetDateKey`, a
   Berlin day string), user-authored ordered progression steps (never

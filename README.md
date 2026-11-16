@@ -265,13 +265,38 @@ curl -H "Authorization: Bearer ascend_..." https://your-instance/api/v1/exercise
 
 | Endpoint | Methode | Beschreibung |
 |---|---|---|
+| `/api/v1/today` | GET | Workout-Brain-Empfehlung: was heute trainiert werden sollte (`?lang=de\|en`, Default `de`) |
+| `/api/v1/calendar` | GET | Eigene Workouts + Gruppen-Meetups im Zeitraum (`?from=`/`?to=`, `YYYY-MM-DD`, Default: heute-7 bis heute+30) |
+| `/api/v1/balance-goals` | GET | Ziel- vs. Ist-Trainingsanteil pro Fokus (Push/Pull/Beine/Core/Grip) |
 | `/api/v1/exercises` | GET | Sichtbare Übungen (eigene + Default + Gruppen) |
 | `/api/v1/workouts` | GET | Eigene Workouts (`?limit=`, max. 200, Default 50) |
 | `/api/v1/workouts` | POST | Workout anlegen (`{date?, notes?, sets: [{exerciseId, reps?, weightKg?, durationSec?, setType?, notes?}]}`) |
+| `/api/v1/groups` | GET | Eigene Gruppen (id, name, Rolle) |
+| `/api/v1/personal-records` | GET | Aktuelle persönliche Bestleistungen pro Übung |
+| `/api/v1/body-weight` | GET | Letzte Körpergewicht-Einträge (`?limit=`, max. 200, Default 30) |
+| `/api/v1/body-weight` | POST | Körpergewicht eintragen (`{weightKg, date?}`, ein Eintrag pro Tag - erneutes Posten am selben Tag korrigiert) |
 
 Bewusst schlank gehalten - kein Ersatz für die interne API, sondern eine
-stabile Fläche für eigene Automationen. Löst keine PR-/Gruppenziel-
-Nebeneffekte aus.
+stabile Fläche für eigene Automationen. `/api/v1/workouts` POST löst
+keine PR-/Gruppenziel-Nebeneffekte aus.
+
+### Beispiel: Home Assistant
+
+REST-Sensor für die Trainingsempfehlung von heute:
+
+```yaml
+sensor:
+  - platform: rest
+    name: Ascend Trainingsempfehlung
+    resource: https://your-instance/api/v1/today
+    headers:
+      Authorization: !secret ascend_api_key
+    value_template: "{{ value_json.headline }}"
+    json_attributes:
+      - detail
+      - exampleExercises
+      - suggestedFocus
+```
 
 ## Datenmodell
 
