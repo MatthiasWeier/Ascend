@@ -352,6 +352,19 @@ new thing a user would notice as separate" - the former is patch.
   for direct automation, not a calendar subscription. Keep new `/api/v1/*`
   routes read-mostly and side-effect-light (no PR/goal-contribution hooks)
   - it's a stable automation surface, not a mirror of the internal app API.
+  The one deliberate exception: `/api/v1/workouts/[id]` PATCH/DELETE *does*
+  clean up `GroupGoalContribution` rows for the sets being replaced/removed
+  (`source: "WORKOUT", sourceId: { in: oldSetIds }`) before touching
+  anything else, in its own transaction - those rows aren't a real
+  cascading foreign key, so a set created via the main app (which *does*
+  call `contributeWorkoutSetToGoals`) and then edited/deleted via the v1
+  API would otherwise leave a stale contribution behind forever, permanently
+  inflating a group goal's total. This is cleanup of existing state, not a
+  new write path - v1 itself still never calls
+  `contributeWorkoutSetToGoals`. `/api/v1/daily-challenges` similarly
+  mirrors `lib/pending-challenges.ts`'s query shape but returns full
+  today-status (including `NOT_STARTED`) for every active, non-invalidated
+  goal, not just the still-pending ones.
 - **Sidequests (`Quest`/`QuestStep`, UI label "Quests"/"Sidequests").**
   Personal long-term goals with a user-chosen deadline (`targetDateKey`, a
   Berlin day string), user-authored ordered progression steps (never

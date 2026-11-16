@@ -5,6 +5,18 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.57.0] - 2026-11-16
+
+### Added
+- **REST-API: deutlich mehr Endpunkte**: `/api/v1/me`, `/api/v1/streak`,
+  `/api/v1/daily-challenges` (heutiger Stand ueber alle Gruppen),
+  `/api/v1/quests`, `/api/v1/climbing-sends` (GET/POST),
+  `/api/v1/group-goals` (Fortschritt, read-only), `/api/v1/injuries`,
+  `/api/v1/muscle-preferences`, `/api/v1/workout-templates`,
+  `/api/v1/balance-goals` PATCH (Ziele setzen), `/api/v1/exercises` POST
+  (eigene Uebung anlegen) und `/api/v1/workouts/[id]` GET/PATCH/DELETE fuer
+  einzelne Workouts. Siehe README fuer die vollstaendige Liste.
+
 ## [0.56.0] - 2026-11-16
 
 ### Added

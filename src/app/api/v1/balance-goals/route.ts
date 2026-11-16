@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
+import type { MuscleFocus } from "@prisma/client";
 import { authenticateApiKey } from "@/lib/api-key-auth";
 import { prisma } from "@/lib/prisma";
 import { computeLoadPercents, ALL_FOCUSES } from "@/lib/muscle-focus";
@@ -45,4 +47,43 @@ export async function GET(request: Request) {
       targetPercent: targetByFocus.get(focus) ?? null,
     })),
   });
+}
+
+const patchSchema = z.object({
+  goals: z
+    .array(
+      z.object({
+        focus: z.enum(ALL_FOCUSES as [string, ...string[]]),
+        targetPercent: z.number().min(0).max(100),
+      })
+    )
+    .min(1)
+    .max(ALL_FOCUSES.length),
+});
+
+// Set Balance-Ziele targets - upsert per focus, same semantics as the
+// settings page's own PATCH.
+export async function PATCH(request: Request) {
+  const auth = await authenticateApiKey(request);
+  if (!auth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await request.json();
+  const parsed = patchSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  }
+
+  await prisma.$transaction(
+    parsed.data.goals.map((g) =>
+      prisma.balanceGoal.upsert({
+        where: { userId_focus: { userId: auth.userId, focus: g.focus as MuscleFocus } },
+        create: { userId: auth.userId, focus: g.focus as MuscleFocus, targetPercent: g.targetPercent },
+        update: { targetPercent: g.targetPercent },
+      })
+    )
+  );
+
+  return NextResponse.json({ ok: true });
 }

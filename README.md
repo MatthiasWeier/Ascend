@@ -265,20 +265,36 @@ curl -H "Authorization: Bearer ascend_..." https://your-instance/api/v1/exercise
 
 | Endpoint | Methode | Beschreibung |
 |---|---|---|
+| `/api/v1/me` | GET | Eigenes Profil (Name, Avatar, Gewichtseinheit, aktuelles Körpergewicht) |
 | `/api/v1/today` | GET | Workout-Brain-Empfehlung: was heute trainiert werden sollte (`?lang=de\|en`, Default `de`) |
 | `/api/v1/calendar` | GET | Eigene Workouts + Gruppen-Meetups im Zeitraum (`?from=`/`?to=`, `YYYY-MM-DD`, Default: heute-7 bis heute+30) |
+| `/api/v1/streak` | GET | Aktuelle Trainings-Streak (Tage) |
+| `/api/v1/daily-challenges` | GET | Heutiger Stand jeder aktiven Daily-Challenge über alle Gruppen |
+| `/api/v1/quests` | GET | Eigene Sidequests inkl. Schritte |
+| `/api/v1/climbing-sends` | GET | Letzte geloggte Sends (`?limit=`, max. 200, Default 50) |
+| `/api/v1/climbing-sends` | POST | Send loggen (`{style, grade, attempts?, count?, date?}`) |
+| `/api/v1/group-goals` | GET | Fortschritt aller Gruppenziele über alle eigenen Gruppen (read-only) |
 | `/api/v1/balance-goals` | GET | Ziel- vs. Ist-Trainingsanteil pro Fokus (Push/Pull/Beine/Core/Grip) |
+| `/api/v1/balance-goals` | PATCH | Balance-Ziele setzen (`{goals: [{focus, targetPercent}]}`) |
+| `/api/v1/injuries` | GET | Aktive Verletzungen |
+| `/api/v1/muscle-preferences` | GET | Muskel-Wunschliste (0 = passt, 1 = mehr, 2 = viel mehr) |
+| `/api/v1/workout-templates` | GET | Eigene Workout-Vorlagen inkl. Übungen |
 | `/api/v1/exercises` | GET | Sichtbare Übungen (eigene + Default + Gruppen) |
+| `/api/v1/exercises` | POST | Eigene Übung anlegen (gleiche Validierung wie in der App) |
 | `/api/v1/workouts` | GET | Eigene Workouts (`?limit=`, max. 200, Default 50) |
 | `/api/v1/workouts` | POST | Workout anlegen (`{date?, notes?, sets: [{exerciseId, reps?, weightKg?, durationSec?, setType?, notes?}]}`) |
+| `/api/v1/workouts/[id]` | GET/PATCH/DELETE | Einzelnes Workout lesen/bearbeiten/löschen |
 | `/api/v1/groups` | GET | Eigene Gruppen (id, name, Rolle) |
 | `/api/v1/personal-records` | GET | Aktuelle persönliche Bestleistungen pro Übung |
 | `/api/v1/body-weight` | GET | Letzte Körpergewicht-Einträge (`?limit=`, max. 200, Default 30) |
 | `/api/v1/body-weight` | POST | Körpergewicht eintragen (`{weightKg, date?}`, ein Eintrag pro Tag - erneutes Posten am selben Tag korrigiert) |
 
 Bewusst schlank gehalten - kein Ersatz für die interne API, sondern eine
-stabile Fläche für eigene Automationen. `/api/v1/workouts` POST löst
-keine PR-/Gruppenziel-Nebeneffekte aus.
+stabile Fläche für eigene Automationen. Schreibende `/api/v1/*`-Routen
+lösen keine PR-/Gruppenziel-Nebeneffekte aus - mit einer Ausnahme:
+`/api/v1/workouts/[id]` PATCH/DELETE räumt automatisch verwaiste
+Gruppenziel-Beiträge auf, falls das Workout ursprünglich über die App
+geloggt wurde (sonst würde der Gruppenziel-Fortschritt nie mehr stimmen).
 
 ### Beispiel: Home Assistant
 
