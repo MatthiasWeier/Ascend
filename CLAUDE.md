@@ -345,11 +345,16 @@ new thing a user would notice as separate" - the former is patch.
   `getBrainSuggestion`/`computeLoadPercents` directly rather than
   re-deriving the logic - `makeT(normalizeLocale(...))` builds a translator
   from `?lang=` since there's no locale cookie on an API request.
-  `/api/v1/calendar` is deliberately a separate JSON endpoint from the
-  pre-existing ICS feed (`/api/calendar/[token]`, URL-token-authenticated,
-  no API key) - the ICS feed only covers workouts and calendar apps poll it
-  on their own schedule, while this also needs group meetups and is meant
-  for direct automation, not a calendar subscription. Keep new `/api/v1/*`
+  `/api/v1/calendar` is a separate JSON endpoint from the ICS feed
+  (`/api/calendar/[token]`, URL-token-authenticated, no API key) - the ICS
+  feed is for calendar-app subscriptions (polled on their own schedule) and
+  now covers group meetups too (not just workouts), while `/api/v1/calendar`
+  is JSON meant for direct automation/scripting. The ICS feed emits timed
+  meetups as `DTSTART;TZID=Europe/Berlin:...` with no embedded VTIMEZONE
+  block - every mainstream calendar client (Google Calendar, Home
+  Assistant's Remote Calendar integration, Apple Calendar) resolves the
+  IANA name fine without one; untimed meetups are an all-day
+  `DTSTART;VALUE=DATE:...` marker instead. Keep new `/api/v1/*`
   routes read-mostly and side-effect-light (no PR/goal-contribution hooks)
   - it's a stable automation surface, not a mirror of the internal app API.
   The one deliberate exception: `/api/v1/workouts/[id]` PATCH/DELETE *does*

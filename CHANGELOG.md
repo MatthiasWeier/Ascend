@@ -5,6 +5,15 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.57.1] - 2026-11-16
+
+### Added
+- **ICS-Kalender-Feed enthaelt jetzt auch Gruppen-Termine**: bisher nur
+  eigene Workouts, jetzt zusaetzlich Klettern/Gym/Sonstiges-Meetups aus
+  allen eigenen Gruppen (mit Ort/Zusagenzahl, als Ganztags- oder
+  Uhrzeit-Termin). Gedacht fuer die Kalender-Integration in externen
+  Tools wie Home Assistant.
+
 ## [0.57.0] - 2026-11-16
 
 ### Added

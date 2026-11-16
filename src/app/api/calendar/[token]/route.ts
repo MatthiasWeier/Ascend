@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { summarizeWorkoutSession } from "@/lib/workout-summary";
+import { meetupDisplayName } from "@/lib/climbing-meetups";
 
 // RFC 5545 §3.3.11 text escaping.
 function escapeIcsText(text: string): string {
@@ -30,14 +31,34 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const sessions = await prisma.workoutSession.findMany({
-    where: { userId: user.id },
-    orderBy: { date: "desc" },
-    include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
-  });
+  const [sessions, memberships] = await Promise.all([
+    prisma.workoutSession.findMany({
+      where: { userId: user.id },
+      orderBy: { date: "desc" },
+      include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
+    }),
+    prisma.groupMember.findMany({ where: { userId: user.id }, select: { groupId: true } }),
+  ]);
+
+  const groupIds = memberships.map((m) => m.groupId);
+  // Every meetup (Klettern/Gym/Sonstiges) in a group this user belongs to,
+  // not just ones they joined - same as the in-app meetup list, join
+  // status is just a label on top, not a filter.
+  const meetups =
+    groupIds.length === 0
+      ? []
+      : await prisma.climbingMeetup.findMany({
+          where: { groupId: { in: groupIds } },
+          orderBy: { dateKey: "asc" },
+          include: {
+            group: { select: { name: true } },
+            participants: { select: { userId: true } },
+          },
+        });
 
   const now = toIcsDate(new Date());
-  const events = sessions.map((s) => {
+
+  const workoutEvents = sessions.map((s) => {
     const summary = summarizeWorkoutSession(s);
     const firstLine = summary.split("\n")[0];
     return [
@@ -51,13 +72,41 @@ export async function GET(
     ].join("\r\n");
   });
 
+  // Timed meetups use Europe/Berlin wall-clock numbers directly (no
+  // embedded VTIMEZONE block, but every mainstream calendar client
+  // resolves the IANA name fine without one); untimed ones are an
+  // all-day marker on that day instead.
+  const meetupEvents = meetups.map((m) => {
+    const title = meetupDisplayName(m.activity, m.title);
+    const joined = m.participants.some((p) => p.userId === user.id);
+    const summary = joined ? title : `${title} (nicht zugesagt)`;
+    const descriptionParts = [
+      m.location ? `Ort: ${m.location}` : null,
+      `Zusagen: ${m.participants.length}`,
+    ].filter((part): part is string => part != null);
+    const dateKeyCompact = m.dateKey.replace(/-/g, "");
+    const dtstartLine = m.time
+      ? `DTSTART;TZID=Europe/Berlin:${dateKeyCompact}T${m.time.replace(":", "")}00`
+      : `DTSTART;VALUE=DATE:${dateKeyCompact}`;
+    return [
+      "BEGIN:VEVENT",
+      `UID:ascend-meetup-${m.id}@ascend`,
+      `DTSTAMP:${now}`,
+      dtstartLine,
+      `SUMMARY:${escapeIcsText(`${m.group.name}: ${summary}`)}`,
+      ...(descriptionParts.length > 0 ? [`DESCRIPTION:${escapeIcsText(descriptionParts.join("\n"))}`] : []),
+      "END:VEVENT",
+    ].join("\r\n");
+  });
+
   const ics = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     "PRODID:-//Ascend//Workout Calendar//DE",
-    `X-WR-CALNAME:${escapeIcsText(`${user.name} - Ascend Workouts`)}`,
+    `X-WR-CALNAME:${escapeIcsText(`${user.name} - Ascend`)}`,
     "CALSCALE:GREGORIAN",
-    ...events,
+    ...workoutEvents,
+    ...meetupEvents,
     "END:VCALENDAR",
   ].join("\r\n");
 
