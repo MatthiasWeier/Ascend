@@ -18,21 +18,21 @@ rather than trusting a summary here to stay in sync with every detail.
 
 ## Where this actually runs
 
-- The real, git-tracked project lives on a Debian 13 VM, **not** wherever
-  this Claude session's working directory happens to be. SSH there to do
-  anything: `ssh debian@192.168.178.163`, project at `~/ascend`.
-- The VM's hostname is `debian13-vm01`. It's reachable over LAN at
-  `192.168.178.163` and, via some reverse proxy the user set up outside
-  this project, publicly at `https://workout.matt-host.de`.
+- This is a public repo - don't put real hostnames, IPs, or domains in
+  this file. If you're the maintainer running a live instance via Claude
+  Code, keep that connection info (VM IP/hostname, SSH user, public
+  domain if any) in your own private notes outside this repo, not here.
+  The pattern is: SSH to a VM to do anything (`ssh <user>@<host>`), project
+  at some path there - not wherever the local Claude Code working
+  directory happens to be.
 - Local edits in a Claude Code scratchpad are just a staging copy - the
   actual source of truth is the VM's working tree. Pull a file down with
   `scp` before editing it if you're not sure your local copy is current;
   a stale local edit silently overwriting a newer VM file has bitten this
   project before.
-- Git remote is **not configured yet** - it's a local repo on the VM only.
-  Publishing it to GitHub is a stated goal of the project (see the Docker/
-  OCI labels and MIT license already in place for that), just hasn't
-  happened yet as of this writing.
+- Published on GitHub, MIT-licensed. Treat `main`/`master` as something
+  other people may now be reading or cloning - don't force-push it, and
+  write commit messages assuming an outside reader.
 - Small VM (2 vCPU / 2GB RAM + a swapfile). Don't run `pnpm dev` and
   `docker compose build` at the same time - it's OOM'd the box before.
 
