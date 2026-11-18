@@ -14,7 +14,7 @@ export async function DELETE(
   const { groupId, dailyChallengeId } = await params;
   const membership = await getGroupMembership(session.user.id, groupId);
   if (!membership || membership.role !== "LEADER") {
-    return NextResponse.json({ error: "Nur der Leader darf Challenges deaktivieren" }, { status: 403 });
+    return NextResponse.json({ error: "Only the leader can deactivate challenges" }, { status: 403 });
   }
 
   const dc = await prisma.groupDailyChallenge.findUnique({ where: { id: dailyChallengeId } });

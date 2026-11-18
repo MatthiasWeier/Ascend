@@ -32,7 +32,7 @@ import type { Muscle } from "@prisma/client";
 const FOCUS_OPTIONS = [
   { value: "PUSH", label: "Push" },
   { value: "PULL", label: "Pull" },
-  { value: "LEGS", label: "Beine" },
+  { value: "LEGS", label: "Legs" },
   { value: "CORE", label: "Core" },
   { value: "GRIP", label: "Grip" },
 ];
@@ -117,14 +117,14 @@ export function CreateExerciseDialog({
       setSaving(false);
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        toast.error(t(data.error ?? "Konnte Übung nicht speichern."));
+        toast.error(t(data.error ?? "Couldn't save the exercise."));
         return;
       }
       const data: { convertedSets: number } = await res.json();
       toast.success(
         data.convertedSets > 0
-          ? t("Übung gespeichert - {n} Sätze umgerechnet.", { n: data.convertedSets })
-          : t("Übung gespeichert.")
+          ? t("Exercise saved - {n} sets converted.", { n: data.convertedSets })
+          : t("Exercise saved.")
       );
       onSaved?.();
       onEditClose?.();
@@ -147,11 +147,11 @@ export function CreateExerciseDialog({
     setSaving(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte Übung nicht anlegen."));
+      toast.error(t(data.error ?? "Couldn't create the exercise."));
       return;
     }
     const data: { exercise: CreatedExercise } = await res.json();
-    toast.success(t("Übung angelegt!"));
+    toast.success(t("Exercise created!"));
     setName("");
     setDescription("");
     setMuscleRoles({});
@@ -164,16 +164,16 @@ export function CreateExerciseDialog({
       {!isEdit && (
         <DialogTrigger render={<Button type="button" variant="outline" size="sm" />}>
           <Plus className="size-4" />
-          {t("Neue Übung")}
+          {t("New exercise")}
         </DialogTrigger>
       )}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEdit ? t("Übung bearbeiten") : t("Neue Übung anlegen")}</DialogTitle>
+          <DialogTitle>{isEdit ? t("Edit exercise") : t("Create new exercise")}</DialogTitle>
           <DialogDescription>
             {isEdit
-              ? t("Änderungen gelten überall, wo die Übung verwendet wird.")
-              : t("Für dich persönlich, oder sichtbar für eine ganze Gruppe.")}
+              ? t("Changes apply everywhere the exercise is used.")
+              : t("Just for you, or visible to a whole group.")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -182,16 +182,16 @@ export function CreateExerciseDialog({
             <Input id="ex-name" value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ex-desc">{t("Beschreibung")}</Label>
+            <Label htmlFor="ex-desc">{t("Description")}</Label>
             <Textarea id="ex-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
           <div className="flex gap-3">
             <div className="flex flex-1 flex-col gap-1.5">
-              <Label>{t("Art")}</Label>
+              <Label>{t("Type")}</Label>
               <Select
                 items={[
-                  { value: "REPS", label: t("Wdh + Gewicht") },
-                  { value: "HOLD", label: t("Halten (Zeit)") },
+                  { value: "REPS", label: t("Reps + weight") },
+                  { value: "HOLD", label: t("Hold (time)") },
                 ]}
                 value={type}
                 onValueChange={(v) => setType(v as "REPS" | "HOLD")}
@@ -200,13 +200,13 @@ export function CreateExerciseDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="REPS">{t("Wdh + Gewicht")}</SelectItem>
-                  <SelectItem value="HOLD">{t("Halten (Zeit)")}</SelectItem>
+                  <SelectItem value="REPS">{t("Reps + weight")}</SelectItem>
+                  <SelectItem value="HOLD">{t("Hold (time)")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex flex-1 flex-col gap-1.5">
-              <Label>{t("Fokus")}</Label>
+              <Label>{t("Focus")}</Label>
               <Select
                 items={FOCUS_OPTIONS.map((f) => ({ value: f.value, label: t(f.label) }))}
                 value={focus}
@@ -229,15 +229,15 @@ export function CreateExerciseDialog({
           {editing && type !== editing.type && editing.setCount > 0 && (
             <p className="rounded-md bg-amber-500/10 px-2 py-1.5 text-xs text-amber-500">
               {type === "HOLD"
-                ? t("Deine {n} bisherigen Sätze werden umgerechnet: aus Wiederholungen werden Sekunden.", { n: editing.setCount })
-                : t("Deine {n} bisherigen Sätze werden umgerechnet: aus Sekunden werden Wiederholungen.", { n: editing.setCount })}
+                ? t("Your {n} existing sets will be converted: repetitions become seconds.", { n: editing.setCount })
+                : t("Your {n} existing sets will be converted: seconds become repetitions.", { n: editing.setCount })}
             </p>
           )}
 
           <div className="flex flex-col gap-1.5">
-            <Label>{t("Trainierte Muskeln")}</Label>
+            <Label>{t("Muscles trained")}</Label>
             <p className="text-xs text-muted-foreground">
-              {t("Tippen: Hauptmuskel, nochmal: Nebenmuskel, nochmal: entfernen. Ohne Auswahl wird der Fokus verwendet.")}
+              {t("Tap: primary muscle, again: secondary muscle, again: remove. Without a selection the focus is used.")}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {ALL_MUSCLES.map((m) => (
@@ -262,19 +262,19 @@ export function CreateExerciseDialog({
 
           <div className="flex items-center justify-between rounded-lg border border-border p-3">
             <div>
-              <Label htmlFor="ex-bw">{t("Bodyweight-Übung")}</Label>
-              <p className="text-xs text-muted-foreground">{t("Körpergewicht fließt in Analytics/Power ein.")}</p>
+              <Label htmlFor="ex-bw">{t("Bodyweight exercise")}</Label>
+              <p className="text-xs text-muted-foreground">{t("Body weight is factored into analytics/power.")}</p>
             </div>
             <Switch id="ex-bw" checked={isBodyweight} onCheckedChange={setIsBodyweight} />
           </div>
 
           {!isEdit && (
             <div className="flex flex-col gap-1.5">
-              <Label>{t("Sichtbarkeit")}</Label>
+              <Label>{t("Visibility")}</Label>
               <Select
                 items={[
-                  { value: "personal", label: t("Nur für mich") },
-                  ...groups.map((g) => ({ value: g.id, label: t("Gruppe: {name}", { name: g.name }) })),
+                  { value: "personal", label: t("Only me") },
+                  ...groups.map((g) => ({ value: g.id, label: t("Group: {name}", { name: g.name }) })),
                 ]}
                 value={groupId}
                 onValueChange={(v) => setGroupId(v as string)}
@@ -283,10 +283,10 @@ export function CreateExerciseDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="personal">{t("Nur für mich")}</SelectItem>
+                  <SelectItem value="personal">{t("Only me")}</SelectItem>
                   {groups.map((g) => (
                     <SelectItem key={g.id} value={g.id}>
-                      {t("Gruppe: {name}", { name: g.name })}
+                      {t("Group: {name}", { name: g.name })}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -296,7 +296,7 @@ export function CreateExerciseDialog({
 
           <DialogFooter>
             <Button type="submit" disabled={saving}>
-              {saving ? (isEdit ? t("Speichern…") : t("Anlegen…")) : isEdit ? t("Speichern") : t("Anlegen")}
+              {saving ? (isEdit ? t("Saving…") : t("Creating…")) : isEdit ? t("Save") : t("Create")}
             </Button>
           </DialogFooter>
         </form>

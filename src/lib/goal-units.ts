@@ -6,8 +6,8 @@ export const GOAL_UNITS = ["REPS", "DURATION_SEC", "KM", "CUSTOM"] as const;
 export type GoalUnitValue = (typeof GOAL_UNITS)[number];
 
 export const GOAL_UNIT_LABEL: Record<GoalUnitValue, string> = {
-  REPS: "Wiederholungen",
-  DURATION_SEC: "Sekunden",
+  REPS: "Repetitions",
+  DURATION_SEC: "Seconds",
   KM: "km",
   CUSTOM: "Custom",
 };

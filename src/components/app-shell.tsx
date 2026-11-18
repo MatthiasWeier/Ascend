@@ -39,11 +39,11 @@ import {
 
 const navItems = [
   { href: "/dashboard", label: "Feed", icon: LayoutDashboard },
-  { href: "/dashboard/workouts/new", label: "Eintragen", icon: PlusCircle },
+  { href: "/dashboard/workouts/new", label: "Log", icon: PlusCircle },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/dashboard/body", label: "Körper", icon: PersonStanding },
+  { href: "/dashboard/body", label: "Body", icon: PersonStanding },
   { href: "/dashboard/quests", label: "Quests", icon: Flag },
-  { href: "/dashboard/groups", label: "Gruppen", icon: Users },
+  { href: "/dashboard/groups", label: "Groups", icon: Users },
 ];
 
 const SIDEBAR_COLLAPSED_KEY = "ascend:sidebar-collapsed";
@@ -154,23 +154,23 @@ export function AppShell({
           )}
           <Link
             href="/dashboard/settings"
-            title={collapsed ? t("Einstellungen") : undefined}
+            title={collapsed ? t("Settings") : undefined}
             className={linkClass(pathname === "/dashboard/settings")}
           >
             <Settings className="size-4 shrink-0" />
-            {!collapsed && t("Einstellungen")}
+            {!collapsed && t("Settings")}
           </Link>
           <button
             type="button"
             onClick={toggleCollapsed}
-            title={collapsed ? t("Sidebar ausklappen") : t("Sidebar einklappen")}
+            title={collapsed ? t("Expand sidebar") : t("Collapse sidebar")}
             className={cn(
               "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
               collapsed && "justify-center px-0"
             )}
           >
             {collapsed ? <PanelLeftOpen className="size-4 shrink-0" /> : <PanelLeftClose className="size-4 shrink-0" />}
-            {!collapsed && t("Einklappen")}
+            {!collapsed && t("Collapse")}
           </button>
           {collapsed ? (
             <p className="mt-2 text-center text-[9px] text-muted-foreground">v{APP_VERSION}</p>
@@ -214,14 +214,14 @@ export function AppShell({
                 )}
                 <DropdownMenuItem render={<Link href="/dashboard/settings" />}>
                   <Settings className="size-4" />
-                  {t("Einstellungen")}
+                  {t("Settings")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   variant="destructive"
                   onClick={() => signOut({ redirectTo: "/" })}
                 >
                   <LogOut className="size-4" />
-                  {t("Abmelden")}
+                  {t("Log out")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

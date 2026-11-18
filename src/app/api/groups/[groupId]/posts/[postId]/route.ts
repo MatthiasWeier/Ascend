@@ -31,10 +31,10 @@ export async function PATCH(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   if (post.userId !== session.user.id) {
-    return NextResponse.json({ error: "Keine Berechtigung" }, { status: 403 });
+    return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   }
   if (post.type === "WORKOUT_SHARE" || post.type === "CLIMBING") {
-    return NextResponse.json({ error: "Workout-Shares lassen sich nicht bearbeiten" }, { status: 400 });
+    return NextResponse.json({ error: "Shared workouts can't be edited" }, { status: 400 });
   }
 
   const body = await request.json();
@@ -80,7 +80,7 @@ export async function DELETE(
   const isLeaderModeratingMessage =
     membership.role === "LEADER" && post.type !== "WORKOUT_SHARE" && post.type !== "CLIMBING" && !isAuthor;
   if (!isAuthor && !isLeaderModeratingMessage) {
-    return NextResponse.json({ error: "Keine Berechtigung" }, { status: 403 });
+    return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   }
 
   if (post.type === "PHOTO" && post.imageUrl) {

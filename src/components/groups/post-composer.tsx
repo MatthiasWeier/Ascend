@@ -57,15 +57,15 @@ export function PostComposer({
     e.preventDefault();
 
     if (mode === "PHOTO" && !file) {
-      toast.error(t("Bitte ein Bild wählen."));
+      toast.error(t("Please choose an image."));
       return;
     }
     if (mode === "WORKOUT_SHARE" && !sessionId) {
-      toast.error(t("Bitte ein Workout wählen."));
+      toast.error(t("Please choose a workout."));
       return;
     }
     if (mode === "TEXT" && !text.trim()) {
-      toast.error(t("Text darf nicht leer sein."));
+      toast.error(t("Text must not be empty."));
       return;
     }
 
@@ -80,10 +80,10 @@ export function PostComposer({
     setLoading(false);
 
     if (!ok) {
-      toast.error(t("Konnte nicht posten."));
+      toast.error(t("Couldn't post."));
       return;
     }
-    toast.success(t("Gepostet!"));
+    toast.success(t("Posted!"));
     if (mode === "PHOTO") {
       setFile(null);
       setCaption("");
@@ -109,14 +109,14 @@ export function PostComposer({
           </TabsTrigger>
           <TabsTrigger value="PHOTO">
             <ImageIcon className="size-3.5" />
-            {t("Foto")}
+            {t("Photo")}
           </TabsTrigger>
         </TabsList>
       </Tabs>
 
       {mode === "TEXT" && (
         <Textarea
-          placeholder={t("Was gibt's Neues?")}
+          placeholder={t("What's new?")}
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
@@ -126,7 +126,7 @@ export function PostComposer({
         const shareable = (sessions ?? []).filter((s) => !alreadySharedIds.has(s.id));
         return sessions != null && shareable.length === 0 ? (
           <p className="rounded-lg border border-dashed border-border p-3 text-center text-sm text-muted-foreground">
-            {t("Alle deine Workouts sind bereits geteilt.")}
+            {t("All your workouts are already shared.")}
           </p>
         ) : (
           <Select
@@ -134,17 +134,17 @@ export function PostComposer({
             onValueChange={(v) => setSessionId(v as string)}
             items={shareable.map((s) => ({
               value: s.id,
-              label: `${new Date(s.date).toLocaleDateString(dateLocale, { day: "2-digit", month: "short" })} — ${t("{n} Sätze", { n: s.sets.length })}`,
+              label: `${new Date(s.date).toLocaleDateString(dateLocale, { day: "2-digit", month: "short" })} — ${t("{n} sets", { n: s.sets.length })}`,
             }))}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={t("Workout wählen")} />
+              <SelectValue placeholder={t("Choose workout")} />
             </SelectTrigger>
             <SelectContent>
               {shareable.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
                   {new Date(s.date).toLocaleDateString(dateLocale, { day: "2-digit", month: "short" })} —{" "}
-                  {t("{n} Sätze", { n: s.sets.length })}
+                  {t("{n} sets", { n: s.sets.length })}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -162,7 +162,7 @@ export function PostComposer({
             className="text-sm"
           />
           <Textarea
-            placeholder={t("Bildunterschrift (optional)…")}
+            placeholder={t("Caption (optional)…")}
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
           />
@@ -170,7 +170,7 @@ export function PostComposer({
       )}
 
       <Button type="submit" disabled={loading} className="self-end">
-        {loading ? t("Posten…") : t("Posten")}
+        {loading ? t("Posting…") : t("Post")}
       </Button>
     </form>
   );

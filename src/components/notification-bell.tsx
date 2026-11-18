@@ -38,31 +38,31 @@ const POLL_MS = 60_000;
 function describe(n: Item, t: TFunction) {
   switch (n.type) {
     case "COMMENT":
-      return { icon: MessageCircle, text: t("{name} hat deinen Beitrag kommentiert", { name: n.actorName }) };
+      return { icon: MessageCircle, text: t("{name} commented on your post", { name: n.actorName }) };
     case "REPLY":
-      return { icon: Reply, text: t("{name} hat auf deinen Kommentar geantwortet", { name: n.actorName }) };
+      return { icon: Reply, text: t("{name} replied to your comment", { name: n.actorName }) };
     case "NUDGE":
-      return { icon: HandHeart, text: t("{name} hat dich angestupst - zieh dein Workout durch!", { name: n.actorName }) };
+      return { icon: HandHeart, text: t("{name} nudged you - get your workout done!", { name: n.actorName }) };
     case "WORKOUT_POST":
-      return { icon: Dumbbell, text: t("{name} hat ein Workout gepostet", { name: n.actorName }) };
+      return { icon: Dumbbell, text: t("{name} posted a workout", { name: n.actorName }) };
     case "CLIMBING":
-      return { icon: Mountain, text: t("{name} war klettern ({n} Sends)", { name: n.actorName, n: n.snippet ?? "" }) };
+      return { icon: Mountain, text: t("{name} went climbing ({n} sends)", { name: n.actorName, n: n.snippet ?? "" }) };
     case "CLIMBING_INVITE": {
       const [activityName, date] = (n.snippet ?? "|").split("|");
       return {
         icon: Mountain,
-        text: t("{name} plant \"{activity}\" am {date} - wer kommt mit?", { name: n.actorName, activity: activityName, date }),
+        text: t("{name} is planning \"{activity}\" on {date} - who's in?", { name: n.actorName, activity: activityName, date }),
       };
     }
     case "CHALLENGE_DONE":
       return {
         icon: Trophy,
-        text: t("{name} hat \"{challenge}\" geschafft", { name: n.actorName, challenge: n.snippet ?? "" }),
+        text: t("{name} completed \"{challenge}\"", { name: n.actorName, challenge: n.snippet ?? "" }),
       };
     case "WORKOUT_REMINDER":
       return {
         icon: BellRing,
-        text: n.snippet ? t("Trainingszeit: {label}", { label: n.snippet }) : t("Deine geplante Trainingszeit ist da."),
+        text: n.snippet ? t("Training time: {label}", { label: n.snippet }) : t("Your scheduled training time is here."),
       };
     case "QUEST_REMINDER": {
       // "daysLeft|done|total|title" - title last since it may contain "|".
@@ -71,21 +71,21 @@ function describe(n: Item, t: TFunction) {
       const days = Number(daysLeft);
       const when =
         days <= 0
-          ? t("Frist ist heute")
+          ? t("Deadline is today")
           : days === 1
-            ? t("noch 1 Tag")
-            : t("noch {days} Tage", { days });
-      const steps = Number(total) > 0 ? ` · ${t("{done}/{total} Schritte", { done, total })}` : "";
+            ? t("1 day left")
+            : t("{days} days left", { days });
+      const steps = Number(total) > 0 ? ` · ${t("{done}/{total} steps", { done, total })}` : "";
       return { icon: Flag, text: `${t("Sidequest \"{title}\"", { title })}: ${when}${steps}` };
     }
     case "QUEST_DONE":
       return {
         icon: Flag,
-        text: t("{name} hat die Sidequest \"{title}\" geschafft", { name: n.actorName, title: n.snippet ?? "" }),
+        text: t("{name} completed the sidequest \"{title}\"", { name: n.actorName, title: n.snippet ?? "" }),
       };
     case "MEETUP_REMINDER": {
       const [activityName] = (n.snippet ?? "").split("|");
-      return { icon: BellRing, text: t("Erinnerung: \"{activity}\" steht bald an", { activity: activityName }) };
+      return { icon: BellRing, text: t("Reminder: \"{activity}\" is coming up", { activity: activityName }) };
     }
   }
 }
@@ -161,7 +161,7 @@ export function NotificationBell() {
             variant="ghost"
             size="icon"
             className="relative size-9"
-            aria-label={unread > 0 ? t("{n} ungelesene Benachrichtigungen", { n: unread }) : t("Benachrichtigungen")}
+            aria-label={unread > 0 ? t("{n} unread notifications", { n: unread }) : t("Notifications")}
           />
         }
       >
@@ -174,7 +174,7 @@ export function NotificationBell() {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[min(22rem,calc(100vw-2rem))] gap-0 p-0">
         <div className="flex items-center justify-between border-b border-border px-3 py-2">
-          <span className="text-sm font-semibold">{t("Benachrichtigungen")}</span>
+          <span className="text-sm font-semibold">{t("Notifications")}</span>
           {unread > 0 && (
             <button
               type="button"
@@ -182,7 +182,7 @@ export function NotificationBell() {
               className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
             >
               <Check className="size-3.5" />
-              {t("Alle gelesen")}
+              {t("Mark all read")}
             </button>
           )}
         </div>
@@ -192,7 +192,7 @@ export function NotificationBell() {
               <Skeleton className="h-16 w-full" />
             </div>
           ) : items.length === 0 ? (
-            <p className="px-3 py-8 text-center text-sm text-muted-foreground">{t("Noch keine Benachrichtigungen.")}</p>
+            <p className="px-3 py-8 text-center text-sm text-muted-foreground">{t("No notifications yet.")}</p>
           ) : (
             items.map((n) => {
               const { icon: Icon, text } = describe(n, t);

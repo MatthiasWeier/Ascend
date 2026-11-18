@@ -66,7 +66,7 @@ type Template = { id: string; name: string; entries: { exerciseId: string }[] };
 const SET_TYPE_LABEL: Record<SetType, string> = {
   WARMUP: "Warm-up",
   NORMAL: "Normal",
-  DROP: "Dropsatz",
+  DROP: "Drop set",
   FAILURE: "Failure",
 };
 
@@ -384,7 +384,7 @@ export default function NewWorkoutPage() {
     let count = photos.length;
     for (const file of files) {
       if (count >= MAX_PHOTOS) {
-        toast.error(t("Maximal 10 Fotos pro Workout."));
+        toast.error(t("Maximum 10 photos per workout."));
         break;
       }
       const form = new FormData();
@@ -392,7 +392,7 @@ export default function NewWorkoutPage() {
       const res = await fetch("/api/workout-photos", { method: "POST", body: form });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        toast.error(t(data.error ?? "Konnte Foto nicht hochladen."));
+        toast.error(t(data.error ?? "Couldn't upload the photo."));
         continue;
       }
       const data: { photo: { id: string } } = await res.json();
@@ -410,7 +410,7 @@ export default function NewWorkoutPage() {
   useEffect(() => {
     if (restSecondsLeft === null) return;
     if (restSecondsLeft <= 0) {
-      toast.success(t("Pause vorbei - weiter geht's!"));
+      toast.success(t("Rest over - let's go!"));
       setRestSecondsLeft(null);
       return;
     }
@@ -540,7 +540,7 @@ export default function NewWorkoutPage() {
         return row;
       })
     );
-    toast.success(t("Vorlage \"{name}\" geladen.", { name: template.name }));
+    toast.success(t("Template \"{name}\" loaded.", { name: template.name }));
   }
 
   async function saveTemplate(e: React.FormEvent) {
@@ -555,12 +555,12 @@ export default function NewWorkoutPage() {
     });
     setSavingTemplate(false);
     if (!res.ok) {
-      toast.error(t("Konnte Vorlage nicht speichern."));
+      toast.error(t("Couldn't save the template."));
       return;
     }
     const data: { template: Template } = await res.json();
     setTemplates((prev) => [data.template, ...prev]);
-    toast.success(t("Vorlage gespeichert!"));
+    toast.success(t("Template saved!"));
     setSaveTemplateOpen(false);
     setTemplateName("");
   }
@@ -571,8 +571,8 @@ export default function NewWorkoutPage() {
     const template = templates[index];
     setTemplates((prev) => prev.filter((tpl) => tpl.id !== templateId));
     undoableAction({
-      message: t("Vorlage \"{name}\" gelöscht.", { name: template.name }),
-      undoLabel: t("Rückgängig"),
+      message: t("Template \"{name}\" deleted.", { name: template.name }),
+      undoLabel: t("Undo"),
       onCommit: () => {
         fetch(`/api/workout-templates/${templateId}`, { method: "DELETE" }).catch(() => {});
       },
@@ -598,7 +598,7 @@ export default function NewWorkoutPage() {
     e.preventDefault();
     if (rows.length === 0) return;
     if (rows.some((r) => !r.exerciseId)) {
-      toast.error(t("Bitte für jeden Satz eine Übung wählen."));
+      toast.error(t("Please pick an exercise for every set."));
       return;
     }
     if (submittingRef.current) return;
@@ -643,7 +643,7 @@ export default function NewWorkoutPage() {
     setLoading(false);
     submittingRef.current = false;
     if (!res.ok) {
-      toast.error(editSessionId ? t("Konnte Workout nicht aktualisieren.") : t("Konnte Workout nicht speichern."));
+      toast.error(editSessionId ? t("Couldn't update the workout.") : t("Couldn't save the workout."));
       return;
     }
 
@@ -651,19 +651,19 @@ export default function NewWorkoutPage() {
     if (!editSessionId) await fetch("/api/workouts/draft", { method: "DELETE" }).catch(() => {});
 
     if (editSessionId) {
-      toast.success(t("Workout aktualisiert!"));
+      toast.success(t("Workout updated!"));
       router.push("/dashboard");
       router.refresh();
       return;
     }
 
     const data: { newPrExerciseNames?: string[]; autoSharedGroupNames?: string[] } = await res.json();
-    toast.success(t("Workout gespeichert!"));
+    toast.success(t("Workout saved!"));
     for (const name of data.newPrExerciseNames ?? []) {
-      toast(t("🏆 Neuer PR: {name}!", { name }), { duration: 5000 });
+      toast(t("🏆 New PR: {name}!", { name }), { duration: 5000 });
     }
     if (data.autoSharedGroupNames?.length) {
-      toast(t("Automatisch geteilt in: {groups}", { groups: data.autoSharedGroupNames.join(", ") }));
+      toast(t("Automatically shared in: {groups}", { groups: data.autoSharedGroupNames.join(", ") }));
     }
 
     router.push("/dashboard");
@@ -674,11 +674,11 @@ export default function NewWorkoutPage() {
     <div className="mx-auto max-w-2xl px-4 py-6 lg:max-w-3xl">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight">
-          {editSessionId ? t("Workout bearbeiten") : t("Workout eintragen")}
+          {editSessionId ? t("Edit workout") : t("Log workout")}
         </h1>
         <div className="flex items-center gap-2">
           <Label htmlFor="workout-date" className="text-sm text-muted-foreground">
-            {t("Datum")}
+            {t("Date")}
           </Label>
           <Input
             id="workout-date"
@@ -703,7 +703,7 @@ export default function NewWorkoutPage() {
         <div className="sticky top-2 z-30 mb-4 flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2 shadow-sm animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center gap-2 text-sm font-medium">
             <Timer className="size-4 text-primary" />
-            {t("Pause:")} <span className="font-mono tabular-nums">{formatMmSs(restSecondsLeft)}</span>
+            {t("Rest:")} <span className="font-mono tabular-nums">{formatMmSs(restSecondsLeft)}</span>
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -729,12 +729,12 @@ export default function NewWorkoutPage() {
       {draftRestoredAt && (
         <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2 text-sm">
           <span>
-            {t("Entwurf wiederhergestellt ({time})", {
+            {t("Draft restored ({time})", {
               time: new Date(draftRestoredAt).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" }),
             })}
           </span>
           <button type="button" onClick={discardDraft} className="font-medium text-primary hover:underline">
-            {t("Verwerfen")}
+            {t("Discard")}
           </button>
         </div>
       )}
@@ -742,14 +742,14 @@ export default function NewWorkoutPage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{t("Sätze")}</CardTitle>
-            <CardDescription>{t("Übung wählen, Werte eintragen. „Satz & Pause“ startet die Pause.")}</CardDescription>
+            <CardTitle className="text-base">{t("Sets")}</CardTitle>
+            <CardDescription>{t("Pick an exercise, enter values. \"Set & rest\" starts the rest timer.")}</CardDescription>
             <CardAction className="flex items-center gap-1.5">
               {templates.length > 0 && (
                 <Select onValueChange={loadTemplate}>
                   <SelectTrigger size="sm" className="w-auto">
                     <FolderOpen className="size-3.5" />
-                    <SelectValue placeholder={t("Vorlage laden")} />
+                    <SelectValue placeholder={t("Load template")} />
                   </SelectTrigger>
                   <SelectContent>
                     {templates.map((tpl) => (
@@ -762,13 +762,13 @@ export default function NewWorkoutPage() {
               )}
               {(templates.length > 0 || manageTemplatesOpen) && (
                 <Dialog open={manageTemplatesOpen} onOpenChange={setManageTemplatesOpen}>
-                  <DialogTrigger render={<Button type="button" variant="ghost" size="icon-sm" title={t("Vorlagen verwalten")} />}>
+                  <DialogTrigger render={<Button type="button" variant="ghost" size="icon-sm" title={t("Manage templates")} />}>
                     <Trash2 className="size-3.5" />
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>{t("Vorlagen verwalten")}</DialogTitle>
-                      <DialogDescription>{t("Löschen lässt sich kurz danach rückgängig machen.")}</DialogDescription>
+                      <DialogTitle>{t("Manage templates")}</DialogTitle>
+                      <DialogDescription>{t("Deleting can be undone for a moment.")}</DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col gap-1 py-2">
                       {templates.map((tpl) => (
@@ -786,7 +786,7 @@ export default function NewWorkoutPage() {
                         </div>
                       ))}
                       {templates.length === 0 && (
-                        <p className="py-4 text-center text-sm text-muted-foreground">{t("Keine Vorlagen mehr.")}</p>
+                        <p className="py-4 text-center text-sm text-muted-foreground">{t("No templates left.")}</p>
                       )}
                     </div>
                   </DialogContent>
@@ -797,26 +797,26 @@ export default function NewWorkoutPage() {
                   render={<Button type="button" variant="outline" size="sm" disabled={!rows.some((r) => r.exerciseId)} />}
                 >
                   <BookmarkPlus className="size-3.5" />
-                  {t("Als Vorlage")}
+                  {t("As template")}
                 </DialogTrigger>
                 <DialogContent>
                   <form onSubmit={saveTemplate}>
                     <DialogHeader>
-                      <DialogTitle>{t("Als Vorlage speichern")}</DialogTitle>
+                      <DialogTitle>{t("Save as template")}</DialogTitle>
                       <DialogDescription>
-                        {t("Speichert die Übungs-Reihenfolge der aktuellen Sätze - Werte werden beim Laden wieder aus deiner letzten Session vorausgefüllt.")}
+                        {t("Saves the exercise order of the current sets - values are prefilled from your last session when loading.")}
                       </DialogDescription>
                     </DialogHeader>
                     <Input
                       value={templateName}
                       onChange={(ev) => setTemplateName(ev.target.value)}
-                      placeholder={t("z.B. Push Day")}
+                      placeholder={t("e.g. Push Day")}
                       className="my-2"
                       required
                     />
                     <DialogFooter>
                       <Button type="submit" disabled={savingTemplate}>
-                        {savingTemplate ? t("Speichern…") : t("Speichern")}
+                        {savingTemplate ? t("Saving…") : t("Save")}
                       </Button>
                     </DialogFooter>
                   </form>
@@ -827,7 +827,7 @@ export default function NewWorkoutPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <span>{t("Pause:")}</span>
+              <span>{t("Rest:")}</span>
               {REST_PRESETS.map((p) => (
                 <button
                   key={p}
@@ -846,7 +846,7 @@ export default function NewWorkoutPage() {
             </div>
             {mostUsedExerciseIds.length > 0 && (
               <div className="-mx-1 flex items-center gap-1.5 overflow-x-auto px-1 pb-1 text-xs">
-                <span className="shrink-0 text-muted-foreground">{t("Häufig:")}</span>
+                <span className="shrink-0 text-muted-foreground">{t("Frequent:")}</span>
                 {mostUsedExerciseIds.map((id) => {
                   const ex = exerciseFor(id);
                   if (!ex) return null;
@@ -878,14 +878,14 @@ export default function NewWorkoutPage() {
                       {hitsFor(ex).length > 0 && (
                         <p className="flex items-center gap-1.5 rounded-md bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-500">
                           <TriangleAlert className="size-3.5 shrink-0" />
-                          {t("Belastet deine Verletzung: {parts}", {
+                          {t("Loads your injury: {parts}", {
                             parts: hitsFor(ex).map((i) => t(BODY_PART_LABEL[i.bodyPart])).join(", "),
                           })}
                         </p>
                       )}
                       {last && (
                         <p className="text-xs text-muted-foreground">
-                          {t("Letztes Mal:")} {formatLastValue(last, weightUnit.format, weightUnit.unitLabel)}
+                          {t("Last time:")} {formatLastValue(last, weightUnit.format, weightUnit.unitLabel)}
                         </p>
                       )}
                       <div className="flex flex-wrap items-center gap-3">
@@ -901,7 +901,7 @@ export default function NewWorkoutPage() {
                             <Input
                               type="number"
                               min={1}
-                              placeholder={t("Sek.")}
+                              placeholder={t("Sec.")}
                               required
                               value={row.durationSec}
                               onChange={(e) => updateRow(row.key, { durationSec: e.target.value })}
@@ -912,7 +912,7 @@ export default function NewWorkoutPage() {
                               min={0}
                               step={0.5}
                               placeholder={`+${weightUnit.unitLabel}`}
-                              title={t("Zusatzgewicht (optional)")}
+                              title={t("Added weight (optional)")}
                               value={row.weightKg}
                               onChange={(e) => updateRow(row.key, { weightKg: e.target.value })}
                               className="h-10 w-20"
@@ -923,7 +923,7 @@ export default function NewWorkoutPage() {
                             <Input
                               type="number"
                               min={1}
-                              placeholder={t("Wdh")}
+                              placeholder={t("Reps")}
                               required
                               value={row.reps}
                               onChange={(e) => updateRow(row.key, { reps: e.target.value })}
@@ -973,7 +973,7 @@ export default function NewWorkoutPage() {
                             row.notesExpanded && "text-primary"
                           )}
                           onClick={() => updateRow(row.key, { notesExpanded: !row.notesExpanded })}
-                          title={t("Notiz zu diesem Satz")}
+                          title={t("Note for this set")}
                         >
                           <StickyNote className="size-4" />
                         </Button>
@@ -983,10 +983,10 @@ export default function NewWorkoutPage() {
                           variant={row.done ? "default" : "outline"}
                           className={cn("ml-auto h-10 gap-1.5 px-3", row.done && "bg-success text-success-foreground hover:bg-success/90")}
                           onClick={() => markDone(row.key)}
-                          title={t("Satz fertig - startet die Pause")}
+                          title={t("Set done - starts the rest timer")}
                         >
                           <Check className="size-4" />
-                          {row.done ? t("Erledigt") : t("Satz & Pause")}
+                          {row.done ? t("Done") : t("Set & rest")}
                         </Button>
                         <Button
                           type="button"
@@ -995,7 +995,7 @@ export default function NewWorkoutPage() {
                           className="size-10 text-muted-foreground hover:text-foreground"
                           onClick={() => duplicateRow(row.key)}
                           disabled={!row.exerciseId}
-                          title={t("Satz duplizieren")}
+                          title={t("Duplicate set")}
                         >
                           <Copy className="size-4" />
                         </Button>
@@ -1005,8 +1005,8 @@ export default function NewWorkoutPage() {
                           size="icon"
                           className="size-10 text-muted-foreground hover:text-destructive"
                           onClick={() => removeRow(row.key)}
-                          title={t("Satz entfernen")}
-                          aria-label={t("Satz entfernen")}
+                          title={t("Remove set")}
+                          aria-label={t("Remove set")}
                         >
                           <Trash2 className="size-4" />
                         </Button>
@@ -1014,7 +1014,7 @@ export default function NewWorkoutPage() {
 
                       {row.notesExpanded && (
                         <Input
-                          placeholder={t("Notiz zu diesem Satz (z.B. langsame Exzentrik)")}
+                          placeholder={t("Note for this set (e.g. slow eccentric)")}
                           value={row.notes}
                           onChange={(e) => updateRow(row.key, { notes: e.target.value })}
                           className="text-sm"
@@ -1034,16 +1034,16 @@ export default function NewWorkoutPage() {
               disabled={exercises.length === 0}
             >
               <Plus className="size-4" />
-              {t("Satz hinzufügen")}
+              {t("Add set")}
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{t("Pump Pics")}</CardTitle>
+            <CardTitle className="text-base">{t("Pump pics")}</CardTitle>
             <CardDescription>
-              {t("Fotos zu diesem Workout - sichtbar für dich und die Gruppen, in denen du es teilst.")}
+              {t("Photos for this workout - visible to you and to the groups you share it in.")}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
@@ -1054,13 +1054,13 @@ export default function NewWorkoutPage() {
                     {/* eslint-disable-next-line @next/next/no-img-element -- auth-gated proxy route */}
                     <img
                       src={`/api/workout-photos/${p.id}`}
-                      alt={t("Pump Pic")}
+                      alt={t("Pump pic")}
                       className="h-28 w-auto max-w-full rounded-lg border border-border object-contain"
                     />
                     <button
                       type="button"
                       onClick={() => removePhoto(p.id)}
-                      aria-label={t("Foto entfernen")}
+                      aria-label={t("Remove photo")}
                       className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-white shadow"
                     >
                       <X className="size-3.5" />
@@ -1085,7 +1085,7 @@ export default function NewWorkoutPage() {
                 onClick={() => photoInputRef.current?.click()}
               >
                 <Camera className="size-4" />
-                {uploadingPhotos ? t("Wird hochgeladen…") : t("Foto hinzufügen")}
+                {uploadingPhotos ? t("Uploading…") : t("Add photo")}
               </Button>
             </div>
           </CardContent>
@@ -1093,12 +1093,12 @@ export default function NewWorkoutPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{t("Wie war's?")}</CardTitle>
+            <CardTitle className="text-base">{t("How was it?")}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-6">
             {trainedFocuses.length > 0 && (
               <div className="flex flex-col gap-4">
-                <Label>{t("Wie ausgelastet ist die Muskelgruppe?")}</Label>
+                <Label>{t("How fatigued is the muscle group?")}</Label>
                 {trainedFocuses.map((focus) => (
                   <div key={focus} className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
@@ -1123,12 +1123,12 @@ export default function NewWorkoutPage() {
                 onClick={() => setTrackSkin((v) => !v)}
                 className="w-fit text-left text-sm font-medium text-primary underline-offset-4 hover:underline"
               >
-                {trackSkin ? t("Haut-Zustand ausblenden") : t("+ Haut-Zustand erfassen (Klettern)")}
+                {trackSkin ? t("Hide skin condition") : t("+ Track skin condition (climbing)")}
               </button>
               {trackSkin && (
                 <div className="flex flex-col gap-2 pt-1">
                   <div className="flex items-center justify-between">
-                    <Label>{t("Haut-Zustand (10 = ruiniert)")}</Label>
+                    <Label>{t("Skin condition (10 = wrecked)")}</Label>
                     <span className="text-sm font-medium text-primary">{skinCondition}/10</span>
                   </div>
                   <Slider
@@ -1143,7 +1143,7 @@ export default function NewWorkoutPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="notes">{t("Notizen")}</Label>
+              <Label htmlFor="notes">{t("Notes")}</Label>
               <Textarea
                 id="notes"
                 placeholder={t("Optional…")}
@@ -1155,7 +1155,7 @@ export default function NewWorkoutPage() {
         </Card>
 
         <Button type="submit" size="lg" disabled={loading || rows.length === 0}>
-          {loading ? t("Speichern…") : editSessionId ? t("Änderungen speichern") : t("Workout speichern")}
+          {loading ? t("Saving…") : editSessionId ? t("Save changes") : t("Save workout")}
         </Button>
       </form>
     </div>

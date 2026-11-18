@@ -19,11 +19,11 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   if (goal.userId !== session.user.id) {
-    return NextResponse.json({ error: "Das ist nicht dein Ziel" }, { status: 403 });
+    return NextResponse.json({ error: "That's not your goal" }, { status: 403 });
   }
   if (goal.isInvalidated) {
     return NextResponse.json(
-      { error: "Dein Ziel wurde von der Gruppe angefochten - setz zuerst ein neues Ziel." },
+      { error: "Your goal was challenged by the group - set a new goal first." },
       { status: 400 }
     );
   }

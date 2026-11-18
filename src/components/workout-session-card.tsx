@@ -45,7 +45,7 @@ const SET_TYPE_BADGE: Partial<Record<SetType, { label: string; className: string
 const SET_TYPE_LABEL_FULL: Record<SetType, string> = {
   WARMUP: "Warm-up",
   NORMAL: "Normal",
-  DROP: "Dropsatz",
+  DROP: "Drop set",
   FAILURE: "Failure",
 };
 
@@ -88,10 +88,10 @@ export function WorkoutSessionCard({
     const res = await fetch(`/api/workouts/${sessionId}`, { method: "DELETE" });
     setDeleting(false);
     if (!res.ok) {
-      toast.error(t("Konnte Workout nicht löschen."));
+      toast.error(t("Couldn't delete the workout."));
       return;
     }
-    toast.success(t("Workout gelöscht."));
+    toast.success(t("Workout deleted."));
     setConfirmOpen(false);
     onDeleted?.();
     router.refresh();
@@ -122,13 +122,13 @@ export function WorkoutSessionCard({
                   className="h-7 gap-1 px-2 text-xs text-muted-foreground"
                 >
                   <Pencil className="size-3.5" />
-                  {t("Bearbeiten")}
+                  {t("Edit")}
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon-sm"
                   className="text-muted-foreground hover:text-destructive"
-                  title={t("Löschen")}
+                  title={t("Delete")}
                   onClick={() => setConfirmOpen(true)}
                 >
                   <Trash2 className="size-4" />
@@ -149,15 +149,15 @@ export function WorkoutSessionCard({
               <BoldNumbers
                 text={[
                   new Set(sets.map((s) => s.exercise.name)).size === 1
-                    ? t("1 Übung")
-                    : t("{n} Übungen", { n: new Set(sets.map((s) => s.exercise.name)).size }),
-                  sets.length === 1 ? t("1 Satz") : t("{n} Sätze", { n: sets.length }),
+                    ? t("1 exercise")
+                    : t("{n} exercises", { n: new Set(sets.map((s) => s.exercise.name)).size }),
+                  sets.length === 1 ? t("1 set") : t("{n} sets", { n: sets.length }),
                 ].join(" · ")}
               />
               {prSetIds && sets.some((s) => prSetIds.has(s.id)) ? " · 🏆" : ""}
             </span>
             <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-              <span>{expanded ? t("Details ausblenden") : t("Details einblenden")}</span>
+              <span>{expanded ? t("Hide details") : t("Show details")}</span>
               <ChevronDown className={cn("size-5 transition-transform", expanded && "rotate-180")} />
             </span>
           </button>
@@ -184,7 +184,7 @@ export function WorkoutSessionCard({
                     {set.exercise.name}
                     {isPr && (
                       <span
-                        title={t("Neuer persönlicher Rekord")}
+                        title={t("New personal record")}
                         className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-500"
                       >
                         <Trophy className="size-3" />
@@ -212,7 +212,7 @@ export function WorkoutSessionCard({
               <ImageLightbox
                 key={p.id}
                 src={`/api/workout-photos/${p.id}`}
-                alt={t("Pump Pic")}
+                alt={t("Pump pic")}
                 thumbClassName="max-h-32 max-w-40"
               />
             ))}
@@ -221,8 +221,8 @@ export function WorkoutSessionCard({
 
         {(perceivedExertion != null || skinCondition != null) && (
           <div className="flex gap-4 text-xs text-muted-foreground">
-            {perceivedExertion != null && <span>{t("Anstrengung {n}/10", { n: perceivedExertion })}</span>}
-            {skinCondition != null && <span>{t("Haut {n}/10", { n: skinCondition })}</span>}
+            {perceivedExertion != null && <span>{t("Effort {n}/10", { n: perceivedExertion })}</span>}
+            {skinCondition != null && <span>{t("Skin {n}/10", { n: skinCondition })}</span>}
           </div>
         )}
 
@@ -233,15 +233,15 @@ export function WorkoutSessionCard({
         <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>{t("Workout löschen?")}</AlertDialogTitle>
+              <AlertDialogTitle>{t("Delete workout?")}</AlertDialogTitle>
               <AlertDialogDescription>
-                {t("Das kann nicht rückgängig gemacht werden. Bereits geteilte Gruppen-Posts bleiben erhalten, verlieren aber den Bezug zu diesem Workout.")}
+                {t("This can't be undone. Group posts that were already shared stay, but lose their link to this workout.")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>{t("Abbrechen")}</AlertDialogCancel>
+              <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
               <AlertDialogAction disabled={deleting} onClick={handleDelete}>
-                {deleting ? t("Löschen…") : t("Löschen")}
+                {deleting ? t("Deleting…") : t("Delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

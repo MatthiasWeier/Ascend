@@ -41,31 +41,31 @@ export function QuestsBoard() {
   function actionsFor(q: QuestDTO) {
     return {
       onToggleStep: (stepId: string, done: boolean) => {
-        call(`/api/quests/${q.id}/steps/${stepId}`, { method: "PATCH", body: JSON.stringify({ done }) }, "Konnte nicht speichern.").then(
+        call(`/api/quests/${q.id}/steps/${stepId}`, { method: "PATCH", body: JSON.stringify({ done }) }, "Couldn't save.").then(
           (ok) => {
             const allDone = q.steps.every((s) => (s.id === stepId ? done : s.doneAt != null));
             if (ok && done && allDone && q.status === "ACTIVE") {
-              toast.success(t("Alle Schritte geschafft - schließ die Sidequest ab!"));
+              toast.success(t("All steps done - complete the sidequest!"));
             }
           }
         );
       },
       onAddStep: async (title: string) => {
-        await call(`/api/quests/${q.id}/steps`, { method: "POST", body: JSON.stringify({ title }) }, "Konnte nicht speichern.");
+        await call(`/api/quests/${q.id}/steps`, { method: "POST", body: JSON.stringify({ title }) }, "Couldn't save.");
       },
       onDeleteStep: (stepId: string) => {
         call(`/api/quests/${q.id}/steps/${stepId}`, { method: "DELETE" }, "Konnte nicht löschen.");
       },
       onMoveStep: (stepId: string, direction: "up" | "down") => {
-        call(`/api/quests/${q.id}/steps/${stepId}`, { method: "PATCH", body: JSON.stringify({ move: direction }) }, "Konnte nicht speichern.");
+        call(`/api/quests/${q.id}/steps/${stepId}`, { method: "PATCH", body: JSON.stringify({ move: direction }) }, "Couldn't save.");
       },
       onComplete: () => {
-        call(`/api/quests/${q.id}`, { method: "PATCH", body: JSON.stringify({ status: "COMPLETED" }) }, "Konnte nicht speichern.").then(
-          (ok) => ok && toast.success(t("Sidequest geschafft - stark!"))
+        call(`/api/quests/${q.id}`, { method: "PATCH", body: JSON.stringify({ status: "COMPLETED" }) }, "Couldn't save.").then(
+          (ok) => ok && toast.success(t("Sidequest completed - nice!"))
         );
       },
       onReopen: () => {
-        call(`/api/quests/${q.id}`, { method: "PATCH", body: JSON.stringify({ status: "ACTIVE" }) }, "Konnte nicht speichern.");
+        call(`/api/quests/${q.id}`, { method: "PATCH", body: JSON.stringify({ status: "ACTIVE" }) }, "Couldn't save.");
       },
       onEdit: () => {
         setEditing(q);
@@ -73,7 +73,7 @@ export function QuestsBoard() {
       },
       onDelete: () => {
         call(`/api/quests/${q.id}`, { method: "DELETE" }, "Konnte nicht löschen.").then(
-          (ok) => ok && toast.success(t("Sidequest gelöscht."))
+          (ok) => ok && toast.success(t("Sidequest deleted."))
         );
       },
     };
@@ -94,7 +94,7 @@ export function QuestsBoard() {
           }}
         >
           <Plus className="size-4" />
-          {t("Neue Sidequest")}
+          {t("New sidequest")}
         </Button>
       </div>
 
@@ -102,7 +102,7 @@ export function QuestsBoard() {
         <Skeleton className="h-40 w-full" />
       ) : quests.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          {t("Noch keine Sidequest. Setz dir ein Ziel - z. B. \"Handstand lernen bis Ende 2026\".")}
+          {t("No sidequest yet. Set yourself a goal - e.g. \"learn a handstand by the end of 2026\".")}
         </p>
       ) : (
         <>
@@ -115,7 +115,7 @@ export function QuestsBoard() {
           )}
           {completed.length > 0 && (
             <section className="flex flex-col gap-3">
-              <h2 className="text-sm font-semibold text-muted-foreground">{t("Geschafft")}</h2>
+              <h2 className="text-sm font-semibold text-muted-foreground">{t("Completed")}</h2>
               <FeedList>
                 {completed.map((q) => (
                   <QuestCard key={q.id} quest={q} actions={actionsFor(q)} />

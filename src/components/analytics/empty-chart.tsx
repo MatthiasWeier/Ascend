@@ -54,7 +54,7 @@ export function EmptyChart({
         <p className="max-w-xs text-sm text-muted-foreground">{message}</p>
         <Button size="sm" render={<Link href="/dashboard/workouts/new" />}>
           <PlusCircle className="size-4" />
-          {t("Erstes Workout eintragen")}
+          {t("Log your first workout")}
         </Button>
       </div>
     </div>

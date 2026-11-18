@@ -22,22 +22,22 @@ export async function OnboardingChecklist({
   const steps: Step[] = [
     {
       href: "/dashboard/settings",
-      label: t("Körpergewicht eintragen"),
-      description: t("Für korrekt bewertete Bodyweight-Übungen wie Klimmzüge"),
+      label: t("Enter your body weight"),
+      description: t("For correctly rated bodyweight exercises like pull-ups"),
       icon: Scale,
       done: hasBodyWeight,
     },
     {
       href: "/dashboard/workouts/new",
-      label: t("Erstes Workout eintragen"),
-      description: t("Übung wählen, Sätze eintragen, fertig"),
+      label: t("Log your first workout"),
+      description: t("Pick an exercise, enter sets, done"),
       icon: Dumbbell,
       done: false,
     },
     {
       href: "/dashboard/groups",
-      label: t("Gruppe erstellen oder beitreten"),
-      description: t("Gemeinsame Ziele, Feed und Challenges mit Freunden"),
+      label: t("Create or join a group"),
+      description: t("Shared goals, feed and challenges with friends"),
       icon: Users,
       done: hasGroup,
     },
@@ -45,7 +45,7 @@ export async function OnboardingChecklist({
 
   return (
     <div className="rounded-xl border border-dashed border-border p-4">
-      <p className="mb-3 text-sm font-semibold">{t("So geht's los")}</p>
+      <p className="mb-3 text-sm font-semibold">{t("Getting started")}</p>
       <div className="flex flex-col gap-1">
         {steps.map((step) => (
           <Link

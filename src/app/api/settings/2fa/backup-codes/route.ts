@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = bodySchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Passwort erforderlich" }, { status: 400 });
+    return NextResponse.json({ error: "Password required" }, { status: 400 });
   }
 
   const user = await prisma.user.findUniqueOrThrow({
@@ -27,11 +27,11 @@ export async function POST(request: Request) {
     select: { passwordHash: true, totpEnabled: true },
   });
   if (!user.totpEnabled) {
-    return NextResponse.json({ error: "2FA ist nicht aktiviert" }, { status: 400 });
+    return NextResponse.json({ error: "2FA is not enabled" }, { status: 400 });
   }
   const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
   if (!valid) {
-    return NextResponse.json({ error: "Passwort ist falsch" }, { status: 400 });
+    return NextResponse.json({ error: "Password is wrong" }, { status: 400 });
   }
 
   const backupCodes = await issueBackupCodes(session.user.id);

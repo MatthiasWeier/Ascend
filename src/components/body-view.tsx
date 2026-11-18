@@ -26,11 +26,11 @@ type MuscleData = {
 type InjuryRow = { id: string; bodyPart: BodyPart; severity: InjurySeverity; note: string | null };
 
 const WINDOWS = [7, 14, 30];
-const LEVEL_LABEL = ["Kaum trainiert", "Wenig", "Mittel", "Viel", "Sehr viel"];
+const LEVEL_LABEL = ["Barely trained", "Little", "Moderate", "A lot", "Very much"];
 const WISHES = [
-  { value: 0, label: "Passt" },
-  { value: 1, label: "Mehr" },
-  { value: 2, label: "Viel mehr" },
+  { value: 0, label: "Fine" },
+  { value: 1, label: "More" },
+  { value: 2, label: "Much more" },
 ];
 
 // The body map: 3D mannequin coloured by how much each muscle was trained
@@ -56,7 +56,7 @@ export function BodyView({ apiUrl = "/api/body", readOnly = false }: { apiUrl?: 
     setError(null);
     return fetch(`${apiUrl}?days=${days}`)
       .then(async (r) => {
-        if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error ?? "Fehler");
+        if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error ?? "Error");
         return r.json() as Promise<{ muscles: MuscleData[]; injuries: InjuryRow[] }>;
       })
       .then((res) => {
@@ -67,7 +67,7 @@ export function BodyView({ apiUrl = "/api/body", readOnly = false }: { apiUrl?: 
       .catch(() => {
         if (cancelledRef?.current) return;
         setData([]);
-        setError(t("Konnte den Körper nicht laden."));
+        setError(t("Couldn't load the body."));
       });
   }
 
@@ -101,7 +101,7 @@ export function BodyView({ apiUrl = "/api/body", readOnly = false }: { apiUrl?: 
     });
     if (!res.ok) {
       setData(previous);
-      toast.error(t("Konnte nicht speichern."));
+      toast.error(t("Couldn't save."));
     }
   }
 
@@ -113,7 +113,7 @@ export function BodyView({ apiUrl = "/api/body", readOnly = false }: { apiUrl?: 
         </p>
       )}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex gap-1" role="group" aria-label={t("Zeitraum")}>
+        <div className="flex gap-1" role="group" aria-label={t("Period")}>
           {WINDOWS.map((w) => (
             <button
               key={w}
@@ -127,30 +127,30 @@ export function BodyView({ apiUrl = "/api/body", readOnly = false }: { apiUrl?: 
                   : "border-border bg-secondary/40 text-muted-foreground hover:bg-secondary"
               )}
             >
-              {t("{n} Tage", { n: w })}
+              {t("{n} days", { n: w })}
             </button>
           ))}
         </div>
         {!webglMissing && (
           <div className="flex gap-1">
             <Button variant="outline" size="sm" onClick={() => viewer.current?.view("front")}>
-              {t("Vorne")}
+              {t("Front")}
             </Button>
             <Button variant="outline" size="sm" onClick={() => viewer.current?.view("back")}>
-              {t("Hinten")}
+              {t("Back")}
             </Button>
             <Button
               variant={spinning ? "default" : "outline"}
               size="sm"
               aria-pressed={spinning}
-              title={t("Automatisch drehen")}
+              title={t("Rotate automatically")}
               onClick={() => {
                 viewer.current?.setAutoRotate(!spinning);
                 setSpinning(!spinning);
               }}
             >
               <RotateCw className="size-4" />
-              {t("Drehen")}
+              {t("Rotate")}
             </Button>
           </div>
         )}
@@ -160,7 +160,7 @@ export function BodyView({ apiUrl = "/api/body", readOnly = false }: { apiUrl?: 
         <div className="overflow-hidden rounded-xl border border-border bg-gradient-to-b from-secondary/40 to-card">
           {webglMissing ? (
             <p className="flex h-64 items-center justify-center px-6 text-center text-sm text-muted-foreground">
-              {t("3D wird von diesem Browser nicht unterstützt - unten findest du alle Muskeln als Liste.")}
+              {t("3D isn't supported by this browser - you'll find all muscles as a list below.")}
             </p>
           ) : data == null ? (
             <Skeleton className="h-[360px] w-full sm:h-[440px] lg:h-[520px]" />
@@ -187,11 +187,11 @@ export function BodyView({ apiUrl = "/api/body", readOnly = false }: { apiUrl?: 
             ))}
             <span className="flex items-center gap-1">
               <span className="size-3 rounded-sm bg-blue-600" />
-              {t("Wunsch")}
+              {t("Wish")}
             </span>
             <span className="flex items-center gap-1">
               <span className="size-3 rounded-sm bg-amber-500" />
-              {t("Verletzung")}
+              {t("Injury")}
             </span>
           </div>
         </div>
@@ -208,16 +208,16 @@ export function BodyView({ apiUrl = "/api/body", readOnly = false }: { apiUrl?: 
                   </p>
                 </div>
                 <p className="text-sm">
-                  <b className="font-bold tabular-nums text-primary">{current.perWeek}</b> {t("gewichtete Sätze pro Woche")}
+                  <b className="font-bold tabular-nums text-primary">{current.perWeek}</b> {t("weighted sets per week")}
                   <br />
                   <span className="text-muted-foreground">
                     {current.daysSince == null
-                      ? t("Noch nie trainiert.")
+                      ? t("Never trained.")
                       : current.daysSince === 0
-                        ? t("Zuletzt: heute")
+                        ? t("Last: today")
                         : current.daysSince === 1
-                          ? t("Zuletzt: vor 1 Tag")
-                          : t("Zuletzt: vor {n} Tagen", { n: current.daysSince })}
+                          ? t("Last: 1 day ago")
+                          : t("Last: {n} days ago", { n: current.daysSince })}
                   </span>
                 </p>
                 {(() => {
@@ -239,7 +239,7 @@ export function BodyView({ apiUrl = "/api/body", readOnly = false }: { apiUrl?: 
                 {!readOnly && <ReportInjuryDialog muscle={current.muscle} onSaved={reload} />}
                 {!readOnly && (
                   <div>
-                    <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t("Wie zufrieden bist du?")}</p>
+                    <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t("How happy are you with it?")}</p>
                     <div className="flex flex-wrap gap-1" role="group">
                       {WISHES.map((w) => (
                         <button
@@ -259,14 +259,14 @@ export function BodyView({ apiUrl = "/api/body", readOnly = false }: { apiUrl?: 
                       ))}
                     </div>
                     <p className="mt-1.5 text-xs text-muted-foreground">
-                      {t("\"Mehr\" bringt den Muskel öfter ins Workout Brain.")}
+                      {t("\"More\" brings the muscle up in the Workout Brain more often.")}
                     </p>
                   </div>
                 )}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                {t("Tipp auf einen Muskel, um Details zu sehen und einen Wunsch zu setzen. Ziehen dreht den Körper.")}
+                {t("Tap a muscle for details and to set a wish. Dragging rotates the body.")}
               </p>
             )}
           </div>
@@ -290,8 +290,8 @@ export function BodyView({ apiUrl = "/api/body", readOnly = false }: { apiUrl?: 
                       >
                         <span className="size-3 shrink-0 rounded-sm" style={{ backgroundColor: HEAT_COLORS[m.level - 1] }} />
                         <span className="flex-1">{t(MUSCLE_LABEL[muscle])}</span>
-                        {m.wish > 0 && <span className="size-2 rounded-full bg-blue-600" title={t("Wunsch")} />}
-                        {m.injured && <span className="size-2 rounded-full bg-amber-500" title={t("Verletzung")} />}
+                        {m.wish > 0 && <span className="size-2 rounded-full bg-blue-600" title={t("Wish")} />}
+                        {m.injured && <span className="size-2 rounded-full bg-amber-500" title={t("Injury")} />}
                         <span className="w-10 text-right text-xs tabular-nums text-muted-foreground">{m.perWeek}</span>
                       </button>
                     </li>
@@ -303,7 +303,7 @@ export function BodyView({ apiUrl = "/api/body", readOnly = false }: { apiUrl?: 
 
       {injuries.length > 0 && (
         <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
-          <p className="mb-2 text-sm font-semibold text-amber-500">{t("Aktive Verletzungen")}</p>
+          <p className="mb-2 text-sm font-semibold text-amber-500">{t("Active injuries")}</p>
           <ul className="flex flex-col gap-1.5">
             {injuries.map((i) => (
               <li key={i.id} className="text-sm">

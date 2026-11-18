@@ -14,7 +14,7 @@ export function DataExport() {
     <a href="/api/settings/export" download>
       <Button type="button" variant="outline">
         <Download className="size-4" />
-        {t("Alle Daten exportieren (JSON)")}
+        {t("Export all data (JSON)")}
       </Button>
     </a>
   );
@@ -38,19 +38,19 @@ export function DataImport() {
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Import fehlgeschlagen."));
+      toast.error(t(data.error ?? "Import failed."));
       return;
     }
     const data: { sessionsImported: number; setsImported: number; newExercisesCreated: number } =
       await res.json();
     toast.success(
       data.newExercisesCreated > 0
-        ? t("{sessions} Workouts importiert ({sets} Sätze, {exercises} neue Übungen angelegt).", {
+        ? t("{sessions} workouts imported ({sets} sets, {exercises} new exercises created).", {
             sessions: data.sessionsImported,
             sets: data.setsImported,
             exercises: data.newExercisesCreated,
           })
-        : t("{sessions} Workouts importiert ({sets} Sätze).", {
+        : t("{sessions} workouts imported ({sets} sets).", {
             sessions: data.sessionsImported,
             sets: data.setsImported,
           }),
@@ -62,11 +62,11 @@ export function DataImport() {
     <div className="flex flex-col gap-2">
       <Button type="button" variant="outline" disabled={importing} onClick={() => inputRef.current?.click()}>
         <Upload className="size-4" />
-        {importing ? t("Importiere…") : t("Strong/Hevy-CSV importieren")}
+        {importing ? t("Importing…") : t("Import Strong/Hevy CSV")}
       </Button>
       <input ref={inputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
       <p className="text-xs text-muted-foreground">
-        {t("Best-effort - unbekannte Übungen werden neu angelegt, Muskel-Fokus wird geraten und sollte danach geprüft werden.")}
+        {t("Best effort - unknown exercises are created, muscle focus is guessed and should be reviewed afterwards.")}
       </p>
     </div>
   );
@@ -93,18 +93,18 @@ export function CalendarFeed() {
     const data: { token: string } = await res.json();
     setUrl(`${window.location.origin}/api/calendar/${data.token}.ics`);
     setLoading(false);
-    toast.success(t("Neuer Link erzeugt - der alte funktioniert nicht mehr."));
+    toast.success(t("New link generated - the old one no longer works."));
   }
 
   function copy() {
     if (!url) return;
-    navigator.clipboard.writeText(url).then(() => toast.success(t("Link kopiert.")));
+    navigator.clipboard.writeText(url).then(() => toast.success(t("Link copied.")));
   }
 
   if (url == null) {
     return (
       <Button type="button" variant="outline" disabled={loading} onClick={load}>
-        {t("Kalender-Link anzeigen")}
+        {t("Show calendar link")}
       </Button>
     );
   }
@@ -112,14 +112,14 @@ export function CalendarFeed() {
   return (
     <div className="flex flex-col gap-2">
       <Label className="text-xs text-muted-foreground">
-        {t("In Kalender-Apps (Apple/Google Kalender etc.) als Abo hinzufügen:")}
+        {t("Add as a subscription in calendar apps (Apple/Google Calendar etc.):")}
       </Label>
       <div className="flex items-center gap-2">
         <Input readOnly value={url} className="font-mono text-xs" />
-        <Button type="button" variant="ghost" size="icon" onClick={copy} title={t("Kopieren")}>
+        <Button type="button" variant="ghost" size="icon" onClick={copy} title={t("Copy")}>
           <Copy className="size-4" />
         </Button>
-        <Button type="button" variant="ghost" size="icon" onClick={regenerate} disabled={loading} title={t("Neu generieren")}>
+        <Button type="button" variant="ghost" size="icon" onClick={regenerate} disabled={loading} title={t("Regenerate")}>
           <RefreshCw className="size-4" />
         </Button>
       </div>

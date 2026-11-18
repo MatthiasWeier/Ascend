@@ -40,123 +40,123 @@ function useSteps(): Step[] {
   return [
     {
       icon: Mountain,
-      title: t("Willkommen bei Ascend 👋"),
-      body: t("Dein Tracker für Kraft und Klettern - allein oder mit Freunden. Die kurze Tour zeigt dir, wo du was findest."),
+      title: t("Welcome to Ascend 👋"),
+      body: t("Your tracker for strength and climbing - solo or with friends. This short tour shows you where everything is."),
     },
     {
       icon: PlusCircle,
-      title: t("Workout eintragen"),
-      body: t("Hier hältst du jedes Training fest."),
+      title: t("Log workout"),
+      body: t("This is where you record every training session."),
       bullets: [
-        t("Übung wählen, Wiederholungen und Gewicht eintragen"),
-        t("Mit „Satz & Pause“ startet automatisch der Pausen-Timer"),
-        t("Vorlagen sparen Zeit bei Routine-Workouts"),
-        t("Dein Entwurf wird automatisch gespeichert - auch wenn du kurz die App wechselst"),
+        t("Pick an exercise, enter reps and weight"),
+        t("\"Set & rest\" starts the rest timer automatically"),
+        t("Templates save time on routine workouts"),
+        t("Your draft is saved automatically - even if you briefly switch apps"),
       ],
-      where: { icon: PlusCircle, label: t("Eintragen") },
+      where: { icon: PlusCircle, label: t("Log") },
     },
     {
       icon: Camera,
-      title: t("Pump Pics, Notizen & Rekorde"),
-      body: t("Mach dein Workout persönlich."),
+      title: t("Pump pics, notes & records"),
+      body: t("Make the workout your own."),
       bullets: [
-        t("Hänge bis zu 10 Fotos an ein Workout"),
-        t("Bewerte, wie ausgelastet die Muskelgruppen waren"),
-        t("Neue Bestleistungen werden als 🏆 PR gefeiert"),
+        t("Attach up to 10 photos to a workout"),
+        t("Rate how fatigued the muscle groups were"),
+        t("New personal bests are celebrated as a 🏆 PR"),
       ],
-      where: { icon: PlusCircle, label: t("Eintragen") },
+      where: { icon: PlusCircle, label: t("Log") },
     },
     {
       icon: LayoutDashboard,
-      title: t("Dein Feed"),
-      body: t("Auf der Startseite siehst du deine Workouts und die Beiträge deiner Gruppen an einem Ort."),
+      title: t("Your feed"),
+      body: t("The home page shows your workouts and your groups' posts in one place."),
       bullets: [
-        t("Filtere nach Gruppe, Workouts, Nachrichten oder Bildern"),
-        t("Klick auf ein Workout für Details oder zum Bearbeiten"),
-        t("Kommentiere und reagiere auf Beiträge"),
+        t("Filter by group, workouts, messages or images"),
+        t("Click a workout for details or to edit it"),
+        t("Comment and react to posts"),
       ],
       where: { icon: LayoutDashboard, label: t("Feed") },
     },
     {
       icon: CalendarDays,
-      title: t("Kalender & Streak"),
-      body: t("Der Aktivitätskalender färbt jeden Trainingstag ein - ein Klick zeigt das Workout."),
+      title: t("Calendar & streak"),
+      body: t("The activity calendar colours every training day - click one to see the workout."),
       bullets: [
-        t("Deinen Streak siehst du oben auf der Startseite"),
-        t("Den Kalender kannst du in den Einstellungen als Kalender-Feed in Google oder Apple Kalender abonnieren"),
+        t("You'll see your streak at the top of the home page"),
+        t("In Settings you can subscribe to the calendar as a feed in Google or Apple Calendar"),
       ],
       where: { icon: BarChart3, label: t("Analytics") },
     },
     {
       icon: BarChart3,
       title: t("Analytics"),
-      body: t("Sieh, wie du dich entwickelst."),
+      body: t("See how you're progressing."),
       bullets: [
-        t("Kraft: Verlauf jeder Übung"),
-        t("Rekorde, Volumen und Balance der Muskelgruppen"),
-        t("Klettern: Haut-Zustand und Belastung"),
+        t("Strength: progress of every exercise"),
+        t("Records, volume and muscle group balance"),
+        t("Climbing: skin condition and load"),
       ],
       where: { icon: BarChart3, label: t("Analytics") },
     },
     {
       icon: Brain,
       title: t("Workout Brain"),
-      body: t("Die Karte auf der Startseite schlägt vor, was du als Nächstes trainieren solltest - damit keine Muskelgruppe zu kurz kommt."),
+      body: t("The card on the home page suggests what to train next - so no muscle group gets neglected."),
       where: { icon: LayoutDashboard, label: t("Feed") },
     },
     {
       icon: PersonStanding,
-      title: t("Körper & Muskeln"),
-      body: t("Eine drehbare 3D-Figur zeigt, welche Muskeln du zuletzt wie stark trainiert hast - grau ist wenig, rot ist viel."),
+      title: t("Body & muscles"),
+      body: t("A rotatable 3D figure shows how much you've trained each muscle lately - grey is little, red is a lot."),
       bullets: [
-        t("Tippe einen Muskel an und sag, ob du ihn öfter trainieren willst - das Workout Brain schlägt ihn dann öfter vor"),
-        t("Verletzungen trägst du in den Einstellungen ein: betroffene Übungen werden gewarnt und nicht mehr vorgeschlagen"),
+        t("Tap a muscle and say whether you want to train it more - the Workout Brain will then suggest it more often"),
+        t("Enter injuries in Settings: affected exercises are flagged and no longer suggested"),
       ],
-      where: { icon: PersonStanding, label: t("Körper") },
+      where: { icon: PersonStanding, label: t("Body") },
     },
     {
       icon: Users,
-      title: t("Gruppen"),
-      body: t("Erstelle eine Gruppe oder tritt per Einladungslink bei."),
+      title: t("Groups"),
+      body: t("Create a group or join via an invite link."),
       bullets: [
-        t("Feed mit Nachrichten, Fotos und geteilten Workouts"),
-        t("Workouts einzeln teilen oder automatisch in der Gruppe teilen"),
-        t("Gemeinsame Ziele, Analytics und Mitgliederliste"),
+        t("Feed with messages, photos and shared workouts"),
+        t("Share workouts one by one or automatically with the group"),
+        t("Shared goals, analytics and member list"),
       ],
-      where: { icon: Users, label: t("Gruppen") },
+      where: { icon: Users, label: t("Groups") },
     },
     {
       icon: Trophy,
-      title: t("Challenges & Gruppenziele"),
-      body: t("Motivation für alle."),
+      title: t("Challenges & group goals"),
+      body: t("Motivation for everyone."),
       bullets: [
-        t("Daily Challenges: Jeder setzt sein Wiederholungs-Ziel für den Tag"),
-        t("Wiederholungen aus deinen Workouts zählen automatisch mit"),
-        t("Gruppenziele wie \"10.000 Liegestütze im September\" füllen sich von selbst"),
+        t("Daily challenges: everyone sets their own rep target for the day"),
+        t("Reps from your workouts count automatically"),
+        t("Group goals like \"10,000 push-ups in September\" fill themselves up"),
       ],
-      where: { icon: Users, label: t("Gruppen") },
+      where: { icon: Users, label: t("Groups") },
     },
     {
       icon: Bell,
-      title: t("Benachrichtigungen"),
-      body: t("Die Glocke oben zeigt Kommentare, Reaktionen und geschaffte Challenges. Push-Nachrichten aufs Handy aktivierst du in den Einstellungen."),
-      where: { icon: Bell, label: t("Glocke oben rechts") },
+      title: t("Notifications"),
+      body: t("The bell at the top shows comments, reactions and completed challenges. You can enable push notifications on your phone in Settings."),
+      where: { icon: Bell, label: t("Bell, top right") },
     },
     {
       icon: Settings,
-      title: t("Einstellungen"),
-      body: t("Passe Ascend an dich an."),
+      title: t("Settings"),
+      body: t("Adapt Ascend to you."),
       bullets: [
-        t("Körpergewicht - für korrekt bewertete Bodyweight-Übungen"),
-        t("Einheit kg/lb, Sprache Deutsch/English, Hell/Dunkel"),
-        t("Export, Import, Zwei-Faktor-Login und mehr"),
+        t("Body weight - for correctly rated bodyweight exercises"),
+        t("Unit kg/lb, language German/English, light/dark"),
+        t("Export, import, two-factor login and more"),
       ],
-      where: { icon: Settings, label: t("Einstellungen") },
+      where: { icon: Settings, label: t("Settings") },
     },
     {
       icon: Rocket,
-      title: t("Los geht's!"),
-      body: t("Am besten startest du direkt mit deinem ersten Workout. Diese Tour findest du jederzeit in den Einstellungen wieder."),
+      title: t("Let's go!"),
+      body: t("The best way to start is with your first workout. You can find this tour again in Settings at any time."),
     },
   ];
 }
@@ -213,7 +213,7 @@ export function OnboardingTutorial({ initialOpen }: { initialOpen: boolean }) {
 
           {step.where && (
             <p className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
-              {t("Zu finden:")}
+              {t("Find it:")}
               <step.where.icon className="size-3.5" />
               <span className="font-medium text-foreground">{step.where.label}</span>
             </p>
@@ -233,11 +233,11 @@ export function OnboardingTutorial({ initialOpen }: { initialOpen: boolean }) {
           <div className="flex items-center gap-2">
             {isFirst ? (
               <Button variant="ghost" className="flex-1" onClick={close}>
-                {t("Überspringen")}
+                {t("Skip")}
               </Button>
             ) : (
               <Button variant="outline" className="flex-1" onClick={() => setIndex(index - 1)}>
-                {t("Zurück")}
+                {t("Back")}
               </Button>
             )}
             {isLast ? (
@@ -248,24 +248,24 @@ export function OnboardingTutorial({ initialOpen }: { initialOpen: boolean }) {
                   router.push("/dashboard/workouts/new");
                 }}
               >
-                {t("Erstes Workout eintragen")}
+                {t("Log your first workout")}
               </Button>
             ) : (
               <Button className="flex-1" onClick={() => setIndex(index + 1)}>
-                {t("Weiter")}
+                {t("Next")}
               </Button>
             )}
           </div>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{t("Schritt {n} von {total}", { n: index + 1, total: steps.length })}</span>
+            <span>{t("Step {n} of {total}", { n: index + 1, total: steps.length })}</span>
             {isLast ? (
               <button type="button" className="underline-offset-2 hover:underline" onClick={close}>
-                {t("Fertig")}
+                {t("Done")}
               </button>
             ) : (
               !isFirst && (
                 <button type="button" className="underline-offset-2 hover:underline" onClick={close}>
-                  {t("Überspringen")}
+                  {t("Skip")}
                 </button>
               )
             )}
@@ -281,7 +281,7 @@ export function ReplayTutorialButton() {
   const t = useT();
   return (
     <Button variant="outline" onClick={() => window.dispatchEvent(new Event(OPEN_TUTORIAL_EVENT))}>
-      {t("Tutorial erneut ansehen")}
+      {t("Watch tutorial again")}
     </Button>
   );
 }

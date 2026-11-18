@@ -37,10 +37,10 @@ export function AddClimbingSendDialog({ onAdded }: { onAdded: () => void }) {
     });
     setLoading(false);
     if (!res.ok) {
-      toast.error(t("Konnte Send nicht speichern."));
+      toast.error(t("Couldn't save the send."));
       return;
     }
-    toast.success(t("Send gespeichert!"));
+    toast.success(t("Send saved!"));
     setGrade("");
     setAttempts("1");
     setOpen(false);
@@ -51,12 +51,12 @@ export function AddClimbingSendDialog({ onAdded }: { onAdded: () => void }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button variant="outline" size="sm" />}>
         <Plus className="size-4" />
-        {t("Send eintragen")}
+        {t("Log send")}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("Send eintragen")}</DialogTitle>
-          <DialogDescription>{t("Boulder oder Route mit Schwierigkeitsgrad.")}</DialogDescription>
+          <DialogTitle>{t("Log send")}</DialogTitle>
+          <DialogDescription>{t("Boulder or route with grade.")}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Tabs value={style} onValueChange={(v) => setStyle(v as "BOULDER" | "ROUTE")}>
@@ -70,17 +70,17 @@ export function AddClimbingSendDialog({ onAdded }: { onAdded: () => void }) {
             </TabsList>
           </Tabs>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="grade">{t("Grad")}</Label>
+            <Label htmlFor="grade">{t("Grade")}</Label>
             <Input
               id="grade"
-              placeholder={style === "BOULDER" ? t("z.B. V5") : t("z.B. 6a+")}
+              placeholder={style === "BOULDER" ? t("e.g. V5") : t("e.g. 6a+")}
               value={grade}
               onChange={(e) => setGrade(e.target.value)}
               required
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="attempts">{t("Versuche")}</Label>
+            <Label htmlFor="attempts">{t("Attempts")}</Label>
             <Input
               id="attempts"
               type="number"
@@ -91,7 +91,7 @@ export function AddClimbingSendDialog({ onAdded }: { onAdded: () => void }) {
           </div>
           <DialogFooter>
             <Button type="submit" disabled={loading}>
-              {loading ? t("Speichern…") : t("Speichern")}
+              {loading ? t("Saving…") : t("Save")}
             </Button>
           </DialogFooter>
         </form>

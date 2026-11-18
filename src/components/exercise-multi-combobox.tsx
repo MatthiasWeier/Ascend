@@ -56,16 +56,16 @@ export function ExerciseMultiCombobox({
         >
           <span className={cn("truncate", selected.length === 0 && "text-muted-foreground")}>
             {selected.length === 0
-              ? t("Wähle aus")
-              : t("{n} Übungen ausgewählt", { n: selected.length })}
+              ? t("Select")
+              : t("{n} exercises selected", { n: selected.length })}
           </span>
           <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
         </PopoverTrigger>
         <PopoverContent className="w-[260px] p-0" align="start">
           <Command>
-            <CommandInput placeholder={t("Übung suchen…")} />
+            <CommandInput placeholder={t("Search exercise…")} />
             <CommandList>
-              <CommandEmpty>{t("Keine Übung gefunden.")}</CommandEmpty>
+              <CommandEmpty>{t("No exercise found.")}</CommandEmpty>
               <CommandGroup>
                 {exercises.map((ex) => (
                   <CommandItem key={ex.id} value={ex.name} onSelect={() => toggle(ex.id)}>
@@ -86,7 +86,7 @@ export function ExerciseMultiCombobox({
               <button
                 type="button"
                 onClick={() => toggle(ex.id)}
-                aria-label={t("{name} entfernen", { name: ex.name })}
+                aria-label={t("Remove {name}", { name: ex.name })}
                 className="rounded-full p-0.5 hover:bg-foreground/10"
               >
                 <X className="size-3" />

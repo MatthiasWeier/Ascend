@@ -9,9 +9,9 @@ import { cn } from "@/lib/utils";
 import type { Muscle } from "@prisma/client";
 
 const LEVELS = [
-  { value: 0, label: "Passt" },
-  { value: 1, label: "Mehr" },
-  { value: 2, label: "Viel mehr" },
+  { value: 0, label: "Fine" },
+  { value: 1, label: "More" },
+  { value: 2, label: "Much more" },
 ];
 
 // Per muscle: "fine as it is" / "train more" / "train much more". The Workout
@@ -39,7 +39,7 @@ export function MuscleWishes() {
     });
     if (!res.ok) {
       setWishes(previous);
-      toast.error(t("Konnte nicht speichern."));
+      toast.error(t("Couldn't save."));
     }
   }
 

@@ -24,13 +24,13 @@ export default function AnalyticsPage() {
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6 lg:max-w-4xl">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{t("Analytics")}</h1>
-        <p className="text-sm text-muted-foreground">{t("Deine Fortschritte in Zahlen.")}</p>
+        <p className="text-sm text-muted-foreground">{t("Your progress in numbers.")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("Aktivitäts-Kalender")}</CardTitle>
-          <CardDescription>{t("Je dunkler, desto intensiver war dein Training an dem Tag.")}</CardDescription>
+          <CardTitle className="text-base">{t("Activity calendar")}</CardTitle>
+          <CardDescription>{t("The darker, the more intense your training was that day.")}</CardDescription>
         </CardHeader>
         <CardContent>
           <ActivityCalendar />
@@ -39,18 +39,18 @@ export default function AnalyticsPage() {
 
       <Tabs defaultValue="strength">
         <TabsList className="w-full flex-wrap">
-          <TabsTrigger value="strength">{t("Kraft")}</TabsTrigger>
-          <TabsTrigger value="records">{t("Rekorde")}</TabsTrigger>
-          <TabsTrigger value="volume">{t("Volumen")}</TabsTrigger>
+          <TabsTrigger value="strength">{t("Strength")}</TabsTrigger>
+          <TabsTrigger value="records">{t("Records")}</TabsTrigger>
+          <TabsTrigger value="volume">{t("Volume")}</TabsTrigger>
           <TabsTrigger value="balance">{t("Balance")}</TabsTrigger>
-          <TabsTrigger value="climbing">{t("Klettern")}</TabsTrigger>
+          <TabsTrigger value="climbing">{t("Climbing")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="strength">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{t("Maximalkraft-Verlauf")}</CardTitle>
-              <CardDescription>{t("Geschätztes 1RM (Epley-Formel) pro Übung über Zeit.")}</CardDescription>
+              <CardTitle className="text-base">{t("Max strength history")}</CardTitle>
+              <CardDescription>{t("Estimated 1RM (Epley formula) per exercise over time.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <OneRmChart />
@@ -61,8 +61,8 @@ export default function AnalyticsPage() {
         <TabsContent value="records">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{t("Persönliche Rekorde")}</CardTitle>
-              <CardDescription>{t("Dein aktueller Bestwert pro Übung.")}</CardDescription>
+              <CardTitle className="text-base">{t("Personal records")}</CardTitle>
+              <CardDescription>{t("Your current best per exercise.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <PersonalRecords />
@@ -73,8 +73,8 @@ export default function AnalyticsPage() {
         <TabsContent value="volume" className="flex flex-col gap-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{t("Sätze diese Woche")}</CardTitle>
-              <CardDescription>{t("Arbeitssätze pro Muskelgruppe seit Montag - Warm-ups zählen nicht mit.")}</CardDescription>
+              <CardTitle className="text-base">{t("Sets this week")}</CardTitle>
+              <CardDescription>{t("Working sets per muscle group since Monday - warm-ups don't count.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <WeeklySets />
@@ -82,8 +82,8 @@ export default function AnalyticsPage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{t("Gesamtarbeit")}</CardTitle>
-              <CardDescription>{t("Bewegtes Gewicht (Wdh × Gewicht) der letzten 90 Tage.")}</CardDescription>
+              <CardTitle className="text-base">{t("Total work")}</CardTitle>
+              <CardDescription>{t("Weight moved (reps × weight) over the last 90 days.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <VolumeChart />
@@ -94,8 +94,8 @@ export default function AnalyticsPage() {
         <TabsContent value="balance">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{t("Balance-Spinnennetz")}</CardTitle>
-              <CardDescription>{t("Wie ausgewogen ist dein Training über alle Bereiche?")}</CardDescription>
+              <CardTitle className="text-base">{t("Balance radar")}</CardTitle>
+              <CardDescription>{t("How balanced is your training across all areas?")}</CardDescription>
             </CardHeader>
             <CardContent>
               <BalanceRadar />
@@ -108,8 +108,8 @@ export default function AnalyticsPage() {
         <TabsContent value="climbing" className="flex flex-col gap-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{t("Boulder-Kalender")}</CardTitle>
-              <CardDescription>{t("Tag antippen, Anzahl pro Schwierigkeit eintragen.")}</CardDescription>
+              <CardTitle className="text-base">{t("Boulder calendar")}</CardTitle>
+              <CardDescription>{t("Tap a day, enter the count per difficulty.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <BoulderCalendar />
@@ -117,8 +117,8 @@ export default function AnalyticsPage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{t("Kletter-Pyramide")}</CardTitle>
-              <CardDescription>{t("Anzahl geschaffter Boulder/Routen pro Schwierigkeitsgrad.")}</CardDescription>
+              <CardTitle className="text-base">{t("Climbing pyramid")}</CardTitle>
+              <CardDescription>{t("Number of boulders/routes sent per grade.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <ClimbingPyramid />

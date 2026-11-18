@@ -25,11 +25,11 @@ import { BoldNumbers } from "@/components/bold-numbers";
 import { ClimbingBody } from "@/components/climbing-body";
 
 const TYPE_FILTERS = [
-  { value: "ALL" as const, label: "Alle", icon: null },
+  { value: "ALL" as const, label: "All", icon: null },
   { value: "TEXT" as const, label: "Text", icon: MessageSquare },
   { value: "WORKOUT_SHARE" as const, label: "Workout", icon: Dumbbell },
-  { value: "PHOTO" as const, label: "Foto", icon: ImageIcon },
-  { value: "CLIMBING" as const, label: "Klettern", icon: Mountain },
+  { value: "PHOTO" as const, label: "Photo", icon: ImageIcon },
+  { value: "CLIMBING" as const, label: "Climbing", icon: Mountain },
 ];
 type TypeFilter = (typeof TYPE_FILTERS)[number]["value"];
 
@@ -76,33 +76,33 @@ function SharedWorkoutBody({
       >
         <span>
           <span className="font-semibold">
-            {header.replace(/^Workout vom (.+)$/, (_, date: string) => t("Workout vom {date}", { date }))}
+            {header.replace(/^Workout vom (.+)$/, (_, date: string) => t("Workout from {date}", { date }))}
           </span>
           {exercises > 0 && (
             <span className="text-foreground/80">
               {" · "}
               <BoldNumbers
                 text={[
-                  exercises === 1 ? t("1 Übung") : t("{n} Übungen", { n: exercises }),
-                  lines.length === 1 ? t("1 Satz") : t("{n} Sätze", { n: lines.length }),
+                  exercises === 1 ? t("1 exercise") : t("{n} exercises", { n: exercises }),
+                  lines.length === 1 ? t("1 set") : t("{n} sets", { n: lines.length }),
                 ].join(" · ")}
               />
               {focuses.length > 0 &&
                 ` · ${focuses
-                  .map((f) => t("{focus}-Fokus", { focus: t((FOCUS_LABEL as Record<string, string>)[f] ?? f) }))
+                  .map((f) => t("{focus} focus", { focus: t((FOCUS_LABEL as Record<string, string>)[f] ?? f) }))
                   .join(", ")}`}
             </span>
           )}
         </span>
         <span className="flex shrink-0 items-center gap-1.5 px-2 text-sm font-medium text-muted-foreground">
-          <span>{open ? t("Details ausblenden") : t("Details einblenden")}</span>
+          <span>{open ? t("Hide details") : t("Show details")}</span>
           <ChevronDown className={cn("size-5 transition-transform", open && "rotate-180")} />
         </span>
       </button>
       {photoIds.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {photoIds.map((id) => (
-            <ImageLightbox key={id} src={`/api/workout-photos/${id}`} alt={t("Pump Pic")} thumbClassName="max-h-40 max-w-56" />
+            <ImageLightbox key={id} src={`/api/workout-photos/${id}`} alt={t("Pump pic")} thumbClassName="max-h-40 max-w-56" />
           ))}
         </div>
       )}
@@ -209,7 +209,7 @@ export function GroupFeed({
     });
     if (!res.ok) {
       setPosts(previousPosts);
-      toast.error(t("Konnte Reaktion nicht speichern."));
+      toast.error(t("Couldn't save the reaction."));
     }
   }
 
@@ -224,7 +224,7 @@ export function GroupFeed({
           ? payload.content
           : payload.type === "PHOTO"
             ? payload.caption || null
-            : t("Workout wird geteilt…"),
+            : t("Sharing workout…"),
       imageUrl: objectUrl,
       createdAt: new Date().toISOString(),
       workoutSessionId: payload.type === "WORKOUT_SHARE" ? payload.workoutSessionId : null,
@@ -273,8 +273,8 @@ export function GroupFeed({
     setPosts((prev) => (prev ?? []).filter((p) => p.id !== postId));
 
     undoableAction({
-      message: t("Beitrag gelöscht."),
-      undoLabel: t("Rückgängig"),
+      message: t("Post deleted."),
+      undoLabel: t("Undo"),
       onCommit: () => {
         fetch(`/api/groups/${groupId}/posts/${postId}`, { method: "DELETE" }).catch(() => {});
       },
@@ -308,7 +308,7 @@ export function GroupFeed({
     });
     setSavingEdit(false);
     if (!res.ok) {
-      toast.error(t("Konnte Beitrag nicht speichern."));
+      toast.error(t("Couldn't save the post."));
       return;
     }
     setPosts((prev) =>
@@ -327,21 +327,21 @@ export function GroupFeed({
     });
     setTogglingAutoShare(false);
     if (!res.ok) {
-      toast.error(t("Konnte Einstellung nicht ändern."));
+      toast.error(t("Couldn't change the setting."));
       return;
     }
     const data: { enabled: boolean; sharedCount: number } = await res.json();
     setAutoShare(data.enabled);
     if (!data.enabled) {
-      toast(t("Automatisches Teilen aus."));
+      toast(t("Auto-sharing off."));
       return;
     }
     toast.success(
       data.sharedCount > 0
         ? data.sharedCount === 1
-          ? t("Automatisches Teilen an - 1 Workout nachgetragen.")
-          : t("Automatisches Teilen an - {n} Workouts nachgetragen.", { n: data.sharedCount })
-        : t("Automatisches Teilen an.")
+          ? t("Auto-sharing on - 1 workout added.")
+          : t("Auto-sharing on - {n} workouts added.", { n: data.sharedCount })
+        : t("Auto-sharing on.")
     );
     refetch();
   }
@@ -353,9 +353,9 @@ export function GroupFeed({
 
       <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4">
         <div>
-          <p className="text-sm font-medium">{t("Workouts automatisch teilen")}</p>
+          <p className="text-sm font-medium">{t("Share workouts automatically")}</p>
           <p className="text-xs text-muted-foreground">
-            {t("Jedes neue Workout landet automatisch hier im Feed - inklusive aller bisherigen.")}
+            {t("Every new workout lands here in the feed automatically - including all past ones.")}
           </p>
         </div>
         <Switch checked={autoShare} onCheckedChange={handleToggleAutoShare} disabled={togglingAutoShare} />
@@ -384,7 +384,7 @@ export function GroupFeed({
             onClick={() => setAuthorFilter(null)}
             className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground"
           >
-            {t("Nur {name}", { name: authorFilter.name })}
+            {t("Only {name}", { name: authorFilter.name })}
             <X className="size-3" />
           </button>
         )}
@@ -394,11 +394,11 @@ export function GroupFeed({
         <Skeleton className="h-32 w-full" />
       ) : posts.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          {t("Noch nichts gepostet. Sei der Erste!")}
+          {t("Nothing posted yet. Be the first!")}
         </p>
       ) : visiblePosts.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          {t("Nichts mit diesem Filter.")}
+          {t("Nothing matches this filter.")}
         </p>
       ) : (
         <FeedList>
@@ -425,7 +425,7 @@ export function GroupFeed({
                   <div className="flex items-center gap-1">
                     <span>
                       {post.pending
-                        ? t("Wird gepostet…")
+                        ? t("Posting…")
                         : new Date(post.createdAt).toLocaleDateString(dateLocale, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </span>
                     {canEdit && !isEditing && (
@@ -434,7 +434,7 @@ export function GroupFeed({
                         variant="ghost"
                         size="icon-sm"
                         className="size-5 text-muted-foreground"
-                        title={t("Bearbeiten")}
+                        title={t("Edit")}
                         onClick={() => startEdit(post)}
                       >
                         <Pencil className="size-3" />
@@ -446,7 +446,7 @@ export function GroupFeed({
                         variant="ghost"
                         size="icon-sm"
                         className="size-5 text-muted-foreground hover:text-destructive"
-                        title={t("Löschen")}
+                        title={t("Delete")}
                         onClick={() => handleDeletePost(post.id)}
                       >
                         <Trash2 className="size-3" />
@@ -456,7 +456,7 @@ export function GroupFeed({
                 </div>
 
                 {post.type === "PHOTO" && post.imageUrl && (
-                  <ImageLightbox src={post.imageUrl} alt={post.content ?? t("Foto")} />
+                  <ImageLightbox src={post.imageUrl} alt={post.content ?? t("Photo")} />
                 )}
 
                 {post.type === "WORKOUT_SHARE" && (
@@ -479,10 +479,10 @@ export function GroupFeed({
                     <div className="flex items-center gap-2">
                       <Button type="button" size="sm" disabled={savingEdit} onClick={() => saveEdit(post.id)}>
                         <Check className="size-3.5" />
-                        {savingEdit ? t("Speichern…") : t("Speichern")}
+                        {savingEdit ? t("Saving…") : t("Save")}
                       </Button>
                       <Button type="button" size="sm" variant="ghost" onClick={cancelEdit}>
-                        {t("Abbrechen")}
+                        {t("Cancel")}
                       </Button>
                     </div>
                   </div>

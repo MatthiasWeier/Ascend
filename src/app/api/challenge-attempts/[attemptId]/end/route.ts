@@ -30,7 +30,7 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   if (attempt.userChallengeGoal.userId !== session.user.id) {
-    return NextResponse.json({ error: "Das ist nicht dein Versuch" }, { status: 403 });
+    return NextResponse.json({ error: "That's not your attempt" }, { status: 403 });
   }
   if (attempt.status !== "IN_PROGRESS") {
     return NextResponse.json({ attempt });

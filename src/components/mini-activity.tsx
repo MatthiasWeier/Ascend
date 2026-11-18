@@ -54,10 +54,10 @@ export async function MiniActivity({
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-2 text-sm font-semibold">
           <CalendarDays className="size-4 text-primary" />
-          {t("Aktivität")}
+          {t("Activity")}
         </span>
         <span className="text-xs text-muted-foreground">
-          {t("{n} Trainingstage in {w} Wochen", { n: trainingDays, w: WEEKS })}
+          {t("{n} training days in {w} weeks", { n: trainingDays, w: WEEKS })}
         </span>
       </div>
       <div className="flex justify-between gap-1">
@@ -68,7 +68,7 @@ export async function MiniActivity({
               return (
                 <div
                   key={day.date}
-                  title={`${day.date}${day.sets > 0 ? `: ${t("{n} Sätze", { n: day.sets })}` : ""}`}
+                  title={`${day.date}${day.sets > 0 ? `: ${t("{n} sets", { n: day.sets })}` : ""}`}
                   className="size-4 rounded-[3px]"
                   style={{ backgroundColor: day.future ? "transparent" : LEVEL_COLORS[level] }}
                 />

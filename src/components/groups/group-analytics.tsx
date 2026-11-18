@@ -23,13 +23,13 @@ type AnalyticsData = {
 export function GroupAnalytics({ groupId }: { groupId: string }) {
   const { t, dateLocale } = useLocale();
   const volumeConfig = {
-    totalSets: { label: t("Sätze (Gruppe)"), color: "var(--chart-1)" },
+    totalSets: { label: t("Sets (group)"), color: "var(--chart-1)" },
   } satisfies ChartConfig;
   const activityConfig = {
     workoutCount: { label: t("Workouts"), color: "var(--chart-2)" },
   } satisfies ChartConfig;
   const climbingConfig = {
-    count: { label: t("Klettertage"), color: "var(--chart-3)" },
+    count: { label: t("Climbing days"), color: "var(--chart-3)" },
   } satisfies ChartConfig;
   const [data, setData] = useState<AnalyticsData | null>(null);
 
@@ -55,13 +55,13 @@ export function GroupAnalytics({ groupId }: { groupId: string }) {
     <div className="flex flex-col gap-4">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("Gruppen-Volumen")}</CardTitle>
-          <CardDescription>{t("Sätze der ganzen Gruppe pro Tag, letzte {days} Tage.", { days: data.days })}</CardDescription>
+          <CardTitle className="text-base">{t("Group volume")}</CardTitle>
+          <CardDescription>{t("Sets of the whole group per day, last {days} days.", { days: data.days })}</CardDescription>
         </CardHeader>
         <CardContent>
           {!hasAnyVolume ? (
             <p className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
-              {t("Noch keine Workouts in diesem Zeitraum.")}
+              {t("No workouts in this period yet.")}
             </p>
           ) : (
             <ChartContainer config={volumeConfig} className="aspect-auto h-64 w-full">
@@ -81,13 +81,13 @@ export function GroupAnalytics({ groupId }: { groupId: string }) {
                   tickMargin={8}
                   width={48}
                   allowDecimals={false}
-                  label={{ value: t("Sätze"), angle: -90, position: "insideLeft", offset: 4, style: { textAnchor: "middle" }, fill: "var(--muted-foreground)", fontSize: 11 }}
+                  label={{ value: t("Sets"), angle: -90, position: "insideLeft", offset: 4, style: { textAnchor: "middle" }, fill: "var(--muted-foreground)", fontSize: 11 }}
                 />
                 <ChartTooltip
                   content={
                     <ChartTooltipContent
                       labelFormatter={(v) => new Date(v).toLocaleDateString(dateLocale)}
-                      formatter={(value) => [t("{n} Sätze", { n: String(value) }), t("Gruppe")]}
+                      formatter={(value) => [t("{n} sets", { n: String(value) }), t("Group")]}
                     />
                   }
                 />
@@ -100,13 +100,13 @@ export function GroupAnalytics({ groupId }: { groupId: string }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("Aktivität pro Mitglied")}</CardTitle>
-          <CardDescription>{t("Geloggte Workouts, letzte {days} Tage.", { days: data.days })}</CardDescription>
+          <CardTitle className="text-base">{t("Activity per member")}</CardTitle>
+          <CardDescription>{t("Logged workouts, last {days} days.", { days: data.days })}</CardDescription>
         </CardHeader>
         <CardContent>
           {!hasAnyActivity ? (
             <p className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
-              {t("Noch keine Workouts in diesem Zeitraum.")}
+              {t("No workouts in this period yet.")}
             </p>
           ) : (
             <ChartContainer config={activityConfig} className="aspect-auto h-64 w-full">
@@ -141,14 +141,14 @@ export function GroupAnalytics({ groupId }: { groupId: string }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-1.5 text-base">
             <Mountain className="size-4 text-primary" />
-            {t("Klettertage")}
+            {t("Climbing days")}
           </CardTitle>
           <CardDescription>
             {data.climbing.totalCount === 0
-              ? t("Noch kein Klettertag als Gruppe.")
+              ? t("No climbing day as a group yet.")
               : data.climbing.totalCount === 1
-                ? t("1 Klettertag bisher.")
-                : t("{n} Klettertage bisher.", { n: data.climbing.totalCount })}
+                ? t("1 climbing day so far.")
+                : t("{n} climbing days so far.", { n: data.climbing.totalCount })}
           </CardDescription>
         </CardHeader>
         {data.climbing.recentDates.length > 0 && (
@@ -179,7 +179,7 @@ export function GroupAnalytics({ groupId }: { groupId: string }) {
                     </span>
                   )}
                   <span className="ml-auto shrink-0 text-xs text-muted-foreground">
-                    {t("{n} dabei", { n: d.participantCount })}
+                    {t("{n} there", { n: d.participantCount })}
                   </span>
                 </li>
               ))}
@@ -191,8 +191,8 @@ export function GroupAnalytics({ groupId }: { groupId: string }) {
       {data.climbing.attendance.some((a) => a.count > 0) && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{t("Teilnahme pro Mitglied")}</CardTitle>
-            <CardDescription>{t("Wie oft zugesagt und dabei gewesen, über alle Klettertage.")}</CardDescription>
+            <CardTitle className="text-base">{t("Attendance per member")}</CardTitle>
+            <CardDescription>{t("How often RSVP'd and there, across all climbing days.")}</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={climbingConfig} className="aspect-auto h-64 w-full">
@@ -205,10 +205,10 @@ export function GroupAnalytics({ groupId }: { groupId: string }) {
                   tickMargin={8}
                   allowDecimals={false}
                   height={40}
-                  label={{ value: t("Klettertage"), position: "insideBottom", offset: 0, fill: "var(--muted-foreground)", fontSize: 11 }}
+                  label={{ value: t("Climbing days"), position: "insideBottom", offset: 0, fill: "var(--muted-foreground)", fontSize: 11 }}
                 />
                 <YAxis type="category" dataKey="userName" tickLine={false} axisLine={false} tickMargin={8} width={80} />
-                <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`${value}`, t("Klettertage")]} />} />
+                <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`${value}`, t("Climbing days")]} />} />
                 <Bar dataKey="count" fill="var(--color-count)" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ChartContainer>

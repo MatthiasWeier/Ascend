@@ -10,7 +10,7 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   if (!isPushConfigured()) {
-    return NextResponse.json({ error: "Push ist auf dem Server nicht eingerichtet." }, { status: 400 });
+    return NextResponse.json({ error: "Push isn't set up on the server." }, { status: 400 });
   }
   return NextResponse.json({ results: await sendTestPush(session.user.id) });
 }

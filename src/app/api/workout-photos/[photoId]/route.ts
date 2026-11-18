@@ -26,7 +26,7 @@ export async function GET(
   const { photoId } = await params;
   const photo = await prisma.workoutPhoto.findUnique({ where: { id: photoId } });
   if (!photo) {
-    return NextResponse.json({ error: "Foto nicht gefunden" }, { status: 404 });
+    return NextResponse.json({ error: "Photo not found" }, { status: 404 });
   }
 
   const isOwner = photo.userId === session.user.id;
@@ -49,7 +49,7 @@ export async function GET(
   const bytes = await storageReadFile(photoPath(photo.userId, photo.filename));
   const contentType = CONTENT_TYPES[path.extname(photo.filename).toLowerCase()];
   if (!bytes || !contentType) {
-    return NextResponse.json({ error: "Foto nicht gefunden" }, { status: 404 });
+    return NextResponse.json({ error: "Photo not found" }, { status: 404 });
   }
 
   return new NextResponse(new Uint8Array(bytes), {
@@ -68,7 +68,7 @@ export async function DELETE(
   const { photoId } = await params;
   const photo = await prisma.workoutPhoto.findUnique({ where: { id: photoId } });
   if (!photo || photo.userId !== session.user.id) {
-    return NextResponse.json({ error: "Foto nicht gefunden" }, { status: 404 });
+    return NextResponse.json({ error: "Photo not found" }, { status: 404 });
   }
 
   await prisma.workoutPhoto.delete({ where: { id: photoId } });

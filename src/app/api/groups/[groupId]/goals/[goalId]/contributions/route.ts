@@ -33,16 +33,16 @@ export async function POST(
   }
   if (goal._count.exercises > 0) {
     return NextResponse.json(
-      { error: "Dieses Ziel wird automatisch aus Workouts/Challenges getrackt" },
+      { error: "This goal is tracked automatically from workouts/challenges" },
       { status: 400 }
     );
   }
   const now = new Date();
   if (goal.startDate && now < goal.startDate) {
-    return NextResponse.json({ error: "Dieses Ziel hat noch nicht begonnen" }, { status: 400 });
+    return NextResponse.json({ error: "This goal hasn't started yet" }, { status: 400 });
   }
   if (goal.deadline && now > goal.deadline) {
-    return NextResponse.json({ error: "Die Frist für dieses Ziel ist abgelaufen" }, { status: 400 });
+    return NextResponse.json({ error: "The deadline for this goal has passed" }, { status: 400 });
   }
 
   await prisma.groupGoalContribution.create({

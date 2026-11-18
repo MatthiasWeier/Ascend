@@ -20,7 +20,7 @@ type GradeDatum = { grade: string; count: number; rank: number };
 export function ClimbingPyramid() {
   const t = useT();
   const chartConfig = {
-    count: { label: t("Anzahl") },
+    count: { label: t("Count") },
   } satisfies ChartConfig;
   const [style, setStyle] = useState<"BOULDER" | "ROUTE">("BOULDER");
   const [grades, setGrades] = useState<GradeDatum[] | null>(null);
@@ -40,7 +40,7 @@ export function ClimbingPyramid() {
         <Tabs value={style} onValueChange={(v) => setStyle(v as "BOULDER" | "ROUTE")}>
           <TabsList>
             <TabsTrigger value="BOULDER">{t("Boulder")}</TabsTrigger>
-            <TabsTrigger value="ROUTE">{t("Routen")}</TabsTrigger>
+            <TabsTrigger value="ROUTE">{t("Routes")}</TabsTrigger>
           </TabsList>
         </Tabs>
         <AddClimbingSendDialog onAdded={refetch} />
@@ -51,7 +51,7 @@ export function ClimbingPyramid() {
       ) : grades.length === 0 ? (
         <EmptyChart
           variant="bars"
-          message={style === "BOULDER" ? t("Noch keine Boulder eingetragen.") : t("Noch keine Routen eingetragen.")}
+          message={style === "BOULDER" ? t("No boulders logged yet.") : t("No routes logged yet.")}
         />
       ) : (
         <>
@@ -64,7 +64,7 @@ export function ClimbingPyramid() {
                 axisLine={false}
                 allowDecimals={false}
                 height={40}
-                label={{ value: t("Anzahl Sends"), position: "insideBottom", offset: 0, fill: "var(--muted-foreground)", fontSize: 11 }}
+                label={{ value: t("Number of sends"), position: "insideBottom", offset: 0, fill: "var(--muted-foreground)", fontSize: 11 }}
               />
               <YAxis
                 dataKey="grade"
@@ -72,9 +72,9 @@ export function ClimbingPyramid() {
                 tickLine={false}
                 axisLine={false}
                 width={72}
-                label={{ value: t("Schwierigkeitsgrad"), angle: -90, position: "insideLeft", offset: 4, style: { textAnchor: "middle" }, fill: "var(--muted-foreground)", fontSize: 11 }}
+                label={{ value: t("Difficulty grade"), angle: -90, position: "insideLeft", offset: 4, style: { textAnchor: "middle" }, fill: "var(--muted-foreground)", fontSize: 11 }}
               />
-              <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`${value}×`, t("Anzahl")]} />} />
+              <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`${value}×`, t("Count")]} />} />
               <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                 <LabelList dataKey="count" position="right" className="fill-foreground text-xs" />
                 {grades.map((g, i) => (
@@ -87,7 +87,7 @@ export function ClimbingPyramid() {
             </BarChart>
           </ChartContainer>
           <p className="text-center text-xs text-muted-foreground">
-            {t("Heller = leichter, dunkler = schwerer")}
+            {t("Lighter = easier, darker = harder")}
           </p>
         </>
       )}

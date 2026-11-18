@@ -20,10 +20,10 @@ export async function POST(request: Request) {
   const form = await request.formData();
   const file = form.get("file");
   if (!(file instanceof File)) {
-    return NextResponse.json({ error: "Keine Datei übermittelt" }, { status: 400 });
+    return NextResponse.json({ error: "No file submitted" }, { status: 400 });
   }
   if (file.size > MAX_CSV_BYTES) {
-    return NextResponse.json({ error: "Datei zu groß (max. 5MB)" }, { status: 400 });
+    return NextResponse.json({ error: "File too large (max. 5 MB)" }, { status: 400 });
   }
 
   const text = await file.text();
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     );
   }
   if (sessions.length === 0) {
-    return NextResponse.json({ error: "Keine Sätze in der Datei gefunden" }, { status: 400 });
+    return NextResponse.json({ error: "No sets found in the file" }, { status: 400 });
   }
 
   const myGroupIds = (

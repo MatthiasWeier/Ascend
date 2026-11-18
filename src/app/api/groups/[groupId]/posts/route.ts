@@ -121,14 +121,14 @@ export async function POST(
     const file = form.get("image");
     const caption = form.get("caption");
     if (!(file instanceof File)) {
-      return NextResponse.json({ error: "Kein Bild übermittelt" }, { status: 400 });
+      return NextResponse.json({ error: "No image submitted" }, { status: 400 });
     }
     if (file.size > MAX_IMAGE_BYTES) {
-      return NextResponse.json({ error: "Bild zu groß (max. 8MB)" }, { status: 400 });
+      return NextResponse.json({ error: "Image too large (max. 8 MB)" }, { status: 400 });
     }
     const ext = extensionForImageType(file.type);
     if (!ext) {
-      return NextResponse.json({ error: "Nicht unterstütztes Bildformat" }, { status: 400 });
+      return NextResponse.json({ error: "Unsupported image format" }, { status: 400 });
     }
 
     const filename = `${randomUUID()}.${ext}`;
@@ -167,14 +167,14 @@ export async function POST(
     include: { sets: { include: { exercise: true }, orderBy: { order: "asc" } } },
   });
   if (!workoutSession || workoutSession.userId !== session.user.id) {
-    return NextResponse.json({ error: "Workout nicht gefunden" }, { status: 404 });
+    return NextResponse.json({ error: "Workout not found" }, { status: 404 });
   }
 
   const alreadyShared = await prisma.groupPost.findUnique({
     where: { groupId_workoutSessionId: { groupId, workoutSessionId: workoutSession.id } },
   });
   if (alreadyShared) {
-    return NextResponse.json({ error: "Workout wurde bereits geteilt" }, { status: 409 });
+    return NextResponse.json({ error: "Workout was already shared" }, { status: 409 });
   }
 
   const post = await prisma.groupPost.create({

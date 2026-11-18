@@ -14,12 +14,12 @@ import { useLocale } from "@/components/locale-provider";
 type Reminder = { id: string; weekday: number; time: string; label: string | null; enabled: boolean };
 type LeadTime = "NEVER" | "ONE_HOUR_BEFORE" | "MORNING_OF" | "EVENING_BEFORE";
 
-const WEEKDAYS = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
+const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const LEAD_TIMES: { value: LeadTime; label: string }[] = [
-  { value: "NEVER", label: "Nie" },
-  { value: "ONE_HOUR_BEFORE", label: "1 Stunde vorher" },
-  { value: "MORNING_OF", label: "Am selben Tag morgens" },
-  { value: "EVENING_BEFORE", label: "Am Vortag abends" },
+  { value: "NEVER", label: "Never" },
+  { value: "ONE_HOUR_BEFORE", label: "1 hour before" },
+  { value: "MORNING_OF", label: "The same day, in the morning" },
+  { value: "EVENING_BEFORE", label: "The evening before" },
 ];
 
 function weekdayLabel(t: (s: string) => string, w: number) {
@@ -62,11 +62,11 @@ export function WorkoutReminders() {
     setSaving(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte nicht speichern."));
+      toast.error(t(data.error ?? "Couldn't save."));
       return;
     }
     setLabel("");
-    toast.success(t("Erinnerung hinzugefügt."));
+    toast.success(t("Reminder added."));
     loadReminders();
   }
 
@@ -78,7 +78,7 @@ export function WorkoutReminders() {
       body: JSON.stringify({ enabled }),
     });
     if (!res.ok) {
-      toast.error(t("Konnte nicht speichern."));
+      toast.error(t("Couldn't save."));
       loadReminders();
     }
   }
@@ -87,7 +87,7 @@ export function WorkoutReminders() {
     setReminders((prev) => prev?.filter((r) => r.id !== id) ?? prev);
     const res = await fetch(`/api/workout-reminders/${id}`, { method: "DELETE" });
     if (!res.ok) {
-      toast.error(t("Konnte nicht speichern."));
+      toast.error(t("Couldn't save."));
       loadReminders();
     }
   }
@@ -102,16 +102,16 @@ export function WorkoutReminders() {
     });
     if (!res.ok) {
       setLeadTime(previous);
-      toast.error(t("Konnte nicht speichern."));
+      toast.error(t("Couldn't save."));
     }
   }
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium">{t("Eigene Trainingszeiten")}</p>
+        <p className="text-sm font-medium">{t("Your training times")}</p>
         <p className="text-xs text-muted-foreground">
-          {t("Wöchentlich wiederkehrend, unabhängig von Gruppen - z.B. \"Montag 13 Uhr, Mittwoch 18 Uhr\".")}
+          {t("Recurring weekly, not tied to any group - e.g. \"Monday 1pm, Wednesday 6pm\".")}
         </p>
         {reminders == null ? (
           <Skeleton className="h-16 w-full" />
@@ -130,8 +130,8 @@ export function WorkoutReminders() {
                       variant="ghost"
                       size="icon-sm"
                       className="ml-auto text-muted-foreground hover:text-destructive"
-                      title={t("Löschen")}
-                      aria-label={t("Löschen")}
+                      title={t("Delete")}
+                      aria-label={t("Delete")}
                       onClick={() => remove(r.id)}
                     >
                       <Trash2 className="size-4" />
@@ -142,7 +142,7 @@ export function WorkoutReminders() {
             )}
             <form onSubmit={addReminder} className="flex flex-wrap items-end gap-2">
               <div className="flex flex-col gap-1.5">
-                <Label className="text-xs">{t("Wochentag")}</Label>
+                <Label className="text-xs">{t("Weekday")}</Label>
                 <Select value={weekday} onValueChange={(v) => setWeekday(v as string)} items={WEEKDAYS.map((_, i) => ({ value: String(i), label: weekdayLabel(t, i) }))}>
                   <SelectTrigger className="w-36">
                     <SelectValue />
@@ -158,7 +158,7 @@ export function WorkoutReminders() {
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="wr-time" className="text-xs">
-                  {t("Uhrzeit")}
+                  {t("Time")}
                 </Label>
                 <Input id="wr-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} className="w-28" required />
               </div>
@@ -166,11 +166,11 @@ export function WorkoutReminders() {
                 <Label htmlFor="wr-label" className="text-xs">
                   {t("Label (optional)")}
                 </Label>
-                <Input id="wr-label" value={label} onChange={(e) => setLabel(e.target.value)} placeholder={t("z.B. Gym")} maxLength={60} />
+                <Input id="wr-label" value={label} onChange={(e) => setLabel(e.target.value)} placeholder={t("e.g. Gym")} maxLength={60} />
               </div>
               <Button type="submit" size="sm" disabled={saving}>
                 <Plus className="size-4" />
-                {t("Hinzufügen")}
+                {t("Add")}
               </Button>
             </form>
           </>
@@ -178,9 +178,9 @@ export function WorkoutReminders() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <p className="text-sm font-medium">{t("Gemeinsame Termine")}</p>
+        <p className="text-sm font-medium">{t("Shared events")}</p>
         <p className="text-xs text-muted-foreground">
-          {t("Wie lange vorher du an einen Klettertag/Gym-Termin erinnert werden willst, dem du zugesagt hast.")}
+          {t("How long before a climbing/gym event you've joined you want to be reminded.")}
         </p>
         {leadTime == null ? (
           <Skeleton className="h-9 w-48" />

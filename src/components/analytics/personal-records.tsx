@@ -34,7 +34,7 @@ export function PersonalRecords() {
 
   if (records.length === 0) {
     return (
-      <EmptyChart variant="bars" className="h-48" message={t("Noch keine Rekorde - leg los!")} />
+      <EmptyChart variant="bars" className="h-48" message={t("No records yet - get going!")} />
     );
   }
 

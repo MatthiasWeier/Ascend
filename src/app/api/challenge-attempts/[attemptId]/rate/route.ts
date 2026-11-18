@@ -32,17 +32,17 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   if (attempt.userChallengeGoal.userId !== session.user.id) {
-    return NextResponse.json({ error: "Das ist nicht dein Versuch" }, { status: 403 });
+    return NextResponse.json({ error: "That's not your attempt" }, { status: 403 });
   }
   if (attempt.difficultyRating != null) {
-    return NextResponse.json({ error: "Bereits bewertet" }, { status: 400 });
+    return NextResponse.json({ error: "Already rated" }, { status: 400 });
   }
 
   const reachedHalf = attempt.currentReps >= attempt.targetRepsSnapshot * 0.5;
   const isTerminal = attempt.status === "COMPLETED" || attempt.status === "ENDED_EARLY";
   if (!reachedHalf && !isTerminal) {
     return NextResponse.json(
-      { error: "Bewertung erst ab 50% des Ziels oder nach Beenden der Challenge möglich" },
+      { error: "Rating is only possible from 50% of the goal or after ending the challenge" },
       { status: 400 }
     );
   }

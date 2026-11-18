@@ -50,7 +50,7 @@ export async function PATCH(
     const adminCount = await prisma.user.count({ where: { isAdmin: true } });
     const target = await prisma.user.findUnique({ where: { id: userId }, select: { isAdmin: true } });
     if (target?.isAdmin && adminCount <= 1) {
-      return NextResponse.json({ error: "Der letzte Admin kann nicht entfernt werden" }, { status: 400 });
+      return NextResponse.json({ error: "The last admin cannot be removed" }, { status: 400 });
     }
   }
 
@@ -78,7 +78,7 @@ export async function DELETE(
 
   if (userId === session.user.id) {
     return NextResponse.json(
-      { error: "Nutze die Konto-Löschung in den Einstellungen für dein eigenes Konto" },
+      { error: "Use account deletion in Settings for your own account" },
       { status: 400 }
     );
   }

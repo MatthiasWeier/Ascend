@@ -8,7 +8,7 @@ export default async function QuestsPage() {
       <div className="mb-4">
         <h1 className="text-2xl font-bold tracking-tight">{t("Sidequests")}</h1>
         <p className="text-sm text-muted-foreground">
-          {t("Deine eigenen Ziele mit Frist - z. B. ein Handstand bis Ende des Jahres. Du wirst regelmäßig erinnert, deine Gruppen können mitfiebern.")}
+          {t("Your own goals with a deadline - e.g. a handstand by the end of the year. You get regular reminders and your groups can cheer you on.")}
         </p>
       </div>
       <QuestsBoard />

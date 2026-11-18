@@ -213,8 +213,8 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
         headline: t(MUSCLE_LABEL[wish.muscle]),
         detail:
           wish.daysSince == null
-            ? t("{muscle} steht auf deiner Wunschliste - du hast ihn noch nie trainiert.", { muscle: t(MUSCLE_LABEL[wish.muscle]) })
-            : t("{muscle} steht auf deiner Wunschliste - zuletzt vor {n} Tagen trainiert.", {
+            ? t("{muscle} is on your wish list - you have never trained it.", { muscle: t(MUSCLE_LABEL[wish.muscle]) })
+            : t("{muscle} is on your wish list - last trained {n} days ago.", {
                 muscle: t(MUSCLE_LABEL[wish.muscle]),
                 n: wish.daysSince,
               }),
@@ -223,7 +223,7 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
     if (isBalanceDriven) {
       return {
         headline: focusName(suggestedFocus),
-        detail: t("Bei {focus} liegst du bei {actual}% deines Trainingsvolumens - Ziel sind {target}%. Zeit, das auszugleichen.", {
+        detail: t("For {focus} you're at {actual}% of your training volume - your target is {target}%. Time to balance that out.", {
           focus: focusName(suggestedFocus),
           actual: actualByFocus[suggestedFocus],
           target: targetByFocus.get(suggestedFocus) ?? 0,
@@ -234,10 +234,10 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
       headline: focusName(suggestedFocus),
       detail:
         focusDaysSince == null
-          ? t("Du hast diesen Fokus noch nie trainiert. Perfekter Einstieg.")
+          ? t("You've never trained this focus. Perfect place to start.")
           : focusDaysSince === 1
-            ? t("Zuletzt vor 1 Tag trainiert — am längsten her von allen Bereichen.")
-            : t("Zuletzt vor {n} Tagen trainiert — am längsten her von allen Bereichen.", { n: focusDaysSince }),
+            ? t("Last trained 1 day ago — the longest ago of all areas.")
+            : t("Last trained {n} days ago — the longest ago of all areas.", { n: focusDaysSince }),
     };
   }
 
@@ -279,8 +279,8 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
   let detail: string;
 
   if (isOverloaded) {
-    headline = t("Ruhetag empfohlen");
-    detail = t("Deine letzten Workouts waren mit Ø {avg}/10 sehr intensiv. Gib deinem Nervensystem heute eine Pause.", {
+    headline = t("Rest day recommended");
+    detail = t("Your last workouts were very intense at an average of {avg}/10. Give your nervous system a break today.", {
       avg: recentAvgExertion?.toFixed(1) ?? "",
     });
   } else if (!skinRecovered && GRIP_DEPENDENT_FOCUSES.includes(suggestedFocus)) {
@@ -289,11 +289,11 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
       effectiveFocus = pickBestFocus(safeCandidates);
       isSwap = true;
       const remaining = skinRecoveryDaysNeeded - (skinDaysSince ?? 0);
-      headline = t("{a} statt {b}", { a: focusName(effectiveFocus), b: focusName(suggestedFocus) });
+      headline = t("{a} instead of {b}", { a: focusName(effectiveFocus), b: focusName(suggestedFocus) });
       detail =
         remaining === 1
-          ? t("Deine Haut braucht noch 1 Tag zur Regeneration. Heute lieber {focus} trainieren.", { focus: focusName(effectiveFocus) })
-          : t("Deine Haut braucht noch {n} Tage zur Regeneration. Heute lieber {focus} trainieren.", {
+          ? t("Your skin needs 1 more day to recover. Better train {focus} today.", { focus: focusName(effectiveFocus) })
+          : t("Your skin needs {n} more days to recover. Better train {focus} today.", {
               n: remaining,
               focus: focusName(effectiveFocus),
             });
@@ -327,7 +327,7 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
   }
   const injuryNote =
     blockedParts.size > 0
-      ? t("Rücksicht auf: {parts} - betroffene Übungen werden nicht vorgeschlagen.", {
+      ? t("Considering: {parts} - affected exercises are not suggested.", {
           parts: Array.from(blockedParts).map((p) => t(BODY_PART_LABEL[p])).join(", "),
         })
       : null;

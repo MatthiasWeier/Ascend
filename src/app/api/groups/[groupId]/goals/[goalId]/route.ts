@@ -27,7 +27,7 @@ export async function PATCH(
   const { groupId, goalId } = await params;
   const membership = await getGroupMembership(session.user.id, groupId);
   if (!membership || membership.role !== "LEADER") {
-    return NextResponse.json({ error: "Nur der Leader darf Ziele bearbeiten" }, { status: 403 });
+    return NextResponse.json({ error: "Only the leader can edit goals" }, { status: 403 });
   }
 
   const goal = await prisma.groupGoal.findUnique({ where: { id: goalId }, include: { exercises: true } });
@@ -56,7 +56,7 @@ export async function PATCH(
   if (resultingExerciseIds.length > 0) {
     const exercises = await prisma.exercise.findMany({ where: { id: { in: resultingExerciseIds } } });
     if (exercises.length !== resultingExerciseIds.length) {
-      return NextResponse.json({ error: "Übung nicht gefunden" }, { status: 404 });
+      return NextResponse.json({ error: "Exercise not found" }, { status: 404 });
     }
     const mismatch = exercises.find((e) => !goalUnitMatchesExerciseType(resultingUnit, e.type));
     if (mismatch) {
@@ -113,7 +113,7 @@ export async function DELETE(
   const { groupId, goalId } = await params;
   const membership = await getGroupMembership(session.user.id, groupId);
   if (!membership || membership.role !== "LEADER") {
-    return NextResponse.json({ error: "Nur der Leader darf Ziele löschen" }, { status: 403 });
+    return NextResponse.json({ error: "Only the leader can delete goals" }, { status: 403 });
   }
 
   const goal = await prisma.groupGoal.findUnique({ where: { id: goalId } });

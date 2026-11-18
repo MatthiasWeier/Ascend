@@ -20,13 +20,13 @@ export const ALL_MEETUP_FOCUSES: ClimbingFocus[] = [
 export const MEETUP_FOCUS_LABEL: Record<ClimbingFocus, string> = {
   SLAB: "Slab",
   POWER: "Power",
-  TECHNIK: "Technik",
-  AUSDAUER: "Ausdauer",
-  KRAFT: "Kraft",
+  TECHNIK: "Technique",
+  AUSDAUER: "Endurance",
+  KRAFT: "Strength",
   MENTAL: "Mental",
   PUSH: "Push",
   PULL: "Pull",
-  LEGS: "Beine",
+  LEGS: "Legs",
   CORE: "Core",
   GRIP: "Grip",
 };
@@ -34,9 +34,9 @@ export const MEETUP_FOCUS_LABEL: Record<ClimbingFocus, string> = {
 export const MEETUP_ACTIVITIES: MeetupActivity[] = ["CLIMBING", "GYM", "OTHER"];
 
 export const MEETUP_ACTIVITY_LABEL: Record<MeetupActivity, string> = {
-  CLIMBING: "Klettern",
+  CLIMBING: "Climbing",
   GYM: "Gym",
-  OTHER: "Sonstiges",
+  OTHER: "Other",
 };
 
 // Which focus tags make sense to offer for each activity - climbing terms
@@ -49,7 +49,7 @@ export const FOCUSES_BY_ACTIVITY: Record<MeetupActivity, ClimbingFocus[]> = {
   OTHER: ["AUSDAUER", "KRAFT", "MENTAL"],
 };
 
-// What to call a meetup in the UI when it has no custom title - "Klettern"
+// What to call a meetup in the UI when it has no custom title - "Climbing"
 // for a climbing day, the activity's own label otherwise.
 export function meetupDisplayName(activity: MeetupActivity, title: string | null): string {
   return title?.trim() || MEETUP_ACTIVITY_LABEL[activity];

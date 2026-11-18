@@ -13,17 +13,17 @@ export function ClimbingBody({ content, className }: { content: string | null; c
   return (
     <div className={cn("flex flex-col gap-1.5 text-sm", className)}>
       <p className="text-foreground/80">
-        <BoldNumbers text={total === 1 ? t("1 Send") : t("{n} Sends", { n: total })} />
+        <BoldNumbers text={total === 1 ? t("1 send") : t("{n} sends", { n: total })} />
       </p>
       <div className="flex flex-wrap gap-1.5">
         {sortedBoulderGrades(summary).map(([grade, count]) => (
           <span key={grade} className="rounded-full bg-secondary px-2 py-0.5 text-xs">
-            {t("Grad {grade}", { grade })} <b className="font-bold tabular-nums text-primary">×{count}</b>
+            {t("Grade {grade}", { grade })} <b className="font-bold tabular-nums text-primary">×{count}</b>
           </span>
         ))}
         {summary.routes > 0 && (
           <span className="rounded-full bg-secondary px-2 py-0.5 text-xs">
-            {t("Routen")} <b className="font-bold tabular-nums text-primary">×{summary.routes}</b>
+            {t("Routes")} <b className="font-bold tabular-nums text-primary">×{summary.routes}</b>
           </span>
         )}
       </div>

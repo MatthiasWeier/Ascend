@@ -85,10 +85,10 @@ export function QuestFormDialog({
     setSaving(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte nicht speichern."));
+      toast.error(t(data.error ?? "Couldn't save."));
       return;
     }
-    toast.success(quest ? t("Gespeichert!") : t("Sidequest angelegt!"));
+    toast.success(quest ? t("Saved!") : t("Sidequest created!"));
     onOpenChange(false);
     onSaved();
   }
@@ -97,25 +97,25 @@ export function QuestFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{quest ? t("Sidequest bearbeiten") : t("Neue Sidequest")}</DialogTitle>
+          <DialogTitle>{quest ? t("Edit sidequest") : t("New sidequest")}</DialogTitle>
           <DialogDescription>
-            {t("Ein Ziel, das du dir selbst setzt - mit Frist, Erinnerungen und (wenn du willst) eigenen Zwischenschritten.")}
+            {t("A goal you set yourself - with a deadline, reminders and (if you like) your own intermediate steps.")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="quest-title">{t("Was willst du erreichen?")}</Label>
+            <Label htmlFor="quest-title">{t("What do you want to achieve?")}</Label>
             <Input
               id="quest-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               maxLength={80}
               required
-              placeholder={t("z. B. Handstand lernen")}
+              placeholder={t("e.g. learn a handstand")}
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="quest-desc">{t("Notiz (optional)")}</Label>
+            <Label htmlFor="quest-desc">{t("Note (optional)")}</Label>
             <Textarea
               id="quest-desc"
               value={description}
@@ -125,7 +125,7 @@ export function QuestFormDialog({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="quest-date">{t("Bis wann?")}</Label>
+            <Label htmlFor="quest-date">{t("By when?")}</Label>
             <Input
               id="quest-date"
               type="date"
@@ -143,17 +143,17 @@ export function QuestFormDialog({
                 value={stepsText}
                 onChange={(e) => setStepsText(e.target.value)}
                 rows={4}
-                placeholder={t("Ein Schritt pro Zeile, in der Reihenfolge, in der du sie angehen willst:\nPike Push-ups\nBeine an der Wand halten\n...")}
+                placeholder={t("One step per line, in the order you want to tackle them:\nPike push-ups\nLegs up against the wall\n...")}
               />
               <p className="text-xs text-muted-foreground">
-                {t("Nichts wird vorgeschlagen - die Schritte legst nur du fest. Bis zu {max} Schritte, später auf der Karte änderbar.", {
+                {t("Nothing is suggested - only you decide the steps. Up to {max} steps, editable on the card later.", {
                   max: MAX_STEPS_PER_QUEST,
                 })}
               </p>
             </div>
           )}
           <div className="flex flex-col gap-1.5">
-            <Label>{t("Erinnerungen")}</Label>
+            <Label>{t("Reminders")}</Label>
             <Select
               value={cadence}
               onValueChange={(v) => setCadence(v as QuestReminderCadence)}
@@ -173,23 +173,23 @@ export function QuestFormDialog({
             <p className="text-xs text-muted-foreground">
               {interval == null
                 ? cadence === "NEVER"
-                  ? t("Keine Erinnerungen.")
-                  : t("Wähle ein Datum, dann siehst du hier, wie oft erinnert wird.")
-                : t("Ca. alle {n} Tage um 9 Uhr, plus am Tag der Frist.", { n: interval })}
+                  ? t("No reminders.")
+                  : t("Pick a date and you'll see how often you'll be reminded.")
+                : t("Roughly every {n} days at 9:00, plus on the deadline day.", { n: interval })}
             </p>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium">{t("Für meine Gruppen sichtbar")}</p>
+              <p className="text-sm font-medium">{t("Visible to my groups")}</p>
               <p className="text-xs text-muted-foreground">
-                {t("Deine Gruppen sehen die Sidequest im Tab \"Sidequests\" und erfahren, wenn du sie schaffst.")}
+                {t("Your groups see the sidequest in the \"Sidequests\" tab and hear when you complete it.")}
               </p>
             </div>
             <Switch checked={shared} onCheckedChange={setShared} />
           </div>
           <DialogFooter>
             <Button type="submit" disabled={saving || !title.trim() || !targetDateKey}>
-              {quest ? t("Speichern") : t("Anlegen")}
+              {quest ? t("Save") : t("Create")}
             </Button>
           </DialogFooter>
         </form>

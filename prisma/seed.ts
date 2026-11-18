@@ -82,14 +82,14 @@ const exercises: ExerciseSeed[] = [
 // Daily-challenge themes the leader can activate for the group - each tied
 // to a REPS exercise, since goals are counted in reps.
 const challengeTemplates: { name: string; description: string; exerciseName: string }[] = [
-  { name: "Pullup Maxing", description: "So viele Klimmzüge wie möglich bis zu deinem Ziel.", exerciseName: "Pull-ups" },
-  { name: "Pushup Power", description: "Liegestütze satt - knallhart bis zum Ziel.", exerciseName: "Push-ups" },
-  { name: "Dip Domination", description: "Dips ohne Gnade.", exerciseName: "Dips" },
-  { name: "Squat Streak", description: "Bodyweight Squats am laufenden Band.", exerciseName: "Bodyweight Squats" },
-  { name: "Sit-up Sprint", description: "Sit-ups gegen die Uhr.", exerciseName: "Sit-ups" },
-  { name: "Burpee Blitz", description: "Burpees - der Allrounder-Killer.", exerciseName: "Burpees" },
-  { name: "Lunge Legacy", description: "Ausfallschritte für starke Beine.", exerciseName: "Lunges" },
-  { name: "Archer Push-up Ascent", description: "Einarmig(er) drücken für Fortgeschrittene.", exerciseName: "Archer Push-ups" },
+  { name: "Pullup Maxing", description: "As many pull-ups as possible up to your goal.", exerciseName: "Pull-ups" },
+  { name: "Pushup Power", description: "Push-ups galore - relentless until your goal.", exerciseName: "Push-ups" },
+  { name: "Dip Domination", description: "Dips without mercy.", exerciseName: "Dips" },
+  { name: "Squat Streak", description: "Bodyweight squats non-stop.", exerciseName: "Bodyweight Squats" },
+  { name: "Sit-up Sprint", description: "Sit-ups against the clock.", exerciseName: "Sit-ups" },
+  { name: "Burpee Blitz", description: "Burpees - the all-rounder killer.", exerciseName: "Burpees" },
+  { name: "Lunge Legacy", description: "Lunges for strong legs.", exerciseName: "Lunges" },
+  { name: "Archer Push-up Ascent", description: "One-arm-ish pressing for advanced athletes.", exerciseName: "Archer Push-ups" },
 ];
 
 async function main() {

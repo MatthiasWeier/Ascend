@@ -148,11 +148,11 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
     const target = Number(form.targetValue);
     if (!form.title.trim() || !target || target <= 0) return;
     if (form.unit === "CUSTOM" && !form.customUnitLabel.trim()) {
-      toast.error(t("Bitte eine Einheit angeben."));
+      toast.error(t("Please specify a unit."));
       return;
     }
     if (form.startDate && form.deadline && form.startDate > form.deadline) {
-      toast.error(t("Start muss vor der Frist liegen."));
+      toast.error(t("Start must be before the deadline."));
       return;
     }
     setSaving(true);
@@ -176,19 +176,19 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
     setSaving(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Fehlgeschlagen."));
+      toast.error(t(data.error ?? "Failed."));
       return;
     }
     if (editing) {
-      toast.success(t("Gespeichert!"));
+      toast.success(t("Saved!"));
     } else {
       const data: { backfilledCount: number } = await res.json();
       toast.success(
         data.backfilledCount > 0
           ? data.backfilledCount === 1
-            ? t("Ziel erstellt - 1 Beitrag aus der Vergangenheit nachgetragen!")
-            : t("Ziel erstellt - {n} Beiträge aus der Vergangenheit nachgetragen!", { n: data.backfilledCount })
-          : t("Ziel erstellt!")
+            ? t("Goal created - 1 past contribution added!")
+            : t("Goal created - {n} past contributions added!", { n: data.backfilledCount })
+          : t("Goal created!")
       );
     }
     setDialogOpen(false);
@@ -198,7 +198,7 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
   async function handleDelete(goalId: string) {
     const res = await fetch(`/api/groups/${groupId}/goals/${goalId}`, { method: "DELETE" });
     if (!res.ok) {
-      toast.error(t("Fehlgeschlagen."));
+      toast.error(t("Failed."));
       return;
     }
     refetch();
@@ -239,10 +239,10 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
     });
     if (!res.ok) {
       setGoals(previousGoals);
-      toast.error(t("Fehlgeschlagen."));
+      toast.error(t("Failed."));
       return;
     }
-    toast.success(t("Beitrag hinzugefügt!"));
+    toast.success(t("Contribution added!"));
     refetch();
   }
 
@@ -252,30 +252,30 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger render={<Button size="sm" className="self-end" onClick={openCreateDialog} />}>
             <Plus className="size-4" />
-            {t("Neues Ziel")}
+            {t("New goal")}
           </DialogTrigger>
           <DialogContent className="max-h-[92dvh] overflow-y-auto">
             <form onSubmit={handleSubmit}>
               <DialogHeader>
-                <DialogTitle>{editing ? t("Gruppenziel bearbeiten") : t("Gruppenziel erstellen")}</DialogTitle>
+                <DialogTitle>{editing ? t("Edit group goal") : t("Create group goal")}</DialogTitle>
                 <DialogDescription>
-                  {t("Jeder trägt Beiträge bei - der Fortschritt ist die Summe der ganzen Gruppe.")}
+                  {t("Everyone contributes - progress is the sum of the whole group.")}
                 </DialogDescription>
               </DialogHeader>
               <div className="flex flex-col gap-3 py-2">
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="goal-title">{t("Titel")}</Label>
+                  <Label htmlFor="goal-title">{t("Title")}</Label>
                   <Input
                     id="goal-title"
                     value={form.title}
                     onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                    placeholder={t("z.B. 3000 Liegestütze im September")}
+                    placeholder={t("e.g. 3000 push-ups in September")}
                     required
                   />
                 </div>
                 <div className="flex gap-3">
                   <div className="flex flex-1 flex-col gap-1.5">
-                    <Label htmlFor="goal-target">{t("Ziel-Wert")}</Label>
+                    <Label htmlFor="goal-target">{t("Target value")}</Label>
                     <Input
                       id="goal-target"
                       type="number"
@@ -287,7 +287,7 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
                     />
                   </div>
                   <div className="flex flex-1 flex-col gap-1.5">
-                    <Label>{t("Einheit")}</Label>
+                    <Label>{t("Unit")}</Label>
                     <Select
                       items={GOAL_UNITS.map((u) => ({ value: u, label: t(GOAL_UNIT_LABEL[u]) }))}
                       value={form.unit}
@@ -308,26 +308,26 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
                 </div>
                 {form.unit === "CUSTOM" && (
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="goal-custom-unit">{t("Einheit-Bezeichnung")}</Label>
+                    <Label htmlFor="goal-custom-unit">{t("Unit label")}</Label>
                     <Input
                       id="goal-custom-unit"
                       value={form.customUnitLabel}
                       onChange={(e) => setForm((f) => ({ ...f, customUnitLabel: e.target.value }))}
-                      placeholder={t("z.B. Bahnen, Höhenmeter…")}
+                      placeholder={t("e.g. laps, meters of elevation…")}
                       required
                     />
                   </div>
                 )}
                 {(form.unit === "REPS" || form.unit === "DURATION_SEC") && (
                   <div className="flex flex-col gap-1.5">
-                    <Label>{t("Übungen verknüpfen (optional)")}</Label>
+                    <Label>{t("Link exercises (optional)")}</Label>
                     <ExerciseMultiCombobox
                       exercises={linkableExercises}
                       value={form.exerciseIds}
                       onChange={(ids) => setForm((f) => ({ ...f, exerciseIds: ids }))}
                     />
                     <p className="text-xs text-muted-foreground">
-                      {t("Verknüpft: Workouts und geschaffte Challenges mit einer dieser Übungen tragen automatisch bei - z.B. Liegestütze + Diamond + Pike zusammen.")}
+                      {t("When linked: workouts and completed challenges with any of these exercises contribute automatically - e.g. push-ups + diamond + pike together.")}
                     </p>
                   </div>
                 )}
@@ -342,7 +342,7 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
                     />
                   </div>
                   <div className="flex flex-1 flex-col gap-1.5">
-                    <Label htmlFor="goal-deadline">{t("Frist (optional)")}</Label>
+                    <Label htmlFor="goal-deadline">{t("Deadline (optional)")}</Label>
                     <Input
                       id="goal-deadline"
                       type="date"
@@ -352,12 +352,12 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {t("Ohne Start zählt die gesamte Trainings-Historie mit - bei \"1000 Klimmzüge im Oktober\" also September und früher. Zum Ausschließen Start setzen.")}
+                  {t("Without a start date your entire training history counts - for \"1000 pull-ups in October\" that includes September and earlier. Set a start date to exclude it.")}
                 </p>
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={saving}>
-                  {saving ? t("Speichern…") : editing ? t("Speichern") : t("Ziel erstellen")}
+                  {saving ? t("Saving…") : editing ? t("Save") : t("Create goal")}
                 </Button>
               </DialogFooter>
             </form>
@@ -369,7 +369,7 @@ export function GroupGoals({ groupId, isLeader }: { groupId: string; isLeader: b
         <Skeleton className="h-32 w-full" />
       ) : goals.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          {t("Noch kein gemeinsames Ziel.")} {isLeader ? t("Leg direkt eins an!") : t("Der Leader kann eins erstellen.")}
+          {t("No shared goal yet.")} {isLeader ? t("Create one right away!") : t("The leader can create one.")}
         </p>
       ) : (
         <FeedList>
@@ -430,8 +430,8 @@ function GoalCard({
                   {goal.startDate && goal.deadline
                     ? `${new Date(goal.startDate).toLocaleDateString(dateLocale)} – ${new Date(goal.deadline).toLocaleDateString(dateLocale)}`
                     : goal.startDate
-                      ? t("ab {date}", { date: new Date(goal.startDate).toLocaleDateString(dateLocale) })
-                      : t("bis {date}", { date: new Date(goal.deadline!).toLocaleDateString(dateLocale) })}
+                      ? t("from {date}", { date: new Date(goal.startDate).toLocaleDateString(dateLocale) })
+                      : t("until {date}", { date: new Date(goal.deadline!).toLocaleDateString(dateLocale) })}
                 </p>
               )}
             </div>
@@ -442,8 +442,8 @@ function GoalCard({
                 variant="ghost"
                 size="icon-sm"
                 className="text-muted-foreground hover:text-foreground"
-                title={t("Ziel bearbeiten")}
-                aria-label={t("Ziel bearbeiten")}
+                title={t("Edit goal")}
+                aria-label={t("Edit goal")}
                 onClick={onEdit}
               >
                 <Pencil className="size-4" />
@@ -452,8 +452,8 @@ function GoalCard({
                 variant="ghost"
                 size="icon-sm"
                 className="text-muted-foreground hover:text-destructive"
-                title={t("Ziel löschen")}
-                aria-label={t("Ziel löschen")}
+                title={t("Delete goal")}
+                aria-label={t("Delete goal")}
                 onClick={onDelete}
               >
                 <X className="size-4" />
@@ -479,7 +479,7 @@ function GoalCard({
               .map((c, i, sorted) => (
                 <li key={c.userId} className="flex items-center gap-2 text-sm">
                   <span
-                    title={t("Platz {n}", { n: i + 1 })}
+                    title={t("Rank {n}", { n: i + 1 })}
                     className={cn(
                       "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold",
                       RANK_STYLE[i] ?? "bg-secondary text-foreground"
@@ -489,7 +489,7 @@ function GoalCard({
                   </span>
                   <span className={cn("w-24 shrink-0 truncate", c.isMe && "font-semibold text-primary")}>
                     {c.userName}
-                    {c.isMe && ` (${t("du")})`}
+                    {c.isMe && ` (${t("you")})`}
                   </span>
                   <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-secondary">
                     <span
@@ -508,7 +508,7 @@ function GoalCard({
         {goal.exerciseIds.length > 0 ? (
           <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Zap className="size-3 text-primary" />
-            {t("Trackt automatisch: {names} (Workouts + Challenges)", { names: goal.exerciseNames.join(", ") })}
+            {t("Tracked automatically: {names} (workouts + challenges)", { names: goal.exerciseNames.join(", ") })}
           </p>
         ) : (
           <form onSubmit={submitContribution} className="flex items-center gap-2">
@@ -516,13 +516,13 @@ function GoalCard({
               type="number"
               min={0}
               step="any"
-              placeholder={t("Beitrag ({unit})", { unit: t(goal.unitLabel) })}
+              placeholder={t("Contribution ({unit})", { unit: t(goal.unitLabel) })}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               className="h-8 flex-1"
             />
             <Button type="submit" size="sm">
-              {t("Hinzufügen")}
+              {t("Add")}
             </Button>
           </form>
         )}

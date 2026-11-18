@@ -3,13 +3,13 @@ import { toast } from "sonner";
 const DEFAULT_DURATION_MS = 5000;
 
 // For destructive actions that already applied optimistically to local
-// state: shows an "Rückgängig" toast and only fires onCommit (the actual
+// state: shows an "Undo" toast and only fires onCommit (the actual
 // server call) once the window elapses without the user clicking undo.
 export function undoableAction({
   message,
   onCommit,
   onUndo,
-  undoLabel = "Rückgängig",
+  undoLabel = "Undo",
   duration = DEFAULT_DURATION_MS,
 }: {
   message: string;

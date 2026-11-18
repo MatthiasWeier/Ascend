@@ -83,7 +83,7 @@ export async function POST(request: Request) {
 
   const existing = await prisma.exercise.findUnique({ where: { name: rest.name } });
   if (existing) {
-    return NextResponse.json({ error: "Eine Übung mit diesem Namen existiert bereits" }, { status: 409 });
+    return NextResponse.json({ error: "An exercise with this name already exists" }, { status: 409 });
   }
 
   const exercise = await prisma.exercise.create({

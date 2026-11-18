@@ -12,8 +12,8 @@ export async function DailyChallengeReminder({ pending }: { pending: PendingChal
       <AlertCircle className="size-4 shrink-0 text-primary" />
       <span className="font-medium">
         {pending.length === 1
-          ? t("Noch offen heute:")
-          : t("Noch {n} offene Challenges heute:", { n: pending.length })}
+          ? t("Still open today:")
+          : t("{n} open challenges today:", { n: pending.length })}
       </span>
       {pending.map((p, i) => (
         <Link

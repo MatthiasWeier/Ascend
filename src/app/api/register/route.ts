@@ -11,13 +11,13 @@ const registerSchema = z.object({
     .string()
     .min(3)
     .max(24)
-    .regex(/^[a-zA-Z0-9_.-]+$/, "Nur Buchstaben, Zahlen, _ . -"),
+    .regex(/^[a-zA-Z0-9_.-]+$/, "Letters, numbers, _ . - only"),
   password: z.string().min(8).max(200),
   inviteCode: z.string().optional(),
 });
 
 // Lets the register page know whether to require an invite code - see
-// "Offene Registrierung" in Admin > Instanz-Einstellungen.
+// "Open registration" in Admin > Instanz-Einstellungen.
 export async function GET() {
   const settings = await getAppSettings();
   return NextResponse.json({ inviteOnly: !settings.registrationOpen });
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
   );
   if (!allowed) {
     return NextResponse.json(
-      { error: "Zu viele Registrierungen. Versuch's später nochmal." },
+      { error: "Too many sign-ups. Try again later." },
       { status: 429, headers: { "Retry-After": String(retryAfterSec) } }
     );
   }
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
   const settings = await getAppSettings();
   if (!settings.registrationOpen && !inviteGroupId) {
     return NextResponse.json(
-      { error: "Registrierung ist nur mit einem gültigen Einladungslink möglich" },
+      { error: "Registration is only possible with a valid invite link" },
       { status: 403 }
     );
   }

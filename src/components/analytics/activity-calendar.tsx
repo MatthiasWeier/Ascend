@@ -51,7 +51,7 @@ export function ActivityCalendar({
   const MONTH_LABELS = Array.from({ length: 12 }, (_, m) =>
     new Date(Date.UTC(2024, m, 1)).toLocaleDateString(dateLocale, { month: "short", timeZone: "UTC" })
   );
-  const WEEKDAY_LABELS = [t("Mo"), "", t("Mi"), "", t("Fr"), "", ""];
+  const WEEKDAY_LABELS = [t("Mon"), "", t("Wed"), "", t("Fri"), "", ""];
   const [year] = useState(new Date().getFullYear());
   const [days, setDays] = useState<Day[] | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -157,7 +157,7 @@ export function ActivityCalendar({
                     key={di}
                     type="button"
                     tabIndex={day.inYear ? 0 : -1}
-                    aria-label={day.inYear ? `${day.date}: ${day.intensity > 0 ? t("Intensität {n}", { n: day.intensity }) : t("Kein Workout")}` : undefined}
+                    aria-label={day.inYear ? `${day.date}: ${day.intensity > 0 ? t("Intensity {n}", { n: day.intensity }) : t("No workout")}` : undefined}
                     onMouseEnter={(e) => day.inYear && showTip(e.currentTarget, day)}
                     onFocus={(e) => day.inYear && showTip(e.currentTarget, day)}
                     onMouseLeave={() => setTip(null)}
@@ -178,11 +178,11 @@ export function ActivityCalendar({
         </div>
       </div>
       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-        {t("Weniger")}
+        {t("Less")}
         {LEVEL_COLORS.map((c, i) => (
           <div key={i} className="size-[10px] rounded-[2px]" style={{ backgroundColor: c }} />
         ))}
-        {t("Mehr")}
+        {t("More")}
       </div>
 
       {tip && (
@@ -201,7 +201,7 @@ export function ActivityCalendar({
             })}
           </p>
           <p className="text-muted-foreground">
-            {tip.intensity > 0 ? t("Intensität {n}", { n: tip.intensity }) : t("Kein Workout")}
+            {tip.intensity > 0 ? t("Intensity {n}", { n: tip.intensity }) : t("No workout")}
           </p>
         </div>
       )}
@@ -223,7 +223,7 @@ export function ActivityCalendar({
           {daySessions == null ? (
             <Skeleton className="h-32 w-full" />
           ) : daySessions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t("Kein Workout an diesem Tag.")}</p>
+            <p className="text-sm text-muted-foreground">{t("No workout on this day.")}</p>
           ) : (
             <div className="flex max-h-96 flex-col gap-3 overflow-y-auto">
               {daySessions.map((s) => (

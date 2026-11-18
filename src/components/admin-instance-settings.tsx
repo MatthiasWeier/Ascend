@@ -28,12 +28,12 @@ export function AdminInstanceSettings() {
     });
     setBusyKey(null);
     if (!res.ok) {
-      toast.error(t("Konnte Einstellung nicht speichern."));
+      toast.error(t("Couldn't save the setting."));
       return;
     }
     const data: Settings = await res.json();
     setSettings(data);
-    toast.success(t("Gespeichert!"));
+    toast.success(t("Saved!"));
   }
 
   if (settings == null) return <Skeleton className="h-24 w-full" />;
@@ -42,10 +42,10 @@ export function AdminInstanceSettings() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
         <div className="min-w-0">
-          <p className="text-sm font-medium">{t("Rate Limits")}</p>
+          <p className="text-sm font-medium">{t("Rate limits")}</p>
           <p className="text-xs text-muted-foreground">
             {t(
-              "Begrenzt Login-Versuche, Registrierungen und ein paar andere Aktionen pro Nutzer/IP - Schutz gegen Brute-Force und Spam, kostet aber etwas Bequemlichkeit."
+              "Limits login attempts, registrations, and a few other actions per user/IP - protects against brute-force and spam, at some cost to convenience."
             )}
           </p>
         </div>
@@ -57,10 +57,10 @@ export function AdminInstanceSettings() {
       </div>
       <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
         <div className="min-w-0">
-          <p className="text-sm font-medium">{t("Offene Registrierung")}</p>
+          <p className="text-sm font-medium">{t("Open registration")}</p>
           <p className="text-xs text-muted-foreground">
             {t(
-              "Wenn aus, kann sich nur registrieren, wer einen gültigen Gruppen-Einladungslink hat - schließt die Instanz für die Öffentlichkeit."
+              "When off, only people with a valid group invite link can register - closes the instance to the public."
             )}
           </p>
         </div>

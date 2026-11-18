@@ -16,13 +16,13 @@ export const REMINDER_CADENCES: QuestReminderCadence[] = [
 ];
 
 export const REMINDER_CADENCE_LABEL: Record<QuestReminderCadence, string> = {
-  AUTO: "Automatisch (je nach Dauer)",
-  DAILY: "Täglich",
-  EVERY_3_DAYS: "Alle 3 Tage",
-  WEEKLY: "Wöchentlich",
-  BIWEEKLY: "Alle 2 Wochen",
-  MONTHLY: "Monatlich",
-  NEVER: "Nie",
+  AUTO: "Automatic (based on duration)",
+  DAILY: "Daily",
+  EVERY_3_DAYS: "Every 3 days",
+  WEEKLY: "Weekly",
+  BIWEEKLY: "Every 2 weeks",
+  MONTHLY: "Monthly",
+  NEVER: "Never",
 };
 
 const FIXED_INTERVAL_DAYS: Record<Exclude<QuestReminderCadence, "AUTO" | "NEVER">, number> = {

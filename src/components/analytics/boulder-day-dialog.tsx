@@ -52,7 +52,7 @@ export function BoulderDayDialog({
       })
       .catch(() => {
         if (cancelled) return;
-        toast.error(t("Konnte den Tag nicht laden."));
+        toast.error(t("Couldn't load the day."));
         onOpenChange(false);
       });
     return () => {
@@ -81,10 +81,10 @@ export function BoulderDayDialog({
     setSaving(false);
     submittingRef.current = false;
     if (!res.ok) {
-      toast.error(t("Konnte nicht speichern."));
+      toast.error(t("Couldn't save."));
       return;
     }
-    toast.success(entries.length === 0 ? t("Boulder-Tag geleert.") : hadExisting ? t("Boulder-Tag aktualisiert!") : t("Boulder-Tag gespeichert!"));
+    toast.success(entries.length === 0 ? t("Boulder day cleared.") : hadExisting ? t("Boulder day updated!") : t("Boulder day saved!"));
     onOpenChange(false);
     onSaved();
   }
@@ -94,9 +94,9 @@ export function BoulderDayDialog({
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>
-            {t("Bouldern am {date}", { date: new Date(date).toLocaleDateString(dateLocale, { timeZone: "UTC" }) })}
+            {t("Bouldering on {date}", { date: new Date(date).toLocaleDateString(dateLocale, { timeZone: "UTC" }) })}
           </DialogTitle>
-          <DialogDescription>{t("Wie viele Boulder pro Schwierigkeit?")}</DialogDescription>
+          <DialogDescription>{t("How many boulders per difficulty?")}</DialogDescription>
         </DialogHeader>
 
         {!loaded ? (
@@ -106,7 +106,7 @@ export function BoulderDayDialog({
             <div className="grid grid-cols-2 gap-2">
               {GRADES.map((grade) => (
                 <div key={grade} className="flex items-center justify-between rounded-lg border border-border p-2">
-                  <span className="text-sm font-medium">{t("Grad {grade}", { grade })}</span>
+                  <span className="text-sm font-medium">{t("Grade {grade}", { grade })}</span>
                   <div className="flex items-center gap-1">
                     <Button
                       type="button"
@@ -127,7 +127,7 @@ export function BoulderDayDialog({
             </div>
             {other > 0 && (
               <p className="text-xs text-muted-foreground">
-                {t("Außerdem an diesem Tag: {n} weitere Sends (Routen/andere Grade), die hier unverändert bleiben.", { n: other })}
+                {t("Also on this day: {n} more sends (routes/other grades) that stay unchanged here.", { n: other })}
               </p>
             )}
           </>
@@ -136,12 +136,12 @@ export function BoulderDayDialog({
         <DialogFooter>
           <Button onClick={handleSave} disabled={!loaded || saving || (total === 0 && !hadExisting)}>
             {saving
-              ? t("Speichern…")
+              ? t("Saving…")
               : total === 0 && hadExisting
-                ? t("Tag leeren")
+                ? t("Clear day")
                 : hadExisting
-                  ? t("Änderungen speichern ({n} Boulder)", { n: total })
-                  : t("{n} Boulder speichern", { n: total })}
+                  ? t("Save changes ({n} boulders)", { n: total })
+                  : t("Save {n} boulders", { n: total })}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -25,7 +25,7 @@ type Point = { date: string; oneRepMax: number };
 export function OneRmChart() {
   const { t, dateLocale } = useLocale();
   const chartConfig = {
-    oneRepMax: { label: t("Geschätztes 1RM"), color: "var(--chart-1)" },
+    oneRepMax: { label: t("Estimated 1RM"), color: "var(--chart-1)" },
   } satisfies ChartConfig;
   const [exercises, setExercises] = useState<Exercise[] | null>(null);
   const [exerciseId, setExerciseId] = useState<string>("");
@@ -63,7 +63,7 @@ export function OneRmChart() {
   const selectedExercise = exercises?.find((e) => e.id === exerciseId);
 
   if (exercises != null && exercises.length === 0) {
-    return <EmptyChart message={t("Trage dein erstes Workout ein, um hier deinen Fortschritt zu sehen.")} />;
+    return <EmptyChart message={t("Log your first workout to see your progress here.")} />;
   }
 
   return (
@@ -75,7 +75,7 @@ export function OneRmChart() {
         items={(exercises ?? []).map((ex) => ({ value: ex.id, label: ex.name }))}
       >
         <SelectTrigger className="w-full sm:w-64">
-          <SelectValue placeholder={t("Übung wählen")} />
+          <SelectValue placeholder={t("Choose exercise")} />
         </SelectTrigger>
         <SelectContent>
           {(exercises ?? []).map((ex) => (
@@ -88,20 +88,20 @@ export function OneRmChart() {
       {selectedExercise?.isBodyweight && (
         <Badge variant="secondary" className="gap-1">
           <Scale className="size-3" />
-          {t("Bodyweight-adjustiert")}
+          {t("Bodyweight-adjusted")}
         </Badge>
       )}
       </div>
 
       {!exerciseId ? (
         <p className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
-          {t("Wähl eine Übung, um ihren Verlauf zu sehen.")}
+          {t("Pick an exercise to see its history.")}
         </p>
       ) : points == null ? (
         <Skeleton className="h-64 w-full" />
       ) : points.length < 2 ? (
         <p className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
-          {t("Noch zu wenig Daten für diese Übung — trag mindestens 2 Workouts ein.")}
+          {t("Not enough data for this exercise yet — log at least 2 workouts.")}
         </p>
       ) : (
         <>
@@ -112,7 +112,7 @@ export function OneRmChart() {
             >
               {delta >= 0 ? <TrendingUp className="size-4" /> : <TrendingDown className="size-4" />}
               {delta >= 0 ? "+" : ""}
-              {t("{delta} {unit} geschätztes 1RM seit erstem Eintrag", { delta: delta.toFixed(1), unit: unitLabel })}
+              {t("{delta} {unit} estimated 1RM since first entry", { delta: delta.toFixed(1), unit: unitLabel })}
             </div>
           )}
           <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
@@ -131,7 +131,7 @@ export function OneRmChart() {
                 axisLine={false}
                 tickMargin={8}
                 width={64}
-                label={{ value: `${t("Geschätztes 1RM")} (${unitLabel})`, angle: -90, position: "insideLeft", offset: 4, style: { textAnchor: "middle" }, fill: "var(--muted-foreground)", fontSize: 11 }}
+                label={{ value: `${t("Estimated 1RM")} (${unitLabel})`, angle: -90, position: "insideLeft", offset: 4, style: { textAnchor: "middle" }, fill: "var(--muted-foreground)", fontSize: 11 }}
               />
               <ChartTooltip
                 content={

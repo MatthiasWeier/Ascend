@@ -11,7 +11,7 @@ const batchSchema = z.object({
   entries: z.array(z.object({ grade: z.string().min(1).max(20), count: z.number().int().positive().max(500) })).max(100),
 });
 
-// Saves one day from the quick "Klettertag" dialog. The dialog always shows
+// Saves one day from the quick "Climbing day" dialog. The dialog always shows
 // the full picture for that day, so this REPLACES the day's entries of that
 // style (for the dialog's own grades) instead of piling new rows on top.
 export async function POST(request: Request) {

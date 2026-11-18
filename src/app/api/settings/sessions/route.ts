@@ -28,7 +28,7 @@ export async function GET() {
   });
 }
 
-// "Alle anderen Sitzungen beenden" - keeps the current device signed in,
+// "End all other sessions" - keeps the current device signed in,
 // revokes every other tracked session for this account.
 export async function DELETE() {
   const session = await auth();

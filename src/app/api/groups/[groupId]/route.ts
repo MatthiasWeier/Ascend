@@ -65,7 +65,7 @@ export async function PATCH(
 
   const membership = await getGroupMembership(session.user.id, groupId);
   if (!membership || membership.role !== "LEADER") {
-    return NextResponse.json({ error: "Nur der Leader darf die Gruppe umbenennen" }, { status: 403 });
+    return NextResponse.json({ error: "Only the leader can rename the group" }, { status: 403 });
   }
 
   const body = await request.json();

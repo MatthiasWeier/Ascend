@@ -39,7 +39,7 @@ export async function POST(
   const { groupId } = await params;
   const membership = await getGroupMembership(session.user.id, groupId);
   if (!membership || membership.role !== "LEADER") {
-    return NextResponse.json({ error: "Nur der Leader darf Challenges aktivieren" }, { status: 403 });
+    return NextResponse.json({ error: "Only the leader can activate challenges" }, { status: 403 });
   }
 
   const body = await request.json();
@@ -63,7 +63,7 @@ export async function POST(
   });
   if (existing) {
     if (existing.isActive) {
-      return NextResponse.json({ error: "Challenge ist bereits aktiv" }, { status: 400 });
+      return NextResponse.json({ error: "Challenge is already active" }, { status: 400 });
     }
     await prisma.groupDailyChallenge.update({
       where: { id: existing.id },

@@ -20,7 +20,7 @@ export async function POST() {
     select: { username: true, totpEnabled: true },
   });
   if (user.totpEnabled) {
-    return NextResponse.json({ error: "2FA ist bereits aktiviert" }, { status: 400 });
+    return NextResponse.json({ error: "2FA is already enabled" }, { status: 400 });
   }
 
   const secret = generateTotpSecret();

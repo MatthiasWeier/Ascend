@@ -30,14 +30,14 @@ type SessionInfo = {
 // Best-effort, cosmetic only - just enough to tell devices apart in the
 // list, not a real UA parser.
 function describeUserAgent(ua: string | null, t: TFunction): string {
-  if (!ua) return t("Unbekanntes Gerät");
+  if (!ua) return t("Unknown device");
   if (/iphone/i.test(ua)) return "iPhone";
   if (/ipad/i.test(ua)) return "iPad";
   if (/android/i.test(ua)) return "Android";
   if (/windows/i.test(ua)) return "Windows";
   if (/macintosh|mac os/i.test(ua)) return "Mac";
   if (/linux/i.test(ua)) return "Linux";
-  return t("Unbekanntes Gerät");
+  return t("Unknown device");
 }
 
 export function SessionManager() {
@@ -59,10 +59,10 @@ export function SessionManager() {
     const res = await fetch(`/api/settings/sessions/${id}`, { method: "DELETE" });
     setBusyId(null);
     if (!res.ok) {
-      toast.error(t("Konnte Sitzung nicht beenden."));
+      toast.error(t("Couldn't end the session."));
       return;
     }
-    toast.success(t("Sitzung beendet."));
+    toast.success(t("Session ended."));
     refetch();
   }
 
@@ -71,10 +71,10 @@ export function SessionManager() {
     const res = await fetch("/api/settings/sessions", { method: "DELETE" });
     setRevokingAll(false);
     if (!res.ok) {
-      toast.error(t("Konnte andere Sitzungen nicht beenden."));
+      toast.error(t("Couldn't end the other sessions."));
       return;
     }
-    toast.success(t("Alle anderen Sitzungen beendet."));
+    toast.success(t("All other sessions ended."));
     refetch();
   }
 
@@ -92,10 +92,10 @@ export function SessionManager() {
               <div>
                 <p className="text-sm font-medium">
                   {describeUserAgent(s.userAgent, t)}
-                  {s.isCurrent && <span className="ml-1.5 text-xs text-success">{t("(dieses Gerät)")}</span>}
+                  {s.isCurrent && <span className="ml-1.5 text-xs text-success">{t("(this device)")}</span>}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {t("Zuletzt aktiv {when}", { when: new Date(s.lastSeenAt).toLocaleString(dateLocale) })}
+                  {t("Last active {when}", { when: new Date(s.lastSeenAt).toLocaleString(dateLocale) })}
                 </p>
               </div>
             </div>
@@ -109,16 +109,16 @@ export function SessionManager() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>{t("Diese Sitzung beenden?")}</AlertDialogTitle>
+                  <AlertDialogTitle>{t("End this session?")}</AlertDialogTitle>
                   <AlertDialogDescription>
                     {s.isCurrent
-                      ? t("Das meldet dich auf diesem Gerät ab.")
-                      : t("Das Gerät wird beim nächsten Zugriff automatisch abgemeldet.")}
+                      ? t("This logs you out on this device.")
+                      : t("The device will be logged out automatically on its next request.")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>{t("Abbrechen")}</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => revoke(s.id)}>{t("Beenden")}</AlertDialogAction>
+                  <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => revoke(s.id)}>{t("End")}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -127,7 +127,7 @@ export function SessionManager() {
       </div>
       {hasOthers && (
         <Button type="button" variant="outline" size="sm" className="w-fit" disabled={revokingAll} onClick={revokeOthers}>
-          {revokingAll ? t("Einen Moment…") : t("Alle anderen Sitzungen beenden")}
+          {revokingAll ? t("One moment…") : t("End all other sessions")}
         </Button>
       )}
     </div>

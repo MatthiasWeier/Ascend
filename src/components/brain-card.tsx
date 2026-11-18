@@ -22,7 +22,7 @@ export async function BrainCard({ suggestion }: { suggestion: BrainSuggestion })
           {suggestion.injuryNote && <p className="mt-1 text-xs text-amber-500">{suggestion.injuryNote}</p>}
           {suggestion.exampleExercises.length > 0 && (
             <p className="mt-1 text-sm">
-              <span className="text-muted-foreground">{t("Zum Beispiel:")} </span>
+              <span className="text-muted-foreground">{t("For example:")} </span>
               <span className="font-medium">{suggestion.exampleExercises.join(" · ")}</span>
             </p>
           )}

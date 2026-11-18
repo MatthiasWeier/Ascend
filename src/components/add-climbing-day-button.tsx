@@ -38,7 +38,7 @@ export function AddClimbingDayButton({ className, size }: { className?: string; 
         }}
       >
         <Mountain className="size-4" />
-        {t("Klettertag")}
+        {t("Climbing day")}
       </Button>
       {open && <BoulderDayDialog date={date} open={open} onOpenChange={setOpen} onSaved={() => router.refresh()} />}
     </>

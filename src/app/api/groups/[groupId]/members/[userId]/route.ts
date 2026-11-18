@@ -24,7 +24,7 @@ export async function DELETE(
   if (userId === session.user.id) {
     if (myMembership.role === "LEADER") {
       return NextResponse.json(
-        { error: "Als Leader musst du die Leitung erst übergeben, bevor du die Gruppe verlassen kannst" },
+        { error: "As leader you must hand over leadership before you can leave the group" },
         { status: 400 }
       );
     }
@@ -36,7 +36,7 @@ export async function DELETE(
   }
 
   if (myMembership.role !== "LEADER") {
-    return NextResponse.json({ error: "Nur der Leader darf Mitglieder entfernen" }, { status: 403 });
+    return NextResponse.json({ error: "Only the leader can remove members" }, { status: 403 });
   }
 
   const target = await getGroupMembership(userId, groupId);

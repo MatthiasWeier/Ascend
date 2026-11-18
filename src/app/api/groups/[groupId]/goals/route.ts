@@ -54,7 +54,7 @@ export async function POST(
   const { groupId } = await params;
   const membership = await getGroupMembership(session.user.id, groupId);
   if (!membership || membership.role !== "LEADER") {
-    return NextResponse.json({ error: "Nur der Leader darf Ziele erstellen" }, { status: 403 });
+    return NextResponse.json({ error: "Only the leader can create goals" }, { status: 403 });
   }
 
   const body = await request.json();
@@ -67,7 +67,7 @@ export async function POST(
   if (exerciseIds.length > 0) {
     const exercises = await prisma.exercise.findMany({ where: { id: { in: exerciseIds } } });
     if (exercises.length !== exerciseIds.length) {
-      return NextResponse.json({ error: "Übung nicht gefunden" }, { status: 404 });
+      return NextResponse.json({ error: "Exercise not found" }, { status: 404 });
     }
     const mismatch = exercises.find((e) => !goalUnitMatchesExerciseType(parsed.data.unit, e.type));
     if (mismatch) {

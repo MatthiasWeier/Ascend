@@ -9,9 +9,9 @@ import { tutorial } from "./tutorial";
 import { climbingMeetups } from "./climbing-meetups";
 import { quests } from "./quests";
 
-// German source text -> English. Split by area only to keep files
+// English source text -> German. Split by area only to keep files
 // reviewable; everything is merged into one flat lookup.
-export const en: Record<string, string> = {
+export const de: Record<string, string> = {
   ...common,
   ...shell,
   ...workouts,

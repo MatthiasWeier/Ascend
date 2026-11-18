@@ -38,7 +38,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ex
   if (name && name !== exercise.name) {
     const clash = await prisma.exercise.findUnique({ where: { name } });
     if (clash) {
-      return NextResponse.json({ error: "Eine Übung mit diesem Namen existiert bereits" }, { status: 409 });
+      return NextResponse.json({ error: "An exercise with this name already exists" }, { status: 409 });
     }
   }
 
@@ -47,7 +47,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ex
     // A goal counts reps or seconds, so its linked exercise can't switch kind.
     const goals = await prisma.groupGoal.count({ where: { exercises: { some: { id: exerciseId } } } });
     if (goals > 0) {
-      return NextResponse.json({ error: "Die Übung ist mit einem Gruppenziel verknüpft - die Art lässt sich nicht ändern" }, { status: 409 });
+      return NextResponse.json({ error: "The exercise is linked to a group goal - its type can't be changed" }, { status: 409 });
     }
   }
 
@@ -101,10 +101,10 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     prisma.challengeTemplate.count({ where: { exerciseId } }),
   ]);
   if (sets > 0) {
-    return NextResponse.json({ error: "Die Übung wird noch in Workouts verwendet", count: sets }, { status: 409 });
+    return NextResponse.json({ error: "The exercise is still used in workouts", count: sets }, { status: 409 });
   }
   if (goals > 0 || challenges > 0) {
-    return NextResponse.json({ error: "Die Übung ist mit einem Gruppenziel oder einer Challenge verknüpft" }, { status: 409 });
+    return NextResponse.json({ error: "The exercise is linked to a group goal or a challenge" }, { status: 409 });
   }
 
   // Templates just lose the entry; the exercise's muscles cascade.

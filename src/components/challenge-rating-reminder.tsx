@@ -7,11 +7,11 @@ import { useT } from "@/components/locale-provider";
 import { cn } from "@/lib/utils";
 
 const RATINGS = [
-  { value: 1, emoji: "😁", label: "Sehr einfach" },
-  { value: 2, emoji: "🙂", label: "Eher einfach" },
-  { value: 3, emoji: "😐", label: "Genau richtig" },
-  { value: 4, emoji: "🥵", label: "Eher schwer" },
-  { value: 5, emoji: "💀", label: "Sehr schwer" },
+  { value: 1, emoji: "😁", label: "Very easy" },
+  { value: 2, emoji: "🙂", label: "Rather easy" },
+  { value: 3, emoji: "😐", label: "Just right" },
+  { value: 4, emoji: "🥵", label: "Rather hard" },
+  { value: 5, emoji: "💀", label: "Very hard" },
 ];
 
 // A challenge finished automatically from workout reps (challenge-workout-
@@ -45,7 +45,7 @@ export function ChallengeRatingReminder({ pending: initial }: { pending: Challen
           <p className="flex items-center gap-1.5">
             <Trophy className="size-4 shrink-0 text-primary" />
             <span className="font-medium">
-              {t("\"{name}\" geschafft ({group}) - wie schwer war's?", { name: p.templateName, group: p.groupName })}
+              {t("\"{name}\" completed ({group}) - how hard was it?", { name: p.templateName, group: p.groupName })}
             </span>
           </p>
           <div className="flex items-center gap-1 pl-6">

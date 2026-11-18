@@ -27,16 +27,16 @@ export default async function Home() {
           Train together. <span className="text-primary">Push each other.</span>
         </h1>
         <p className="text-balance text-muted-foreground">
-          {t("Tracke dein Training, lass dir vom Workout Brain sagen was als Nächstes dran ist, und motiviere deine Crew in gemeinsamen Challenges.")}
+          {t("Track your training, let the Workout Brain tell you what's next, and motivate your crew in shared challenges.")}
         </p>
       </div>
 
       <div className="flex gap-3">
         <Button size="lg" render={<Link href="/register" />}>
-          {t("Loslegen")}
+          {t("Get started")}
         </Button>
         <Button size="lg" variant="outline" render={<Link href="/login" />}>
-          {t("Anmelden")}
+          {t("Log in")}
         </Button>
       </div>
 
@@ -45,21 +45,21 @@ export default async function Home() {
           <Flame className="size-5 text-primary" />
           <p className="text-sm font-medium">Workout Brain</p>
           <p className="text-xs text-muted-foreground">
-            {t("Empfiehlt Muskel-Fokus, Ruhetage und Haut-Regeneration")}
+            {t("Recommends muscle focus, rest days and skin recovery")}
           </p>
         </div>
         <div className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-5">
           <TrendingUp className="size-5 text-primary" />
           <p className="text-sm font-medium">Analytics</p>
           <p className="text-xs text-muted-foreground">
-            {t("1RM-Verlauf, Volumen, Balance-Radar, Kletter-Pyramide")}
+            {t("1RM history, volume, balance radar, climbing pyramid")}
           </p>
         </div>
         <div className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-5">
           <Users className="size-5 text-primary" />
-          <p className="text-sm font-medium">{t("Gruppen")}</p>
+          <p className="text-sm font-medium">{t("Groups")}</p>
           <p className="text-xs text-muted-foreground">
-            {t("Challenges, Fotos & Workouts mit deiner Crew teilen")}
+            {t("Share challenges, photos & workouts with your crew")}
           </p>
         </div>
       </div>

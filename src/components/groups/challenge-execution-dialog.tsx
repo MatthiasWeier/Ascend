@@ -19,11 +19,11 @@ type Attempt = {
 };
 
 const RATINGS = [
-  { value: 1, emoji: "😁", label: "Sehr einfach" },
-  { value: 2, emoji: "🙂", label: "Eher einfach" },
-  { value: 3, emoji: "😐", label: "Genau richtig" },
-  { value: 4, emoji: "🥵", label: "Eher schwer" },
-  { value: 5, emoji: "💀", label: "Sehr schwer" },
+  { value: 1, emoji: "😁", label: "Very easy" },
+  { value: 2, emoji: "🙂", label: "Rather easy" },
+  { value: 3, emoji: "😐", label: "Just right" },
+  { value: 4, emoji: "🥵", label: "Rather hard" },
+  { value: 5, emoji: "💀", label: "Very hard" },
 ];
 
 const INCREMENTS = [1, 2, 5, 10];
@@ -84,13 +84,13 @@ export function ChallengeExecutionDialog({
     });
     setBusy(false);
     if (!res.ok) {
-      toast.error(t("Konnte nicht speichern."));
+      toast.error(t("Couldn't save."));
       return;
     }
     const data = await res.json();
     setAttempt(data.attempt);
     if (data.attempt.status === "COMPLETED") {
-      toast.success(t("Ziel erreicht! 🎉"));
+      toast.success(t("Goal reached! 🎉"));
       onChanged();
     }
   }
@@ -100,7 +100,7 @@ export function ChallengeExecutionDialog({
     const res = await fetch(`/api/challenge-attempts/${attempt.id}/end`, { method: "POST" });
     setBusy(false);
     if (!res.ok) {
-      toast.error(t("Fehlgeschlagen."));
+      toast.error(t("Failed."));
       return;
     }
     const data = await res.json();
@@ -118,10 +118,10 @@ export function ChallengeExecutionDialog({
     setBusy(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Bewertung fehlgeschlagen."));
+      toast.error(t(data.error ?? "Rating failed."));
       return;
     }
-    toast.success(t("Danke fürs Bewerten!"));
+    toast.success(t("Thanks for rating!"));
     onChanged();
     onOpenChange(false);
   }
@@ -138,7 +138,7 @@ export function ChallengeExecutionDialog({
         {needsRating ? (
           <div className="flex flex-col items-center gap-4 py-2">
             <p className="text-center text-sm text-muted-foreground">
-              {t("{cur} / {target} Wdh — wie schwer war's?", { cur: attempt.currentReps, target: attempt.targetRepsSnapshot })}
+              {t("{cur} / {target} reps — how hard was it?", { cur: attempt.currentReps, target: attempt.targetRepsSnapshot })}
             </p>
             <div className="flex gap-2">
               {RATINGS.map((r) => (
@@ -161,9 +161,9 @@ export function ChallengeExecutionDialog({
 
             <div className="flex flex-col items-center gap-1">
               <span className="text-5xl font-bold tabular-nums">{attempt.currentReps}</span>
-              <span className="text-sm text-muted-foreground">{t("von {target} Wdh", { target: attempt.targetRepsSnapshot })}</span>
+              <span className="text-sm text-muted-foreground">{t("of {target} reps", { target: attempt.targetRepsSnapshot })}</span>
               {(attempt.workoutReps ?? 0) > 0 && (
-                <span className="text-xs text-muted-foreground">{t("davon {n} aus deinen Workouts heute", { n: attempt.workoutReps ?? 0 })}</span>
+                <span className="text-xs text-muted-foreground">{t("{n} of those from your workouts today", { n: attempt.workoutReps ?? 0 })}</span>
               )}
             </div>
 
@@ -171,7 +171,7 @@ export function ChallengeExecutionDialog({
 
             {justFinished ? (
               <p className={cn("text-sm font-medium", attempt.status === "COMPLETED" ? "text-success" : "text-muted-foreground")}>
-                {attempt.status === "COMPLETED" ? t("Geschafft! 🎉") : t("Challenge beendet.")}
+                {attempt.status === "COMPLETED" ? t("Done! 🎉") : t("Challenge ended.")}
               </p>
             ) : (
               <>
@@ -184,7 +184,7 @@ export function ChallengeExecutionDialog({
                 </div>
                 {canGiveUp && (
                   <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={endEarly}>
-                    {t("Aufgeben")}
+                    {t("Give up")}
                   </Button>
                 )}
               </>

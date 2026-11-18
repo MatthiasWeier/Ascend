@@ -43,7 +43,7 @@ export async function POST(
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input" }, { status: 400 });
   }
   if (parsed.data.dateKey && parsed.data.dateKey < todayGermanDateKey()) {
-    return NextResponse.json({ error: "Termine lassen sich nur für heute oder später planen" }, { status: 400 });
+    return NextResponse.json({ error: "Events can only be planned for today or later" }, { status: 400 });
   }
 
   const suggestion = await prisma.climbingMeetupSuggestion.create({

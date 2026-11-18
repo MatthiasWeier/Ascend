@@ -26,7 +26,7 @@ export function GroupQuests({ groupId }: { groupId: string }) {
   if (quests.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-        {t("Noch teilt niemand eine Sidequest. Eigene legst du unter \"Quests\" in der Navigation an.")}
+        {t("Nobody is sharing a sidequest yet. Create your own under \"Quests\" in the navigation.")}
       </p>
     );
   }

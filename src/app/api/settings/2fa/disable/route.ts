@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = bodySchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Passwort erforderlich" }, { status: 400 });
+    return NextResponse.json({ error: "Password required" }, { status: 400 });
   }
 
   const user = await prisma.user.findUniqueOrThrow({
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   });
   const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
   if (!valid) {
-    return NextResponse.json({ error: "Passwort ist falsch" }, { status: 400 });
+    return NextResponse.json({ error: "Password is wrong" }, { status: 400 });
   }
 
   await prisma.$transaction([

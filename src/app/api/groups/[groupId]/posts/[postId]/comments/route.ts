@@ -17,7 +17,7 @@ async function loadPost(groupId: string, postId: string) {
 }
 
 // Flat list, oldest first - the client builds the reply tree from parentId.
-// Deleted comments that still have replies are kept as "[gelöscht]" stubs so
+// Deleted comments that still have replies are kept as "[deleted]" stubs so
 // the thread doesn't fall apart.
 export async function GET(
   request: Request,
@@ -73,7 +73,7 @@ export async function POST(
 
   const { allowed } = await checkRateLimit(`comment:${session.user.id}`, 20, 60 * 1000);
   if (!allowed) {
-    return NextResponse.json({ error: "Zu viele Kommentare - kurz warten." }, { status: 429 });
+    return NextResponse.json({ error: "Too many comments - please wait a moment." }, { status: 429 });
   }
 
   const parsed = createSchema.safeParse(await request.json().catch(() => null));
@@ -85,7 +85,7 @@ export async function POST(
   if (parsed.data.parentId) {
     const parent = await prisma.postComment.findUnique({ where: { id: parsed.data.parentId } });
     if (!parent || parent.postId !== postId || parent.deletedAt) {
-      return NextResponse.json({ error: "Kommentar nicht gefunden" }, { status: 404 });
+      return NextResponse.json({ error: "Comment not found" }, { status: 404 });
     }
     parentAuthorId = parent.userId;
   }

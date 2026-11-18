@@ -39,14 +39,14 @@ export async function PATCH(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   if (meetup.createdById !== session.user.id) {
-    return NextResponse.json({ error: "Nur wer den Termin geplant hat, kann ihn ändern" }, { status: 403 });
+    return NextResponse.json({ error: "Only whoever planned the event can change it" }, { status: 403 });
   }
   const parsed = editSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
   if (parsed.data.dateKey && parsed.data.dateKey < todayGermanDateKey()) {
-    return NextResponse.json({ error: "Termine lassen sich nur für heute oder später planen" }, { status: 400 });
+    return NextResponse.json({ error: "Events can only be planned for today or later" }, { status: 400 });
   }
   const data: { dateKey?: string; time?: string | null; location?: string | null; title?: string | null } = {};
   if (parsed.data.dateKey !== undefined) data.dateKey = parsed.data.dateKey;

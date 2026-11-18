@@ -22,7 +22,7 @@ export async function POST(
 
   const myMembership = await getGroupMembership(session.user.id, groupId);
   if (!myMembership || myMembership.role !== "LEADER") {
-    return NextResponse.json({ error: "Nur der Leader darf die Leitung übergeben" }, { status: 403 });
+    return NextResponse.json({ error: "Only the leader can hand over leadership" }, { status: 403 });
   }
 
   const body = await request.json();
@@ -31,12 +31,12 @@ export async function POST(
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
   if (parsed.data.userId === session.user.id) {
-    return NextResponse.json({ error: "Du bist bereits Leader" }, { status: 400 });
+    return NextResponse.json({ error: "You are already the leader" }, { status: 400 });
   }
 
   const target = await getGroupMembership(parsed.data.userId, groupId);
   if (!target) {
-    return NextResponse.json({ error: "Mitglied nicht gefunden" }, { status: 404 });
+    return NextResponse.json({ error: "Member not found" }, { status: 404 });
   }
 
   await prisma.$transaction([

@@ -47,10 +47,10 @@ export function ReportInjuryDialog({ muscle, onSaved }: { muscle: Muscle; onSave
     setSaving(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte nicht speichern."));
+      toast.error(t(data.error ?? "Couldn't save."));
       return;
     }
-    toast.success(t("Verletzung gespeichert."));
+    toast.success(t("Injury saved."));
     setNote("");
     setEndsAt("");
     setOpen(false);
@@ -61,19 +61,19 @@ export function ReportInjuryDialog({ muscle, onSaved }: { muscle: Muscle; onSave
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button type="button" variant="outline" size="sm" className="border-amber-500/40 text-amber-500 hover:bg-amber-500/10" />}>
         <TriangleAlert className="size-3.5" />
-        {t("Verletzung melden")}
+        {t("Report injury")}
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>{t("Verletzung an {muscle} melden", { muscle: t(MUSCLE_LABEL[muscle]) })}</DialogTitle>
+          <DialogTitle>{t("Report an injury for {muscle}", { muscle: t(MUSCLE_LABEL[muscle]) })}</DialogTitle>
           <DialogDescription>
-            {t("Betroffene Übungen bekommen beim Eintragen eine Warnung und fliegen (bei Mittel/Schwer) aus den Vorschlägen des Workout Brains. Andere Gruppenmitglieder sehen das ebenfalls.")}
+            {t("Affected exercises get a warning while logging and (at moderate/severe) are dropped from the Workout Brain's suggestions. Other group members see this too.")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="flex flex-col gap-4">
           {options.length > 1 && (
             <div className="flex flex-col gap-1.5">
-              <Label>{t("Wo genau?")}</Label>
+              <Label>{t("Where exactly?")}</Label>
               <Select value={bodyPart} onValueChange={(v) => setBodyPart(v as BodyPart)} items={options.map((p) => ({ value: p, label: t(BODY_PART_LABEL[p]) }))}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
@@ -89,7 +89,7 @@ export function ReportInjuryDialog({ muscle, onSaved }: { muscle: Muscle; onSave
             </div>
           )}
           <div className="flex flex-col gap-1.5">
-            <Label>{t("Wie schlimm?")}</Label>
+            <Label>{t("How bad?")}</Label>
             <Select value={severity} onValueChange={(v) => setSeverity(v as InjurySeverity)} items={SEVERITIES.map((s) => ({ value: s, label: t(SEVERITY_LABEL[s]) }))}>
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -104,16 +104,16 @@ export function ReportInjuryDialog({ muscle, onSaved }: { muscle: Muscle; onSave
             </Select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="rep-note">{t("Notiz (optional)")}</Label>
-            <Textarea id="rep-note" maxLength={200} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("z.B. Sehnenreizung links")} />
+            <Label htmlFor="rep-note">{t("Note (optional)")}</Label>
+            <Textarea id="rep-note" maxLength={200} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("e.g. tendon irritation, left")} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="rep-end">{t("Voraussichtlich ausgeheilt (optional)")}</Label>
+            <Label htmlFor="rep-end">{t("Expected to be healed (optional)")}</Label>
             <Input id="rep-end" type="date" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
           </div>
           <DialogFooter>
             <Button type="submit" disabled={saving}>
-              {saving ? t("Speichern…") : t("Melden")}
+              {saving ? t("Saving…") : t("Report")}
             </Button>
           </DialogFooter>
         </form>

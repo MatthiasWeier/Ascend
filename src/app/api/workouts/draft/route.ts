@@ -20,7 +20,7 @@ async function save(request: Request) {
   }
   const text = await request.text();
   if (text.length > MAX_BYTES) {
-    return NextResponse.json({ error: "Entwurf zu groß" }, { status: 413 });
+    return NextResponse.json({ error: "Draft too large" }, { status: 413 });
   }
   let data: unknown;
   try {

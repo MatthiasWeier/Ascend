@@ -27,7 +27,7 @@ export async function SideGoals({ userId, groups }: { userId: string; groups: { 
     <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
       <span className="flex items-center gap-2 text-sm font-semibold">
         <Target className="size-4 text-primary" />
-        {t("Gruppenziele")}
+        {t("Group goals")}
       </span>
       <div className="flex flex-col gap-3">
         {goals.map((g) => (

@@ -9,7 +9,7 @@ import { pathToFileURL } from "node:url";
 
 const root = path.resolve(import.meta.dirname, "..");
 const srcDir = path.join(root, "src");
-const enDir = path.join(srcDir, "lib", "i18n", "en");
+const deDir = path.join(srcDir, "lib", "i18n", "de");
 
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
@@ -20,9 +20,9 @@ function walk(dir) {
 }
 
 const dictionary = {};
-for (const file of fs.readdirSync(enDir)) {
+for (const file of fs.readdirSync(deDir)) {
   if (file === "index.ts") continue;
-  const mod = await import(pathToFileURL(path.join(enDir, file)).href);
+  const mod = await import(pathToFileURL(path.join(deDir, file)).href);
   for (const value of Object.values(mod)) Object.assign(dictionary, value);
 }
 
@@ -37,22 +37,22 @@ function unescapeLiteral(raw) {
 // Keys that are looked up dynamically (t(variable)) - the literals live in
 // constants/DB seed/API responses, so they're listed here explicitly.
 const DYNAMIC_KEYS = [
-  "Feed", "Eintragen", "Analytics", "Gruppen", "Einstellungen",
-  "Push", "Pull", "Beine", "Core", "Grip",
-  "Warm-up", "Normal", "Dropsatz", "Failure",
-  "Alle", "Text", "Workout", "Foto",
-  "Workouts", "Nachrichten", "Bilder", "Challenges",
-  "Wiederholungen", "Sekunden", "km", "Custom",
-  "Sehr einfach", "Eher einfach", "Genau richtig", "Eher schwer", "Sehr schwer",
-  "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So",
-  "So viele Klimmzüge wie möglich bis zu deinem Ziel.",
-  "Liegestütze satt - knallhart bis zum Ziel.",
-  "Dips ohne Gnade.",
-  "Bodyweight Squats am laufenden Band.",
-  "Sit-ups gegen die Uhr.",
-  "Burpees - der Allrounder-Killer.",
-  "Ausfallschritte für starke Beine.",
-  "Einarmig(er) drücken für Fortgeschrittene.",
+  "Feed", "Log", "Analytics", "Groups", "Settings",
+  "Push", "Pull", "Legs", "Core", "Grip",
+  "Warm-up", "Normal", "Drop set", "Failure",
+  "All", "Text", "Workout", "Photo",
+  "Workouts", "Messages", "Images", "Challenges",
+  "Repetitions", "Seconds", "km", "Custom",
+  "Very easy", "Rather easy", "Just right", "Rather hard", "Very hard",
+  "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
+  "As many pull-ups as possible up to your goal.",
+  "Push-ups galore - relentless until your goal.",
+  "Dips without mercy.",
+  "Bodyweight squats non-stop.",
+  "Sit-ups against the clock.",
+  "Burpees - the all-rounder killer.",
+  "Lunges for strong legs.",
+  "One-arm-ish pressing for advanced athletes.",
 ];
 
 const used = new Map(); // key -> first location
@@ -63,7 +63,7 @@ const apiError = /error:\s*("(?:[^"\\\n]|\\.)*")/g;
 const germanHint = /[äöüÄÖÜß]|\b(Speichern|Abbrechen|Löschen|Noch|Konnte|nicht|Bitte|Übung|Gruppe|Workout|Passwort|Benutzername|Fehlgeschlagen|Einstellungen)\b/;
 
 for (const file of walk(srcDir)) {
-  if (file.includes(path.join("lib", "i18n", "en"))) continue;
+  if (file.includes(path.join("lib", "i18n", "de"))) continue;
   const rel = path.relative(root, file);
   const text = fs.readFileSync(file, "utf8");
   const isApi = rel.includes(path.join("app", "api"));

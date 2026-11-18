@@ -53,10 +53,10 @@ export default function GroupsPage() {
     setCreating(false);
     submittingRef.current = false;
     if (!res.ok) {
-      toast.error(t("Konnte Gruppe nicht erstellen."));
+      toast.error(t("Couldn't create the group."));
       return;
     }
-    toast.success(t("Gruppe erstellt!"));
+    toast.success(t("Group created!"));
     setName("");
     setOpen(false);
     refetch();
@@ -66,18 +66,18 @@ export default function GroupsPage() {
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6 lg:max-w-4xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t("Gruppen")}</h1>
-          <p className="text-sm text-muted-foreground">{t("Trainiert zusammen, pusht euch.")}</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("Groups")}</h1>
+          <p className="text-sm text-muted-foreground">{t("Train together, push each other.")}</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger render={<Button size="sm" />}>
             <Plus className="size-4" />
-            {t("Neu")}
+            {t("New")}
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{t("Neue Gruppe")}</DialogTitle>
-              <DialogDescription>{t("Du wirst automatisch Owner und kannst danach Leute einladen.")}</DialogDescription>
+              <DialogTitle>{t("New group")}</DialogTitle>
+              <DialogDescription>{t("You automatically become the owner and can invite people afterwards.")}</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreate} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
@@ -86,7 +86,7 @@ export default function GroupsPage() {
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={creating}>
-                  {creating ? t("Erstellen…") : t("Erstellen")}
+                  {creating ? t("Creating…") : t("Create")}
                 </Button>
               </DialogFooter>
             </form>
@@ -101,7 +101,7 @@ export default function GroupsPage() {
         </div>
       ) : groups.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          {t("Noch in keiner Gruppe. Erstell eine oder lass dich einladen.")}
+          {t("Not in any group yet. Create one or get invited.")}
         </p>
       ) : (
         <FeedList>
@@ -115,7 +115,7 @@ export default function GroupsPage() {
                   <div className="flex-1">
                     <p className="font-medium">{g.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {g.memberCount === 1 ? t("1 Mitglied") : t("{n} Mitglieder", { n: g.memberCount })}
+                      {g.memberCount === 1 ? t("1 member") : t("{n} members", { n: g.memberCount })}
                       {g.role === "LEADER" ? ` · ${t("Leader")}` : ""}
                     </p>
                   </div>

@@ -70,14 +70,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ qu
   const { title, description, targetDateKey, sharedWithGroups, reminderCadence, status } = parsed.data;
 
   if (targetDateKey && targetDateKey !== quest.targetDateKey && targetDateKey < todayGermanDateKey()) {
-    return NextResponse.json({ error: "Das Zieldatum liegt in der Vergangenheit." }, { status: 400 });
+    return NextResponse.json({ error: "The target date is in the past." }, { status: 400 });
   }
 
   const reopening = status === "ACTIVE" && quest.status === "COMPLETED";
   if (reopening) {
     const activeCount = await prisma.quest.count({ where: { userId, status: "ACTIVE" } });
     if (activeCount >= MAX_ACTIVE_QUESTS) {
-      return NextResponse.json({ error: "Zu viele aktive Sidequests - schließ erst welche ab." }, { status: 400 });
+      return NextResponse.json({ error: "Too many active sidequests - complete some first." }, { status: 400 });
     }
   }
   const completing = status === "COMPLETED" && quest.status === "ACTIVE";

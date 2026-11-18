@@ -57,10 +57,10 @@ export function InjuriesCard() {
     setSaving(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte nicht speichern."));
+      toast.error(t(data.error ?? "Couldn't save."));
       return;
     }
-    toast.success(t("Verletzung gespeichert."));
+    toast.success(t("Injury saved."));
     setNote("");
     setEndsAt("");
     load();
@@ -68,14 +68,14 @@ export function InjuriesCard() {
 
   async function heal(id: string) {
     const res = await fetch(`/api/injuries/${id}`, { method: "PATCH" });
-    if (!res.ok) return toast.error(t("Konnte nicht speichern."));
-    toast.success(t("Als ausgeheilt markiert."));
+    if (!res.ok) return toast.error(t("Couldn't save."));
+    toast.success(t("Marked as healed."));
     load();
   }
 
   async function remove(id: string) {
     const res = await fetch(`/api/injuries/${id}`, { method: "DELETE" });
-    if (!res.ok) return toast.error(t("Konnte nicht speichern."));
+    if (!res.ok) return toast.error(t("Couldn't save."));
     load();
   }
 
@@ -84,7 +84,7 @@ export function InjuriesCard() {
       {injuries == null ? (
         <Skeleton className="h-16 w-full" />
       ) : injuries.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("Keine aktiven Verletzungen. Gut so!")}</p>
+        <p className="text-sm text-muted-foreground">{t("No active injuries. Keep it up!")}</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {injuries.map((i) => (
@@ -99,26 +99,26 @@ export function InjuriesCard() {
                 <p className="text-xs text-muted-foreground">
                   {i.note && `${i.note} · `}
                   {i.endsAt
-                    ? t("bis {date}", { date: new Date(i.endsAt).toLocaleDateString(dateLocale) })
-                    : t("bis du sie als ausgeheilt markierst")}
+                    ? t("until {date}", { date: new Date(i.endsAt).toLocaleDateString(dateLocale) })
+                    : t("until you mark it as healed")}
                 </p>
               </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => heal(i.id)}
-                title={t("Als ausgeheilt markieren")}
+                title={t("Mark as healed")}
               >
                 <CheckCheck className="size-4" />
-                {t("Ausgeheilt")}
+                {t("Healed")}
               </Button>
               <Button
                 variant="ghost"
                 size="icon-sm"
                 className="text-muted-foreground hover:text-destructive"
                 onClick={() => remove(i.id)}
-                title={t("Eintrag löschen")}
-                aria-label={t("Eintrag löschen")}
+                title={t("Delete entry")}
+                aria-label={t("Delete entry")}
               >
                 <Trash2 className="size-4" />
               </Button>
@@ -128,10 +128,10 @@ export function InjuriesCard() {
       )}
 
       <form onSubmit={add} className="flex flex-col gap-3 rounded-lg border border-dashed border-border p-3">
-        <p className="text-sm font-medium">{t("Verletzung hinzufügen")}</p>
+        <p className="text-sm font-medium">{t("Add injury")}</p>
         <div className="flex flex-wrap gap-3">
           <div className="flex min-w-40 flex-1 flex-col gap-1.5">
-            <Label>{t("Wo tut es weh?")}</Label>
+            <Label>{t("Where does it hurt?")}</Label>
             <Select
               value={bodyPart}
               onValueChange={(v) => setBodyPart(v as BodyPart)}
@@ -150,7 +150,7 @@ export function InjuriesCard() {
             </Select>
           </div>
           <div className="flex min-w-40 flex-1 flex-col gap-1.5">
-            <Label>{t("Wie schlimm?")}</Label>
+            <Label>{t("How bad?")}</Label>
             <Select
               value={severity}
               onValueChange={(v) => setSeverity(v as InjurySeverity)}
@@ -171,25 +171,25 @@ export function InjuriesCard() {
         </div>
         <p className="text-xs text-muted-foreground">
           {severity === "MILD"
-            ? t("Leicht: Beim Eintragen siehst du nur eine Warnung.")
-            : t("Mittel/Schwer: Betroffene Übungen werden zusätzlich nicht mehr vom Workout Brain vorgeschlagen.")}
+            ? t("Mild: you only get a warning while logging.")
+            : t("Moderate/severe: affected exercises are also no longer suggested by the Workout Brain.")}
         </p>
         <div className="flex flex-wrap gap-3">
           <div className="flex min-w-40 flex-1 flex-col gap-1.5">
-            <Label htmlFor="inj-note">{t("Notiz (optional)")}</Label>
-            <Input id="inj-note" maxLength={200} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("z.B. Sehnenreizung links")} />
+            <Label htmlFor="inj-note">{t("Note (optional)")}</Label>
+            <Input id="inj-note" maxLength={200} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("e.g. tendon irritation, left")} />
           </div>
           <div className="flex min-w-40 flex-1 flex-col gap-1.5">
-            <Label htmlFor="inj-end">{t("Voraussichtlich ausgeheilt (optional)")}</Label>
+            <Label htmlFor="inj-end">{t("Expected to be healed (optional)")}</Label>
             <Input id="inj-end" type="date" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
           </div>
         </div>
         <Button type="submit" size="sm" disabled={saving} className="self-start">
           <Plus className="size-4" />
-          {t("Hinzufügen")}
+          {t("Add")}
         </Button>
         <p className="text-xs text-muted-foreground">
-          {t("Hinweis: Ascend ersetzt keine ärztliche Beratung. Bei anhaltenden Schmerzen bitte abklären lassen.")}
+          {t("Note: Ascend is no substitute for medical advice. Please get persistent pain checked.")}
         </p>
       </form>
     </div>

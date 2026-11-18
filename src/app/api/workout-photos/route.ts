@@ -20,25 +20,25 @@ export async function POST(request: Request) {
 
   const { allowed } = await checkRateLimit(`workout-photo:${userId}`, 30, 60 * 1000);
   if (!allowed) {
-    return NextResponse.json({ error: "Zu viele Anfragen, kurz warten." }, { status: 429 });
+    return NextResponse.json({ error: "Too many requests, please wait a moment." }, { status: 429 });
   }
 
   const form = await request.formData().catch(() => null);
   const file = form?.get("image");
   if (!(file instanceof File)) {
-    return NextResponse.json({ error: "Kein Bild übermittelt" }, { status: 400 });
+    return NextResponse.json({ error: "No image submitted" }, { status: 400 });
   }
   if (file.size > MAX_IMAGE_BYTES) {
-    return NextResponse.json({ error: "Bild zu groß (max. 8MB)" }, { status: 400 });
+    return NextResponse.json({ error: "Image too large (max. 8 MB)" }, { status: 400 });
   }
   const ext = extensionForImageType(file.type);
   if (!ext) {
-    return NextResponse.json({ error: "Nicht unterstütztes Bildformat" }, { status: 400 });
+    return NextResponse.json({ error: "Unsupported image format" }, { status: 400 });
   }
 
   const pending = await prisma.workoutPhoto.count({ where: { userId, sessionId: null } });
   if (pending >= MAX_PHOTOS_PER_WORKOUT + 2) {
-    return NextResponse.json({ error: "Zu viele Fotos" }, { status: 400 });
+    return NextResponse.json({ error: "Too many photos" }, { status: 400 });
   }
 
   const filename = `${randomUUID()}.${ext}`;

@@ -16,14 +16,14 @@ export async function POST(request: Request) {
   const form = await request.formData();
   const file = form.get("avatar");
   if (!(file instanceof File)) {
-    return NextResponse.json({ error: "Kein Bild übermittelt" }, { status: 400 });
+    return NextResponse.json({ error: "No image submitted" }, { status: 400 });
   }
   if (file.size > MAX_AVATAR_BYTES) {
-    return NextResponse.json({ error: "Bild zu groß (max. 4MB)" }, { status: 400 });
+    return NextResponse.json({ error: "Image too large (max. 4 MB)" }, { status: 400 });
   }
   const ext = extensionForImageType(file.type);
   if (!ext) {
-    return NextResponse.json({ error: "Nicht unterstütztes Bildformat" }, { status: 400 });
+    return NextResponse.json({ error: "Unsupported image format" }, { status: 400 });
   }
 
   const filename = `${randomUUID()}.${ext}`;

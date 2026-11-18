@@ -19,7 +19,7 @@ export async function POST(
 
   const { allowed } = await checkRateLimit(`increment:${session.user.id}`, 60, 60 * 1000);
   if (!allowed) {
-    return NextResponse.json({ error: "Zu viele Anfragen, kurz warten." }, { status: 429 });
+    return NextResponse.json({ error: "Too many requests, please wait a moment." }, { status: 429 });
   }
 
   const { attemptId } = await params;
@@ -45,10 +45,10 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   if (attempt.userChallengeGoal.userId !== session.user.id) {
-    return NextResponse.json({ error: "Das ist nicht dein Versuch" }, { status: 403 });
+    return NextResponse.json({ error: "That's not your attempt" }, { status: 403 });
   }
   if (attempt.status !== "IN_PROGRESS") {
-    return NextResponse.json({ error: "Versuch ist bereits abgeschlossen" }, { status: 400 });
+    return NextResponse.json({ error: "Attempt is already finished" }, { status: 400 });
   }
 
   const body = await request.json();

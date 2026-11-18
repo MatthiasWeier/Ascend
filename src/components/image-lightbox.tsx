@@ -31,7 +31,7 @@ export function ImageLightbox({
           e.stopPropagation();
           setOpen(true);
         }}
-        aria-label={t("Bild vergrößern")}
+        aria-label={t("Enlarge image")}
         className={cn("pointer-events-auto block w-fit max-w-full cursor-zoom-in", className)}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- auth-gated proxy route, not optimizable */}
@@ -54,7 +54,7 @@ export function ImageLightbox({
             rel="noreferrer"
             className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
           >
-            {t("Original in neuem Tab öffnen")}
+            {t("Open original in new tab")}
           </a>
         </DialogContent>
       </Dialog>

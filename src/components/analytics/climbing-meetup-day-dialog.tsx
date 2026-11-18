@@ -138,7 +138,7 @@ function SuggestChangeDialog({ meetup, onSuggested }: { meetup: Meetup; onSugges
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!time && !location && !note) {
-      toast.error(t("Bitte mindestens ein Feld ausfüllen."));
+      toast.error(t("Please fill in at least one field."));
       return;
     }
     setSaving(true);
@@ -150,10 +150,10 @@ function SuggestChangeDialog({ meetup, onSuggested }: { meetup: Meetup; onSugges
     setSaving(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte nicht speichern."));
+      toast.error(t(data.error ?? "Couldn't save."));
       return;
     }
-    toast.success(t("Änderung vorgeschlagen!"));
+    toast.success(t("Change suggested!"));
     setTime("");
     setLocation("");
     setNote("");
@@ -165,31 +165,31 @@ function SuggestChangeDialog({ meetup, onSuggested }: { meetup: Meetup; onSugges
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button type="button" size="sm" variant="outline" />}>
         <MessageSquarePlus className="size-3.5" />
-        {t("Änderung vorschlagen")}
+        {t("Suggest a change")}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("Änderung vorschlagen")}</DialogTitle>
+          <DialogTitle>{t("Suggest a change")}</DialogTitle>
           <DialogDescription>
-            {t("Nur ausfüllen, was sich ändern soll - {name} entscheidet, ob's übernommen wird.", { name: meetup.createdBy.name })}
+            {t("Only fill in what should change - {name} decides whether it's applied.", { name: meetup.createdBy.name })}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="sg-time">{t("Andere Uhrzeit (optional)")}</Label>
+            <Label htmlFor="sg-time">{t("Different time (optional)")}</Label>
             <Input id="sg-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="sg-loc">{t("Anderer Ort (optional)")}</Label>
-            <Input id="sg-loc" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={120} placeholder={t("z.B. Boulderhalle Nord")} />
+            <Label htmlFor="sg-loc">{t("Different location (optional)")}</Label>
+            <Input id="sg-loc" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={120} placeholder={t("e.g. North Boulder Gym")} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="sg-note">{t("Notiz (optional)")}</Label>
-            <Textarea id="sg-note" value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} placeholder={t("z.B. Halle hat da zu")} />
+            <Label htmlFor="sg-note">{t("Note (optional)")}</Label>
+            <Textarea id="sg-note" value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} placeholder={t("e.g. the gym is closed then")} />
           </div>
           <DialogFooter>
             <Button type="submit" disabled={saving}>
-              {saving ? t("Senden…") : t("Vorschlagen")}
+              {saving ? t("Sending…") : t("Suggest")}
             </Button>
           </DialogFooter>
         </form>
@@ -208,7 +208,7 @@ function SuggestionRow({ meetup, suggestion, isCreator, onChanged }: { meetup: M
     setBusy(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte nicht speichern."));
+      toast.error(t(data.error ?? "Couldn't save."));
       return;
     }
     onChanged();
@@ -223,10 +223,10 @@ function SuggestionRow({ meetup, suggestion, isCreator, onChanged }: { meetup: M
     <div className={cn("flex flex-col gap-1.5 rounded-lg border px-3 py-2 text-sm", suggestion.status === "PENDING" ? "border-amber-500/40 bg-amber-500/5" : "border-border bg-secondary/30")}>
       <p>
         <span className="font-medium">{suggestion.suggestedBy.name}</span>{" "}
-        {t("schlägt vor:")} {parts.length > 0 ? parts.join(" · ") : t("(nur Notiz)")}
+        {t("suggests:")} {parts.length > 0 ? parts.join(" · ") : t("(note only)")}
         {suggestion.status !== "PENDING" && (
           <span className={cn("ml-2 text-xs font-medium", suggestion.status === "ACCEPTED" ? "text-success" : "text-muted-foreground")}>
-            {suggestion.status === "ACCEPTED" ? t("übernommen") : t("abgelehnt")}
+            {suggestion.status === "ACCEPTED" ? t("applied") : t("declined")}
           </span>
         )}
       </p>
@@ -235,11 +235,11 @@ function SuggestionRow({ meetup, suggestion, isCreator, onChanged }: { meetup: M
         <div className="flex gap-2">
           <Button size="sm" disabled={busy} onClick={() => respond("accept")}>
             <Check className="size-3.5" />
-            {t("Übernehmen")}
+            {t("Apply")}
           </Button>
           <Button size="sm" variant="ghost" disabled={busy} onClick={() => respond("decline")}>
             <X className="size-3.5" />
-            {t("Ablehnen")}
+            {t("Decline")}
           </Button>
         </div>
       )}
@@ -265,8 +265,8 @@ function MeetupCard({ meetup, myId, onChanged }: { meetup: Meetup; myId: string;
       body: JSON.stringify({ goal: goal || undefined, focuses }),
     });
     setBusy(false);
-    if (!res.ok) return toast.error(t("Konnte nicht speichern."));
-    toast.success(t("Zugesagt!"));
+    if (!res.ok) return toast.error(t("Couldn't save."));
+    toast.success(t("You're in!"));
     setEditing(false);
     onChanged();
   }
@@ -275,7 +275,7 @@ function MeetupCard({ meetup, myId, onChanged }: { meetup: Meetup; myId: string;
     setBusy(true);
     const res = await fetch(`/api/groups/${meetup.groupId}/climbing-meetups/${meetup.id}/join`, { method: "DELETE" });
     setBusy(false);
-    if (!res.ok) return toast.error(t("Konnte nicht speichern."));
+    if (!res.ok) return toast.error(t("Couldn't save."));
     onChanged();
   }
 
@@ -284,8 +284,8 @@ function MeetupCard({ meetup, myId, onChanged }: { meetup: Meetup; myId: string;
     const res = await fetch(`/api/groups/${meetup.groupId}/climbing-meetups/${meetup.id}`, { method: "DELETE" });
     setBusy(false);
     setConfirmCancel(false);
-    if (!res.ok) return toast.error(t("Konnte nicht speichern."));
-    toast.success(t("Termin abgesagt."));
+    if (!res.ok) return toast.error(t("Couldn't save."));
+    toast.success(t("Event cancelled."));
     onChanged();
   }
 
@@ -299,15 +299,15 @@ function MeetupCard({ meetup, myId, onChanged }: { meetup: Meetup; myId: string;
             <Mountain className="size-4 text-emerald-600 dark:text-emerald-400" />
             {meetupDisplayName(meetup.activity, meetup.title)}
           </p>
-          <p className="text-xs text-muted-foreground">{meetup.group.name} · {t("Geplant von {name}", { name: meetup.createdBy.name })}</p>
+          <p className="text-xs text-muted-foreground">{meetup.group.name} · {t("Planned by {name}", { name: meetup.createdBy.name })}</p>
         </div>
         {isCreator && (
           <Button
             variant="ghost"
             size="icon-sm"
             className="text-muted-foreground hover:text-destructive"
-            title={t("Termin absagen")}
-            aria-label={t("Termin absagen")}
+            title={t("Cancel event")}
+            aria-label={t("Cancel event")}
             onClick={() => setConfirmCancel(true)}
           >
             <Trash2 className="size-4" />
@@ -335,8 +335,8 @@ function MeetupCard({ meetup, myId, onChanged }: { meetup: Meetup; myId: string;
       <div className="flex flex-col gap-1.5">
         <p className="text-xs font-medium text-muted-foreground">
           {meetup.participants.length === 1
-            ? t("1 Person kommt")
-            : t("{n} Personen kommen", { n: meetup.participants.length })}
+            ? t("1 person is coming")
+            : t("{n} people are coming", { n: meetup.participants.length })}
         </p>
         {meetup.participants.map((p) => (
           <div key={p.userId} className="flex items-start gap-2 rounded-lg bg-secondary/40 px-2.5 py-2 text-sm">
@@ -349,7 +349,7 @@ function MeetupCard({ meetup, myId, onChanged }: { meetup: Meetup; myId: string;
             <div className="min-w-0 flex-1">
               <p className="font-medium">
                 {p.user.name}
-                {p.userId === myId && ` (${t("du")})`}
+                {p.userId === myId && ` (${t("you")})`}
               </p>
               {p.goal && <p className="text-xs text-muted-foreground">{p.goal}</p>}
               {p.focuses.length > 0 && (
@@ -369,19 +369,19 @@ function MeetupCard({ meetup, myId, onChanged }: { meetup: Meetup; myId: string;
       {editing ? (
         <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border p-2.5">
           <div className="flex flex-col gap-1.5">
-            <Label className="text-xs">{t("Was möchtest du schaffen? (optional)")}</Label>
-            <Input value={goal} onChange={(e) => setGoal(e.target.value)} maxLength={200} placeholder={t("z.B. erste 6a")} />
+            <Label className="text-xs">{t("What do you want to achieve? (optional)")}</Label>
+            <Input value={goal} onChange={(e) => setGoal(e.target.value)} maxLength={200} placeholder={t("e.g. first 6a")} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label className="text-xs">{t("Woran möchtest du trainieren? (optional)")}</Label>
+            <Label className="text-xs">{t("What do you want to train? (optional)")}</Label>
             <FocusPicker activity={meetup.activity} value={focuses} onChange={setFocuses} />
           </div>
           <div className="flex gap-2">
             <Button size="sm" disabled={busy} onClick={join}>
-              {mine ? t("Speichern") : t("Zusagen")}
+              {mine ? t("Save") : t("Join")}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>
-              {t("Abbrechen")}
+              {t("Cancel")}
             </Button>
           </div>
         </div>
@@ -390,15 +390,15 @@ function MeetupCard({ meetup, myId, onChanged }: { meetup: Meetup; myId: string;
           {mine ? (
             <>
               <Button size="sm" variant="outline" disabled={busy} onClick={() => setEditing(true)}>
-                {t("Details bearbeiten")}
+                {t("Edit details")}
               </Button>
               <Button size="sm" variant="ghost" disabled={busy} onClick={leave}>
-                {t("Absagen")}
+                {t("Cancel")}
               </Button>
             </>
           ) : (
             <Button size="sm" disabled={busy} onClick={() => setEditing(true)}>
-              {t("Ich komme mit")}
+              {t("I'm in")}
             </Button>
           )}
           {!isCreator && <SuggestChangeDialog meetup={meetup} onSuggested={onChanged} />}
@@ -408,7 +408,7 @@ function MeetupCard({ meetup, myId, onChanged }: { meetup: Meetup; myId: string;
       {meetup.suggestions.length > 0 && (
         <div className="flex flex-col gap-1.5">
           <p className="text-xs font-medium text-muted-foreground">
-            {pendingSuggestions > 0 ? t("{n} offene Vorschläge", { n: pendingSuggestions }) : t("Vorschläge")}
+            {pendingSuggestions > 0 ? t("{n} open suggestions", { n: pendingSuggestions }) : t("Suggestions")}
           </p>
           {meetup.suggestions.map((s) => (
             <SuggestionRow key={s.id} meetup={meetup} suggestion={s} isCreator={isCreator} onChanged={onChanged} />
@@ -419,15 +419,15 @@ function MeetupCard({ meetup, myId, onChanged }: { meetup: Meetup; myId: string;
       <AlertDialog open={confirmCancel} onOpenChange={setConfirmCancel}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("Termin absagen?")}</AlertDialogTitle>
+            <AlertDialogTitle>{t("Cancel event?")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("Der Termin wird für alle gelöscht, die zugesagt haben.")}
+              {t("The event will be deleted for everyone who joined.")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("Zurück")}</AlertDialogCancel>
+            <AlertDialogCancel>{t("Back")}</AlertDialogCancel>
             <AlertDialogAction disabled={busy} onClick={cancelMeetup}>
-              {t("Absagen")}
+              {t("Cancel")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -477,23 +477,23 @@ function CreateMeetupForm({ dateKey, onCreated }: { dateKey: string; onCreated: 
     setSaving(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte nicht speichern."));
+      toast.error(t(data.error ?? "Couldn't save."));
       return;
     }
-    toast.success(t("Termin geplant!"));
+    toast.success(t("Event planned!"));
     onCreated();
   }
 
   if (groups == null) return <Skeleton className="h-40 w-full" />;
   if (groups.length === 0) {
-    return <p className="text-sm text-muted-foreground">{t("Du bist in keiner Gruppe - trit einer bei, um Termine zu planen.")}</p>;
+    return <p className="text-sm text-muted-foreground">{t("You're not in any group yet - join one to plan events.")}</p>;
   }
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-3">
       {groups.length > 1 && (
         <div className="flex flex-col gap-1.5">
-          <Label>{t("Gruppe")}</Label>
+          <Label>{t("Group")}</Label>
           <Select value={groupId} onValueChange={(v) => setGroupId(v as string)} items={groups.map((g) => ({ value: g.id, label: g.name }))}>
             <SelectTrigger className="w-full">
               <SelectValue />
@@ -509,33 +509,33 @@ function CreateMeetupForm({ dateKey, onCreated }: { dateKey: string; onCreated: 
         </div>
       )}
       <div className="flex flex-col gap-1.5">
-        <Label>{t("Was steht an?")}</Label>
+        <Label>{t("What's on?")}</Label>
         <ActivityPicker value={activity} onChange={setActivity} />
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="mu-title">{t("Titel (optional)")}</Label>
-        <Input id="mu-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("z.B. Beintag")} maxLength={60} />
+        <Label htmlFor="mu-title">{t("Title (optional)")}</Label>
+        <Input id="mu-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("e.g. leg day")} maxLength={60} />
       </div>
       <div className="flex gap-3">
         <div className="flex flex-1 flex-col gap-1.5">
-          <Label htmlFor="mu-time">{t("Uhrzeit (optional)")}</Label>
+          <Label htmlFor="mu-time">{t("Time (optional)")}</Label>
           <Input id="mu-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
         </div>
         <div className="flex flex-1 flex-col gap-1.5">
-          <Label htmlFor="mu-loc">{t("Ort (optional)")}</Label>
-          <Input id="mu-loc" value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t("z.B. Boulderhalle Nord")} maxLength={120} />
+          <Label htmlFor="mu-loc">{t("Location (optional)")}</Label>
+          <Input id="mu-loc" value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t("e.g. North Boulder Gym")} maxLength={120} />
         </div>
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="mu-goal">{t("Was möchtest du schaffen? (optional)")}</Label>
-        <Textarea id="mu-goal" value={goal} onChange={(e) => setGoal(e.target.value)} maxLength={200} placeholder={t("z.B. erste 6a")} />
+        <Label htmlFor="mu-goal">{t("What do you want to achieve? (optional)")}</Label>
+        <Textarea id="mu-goal" value={goal} onChange={(e) => setGoal(e.target.value)} maxLength={200} placeholder={t("e.g. first 6a")} />
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label>{t("Woran möchtest du trainieren? (optional)")}</Label>
+        <Label>{t("What do you want to train? (optional)")}</Label>
         <FocusPicker activity={activity} value={focuses} onChange={setFocuses} />
       </div>
       <Button type="submit" disabled={saving || !groupId} className="self-start">
-        {saving ? t("Planen…") : t("Termin planen")}
+        {saving ? t("Planning…") : t("Plan an event")}
       </Button>
     </form>
   );
@@ -584,7 +584,7 @@ export function ClimbingMeetupDayDialog({
               timeZone: "UTC",
             })}
           </DialogTitle>
-          <DialogDescription>{t("Geplante Termine deiner Gruppen an diesem Tag.")}</DialogDescription>
+          <DialogDescription>{t("Your groups' planned events on this day.")}</DialogDescription>
         </DialogHeader>
 
         {meetups == null || myId == null ? (
@@ -603,7 +603,7 @@ export function ClimbingMeetupDayDialog({
               />
             ))}
             <div className="flex flex-col gap-1.5">
-              {meetups.length > 0 && <p className="text-xs font-medium text-muted-foreground">{t("Weiteren Termin planen")}</p>}
+              {meetups.length > 0 && <p className="text-xs font-medium text-muted-foreground">{t("Plan another event")}</p>}
               <CreateMeetupForm
                 dateKey={dateKey}
                 onCreated={() => {

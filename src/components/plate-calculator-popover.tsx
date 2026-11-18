@@ -23,7 +23,7 @@ export function PlateCalculatorPopover({ targetWeightKg }: { targetWeightKg: num
     <Popover>
       <PopoverTrigger
         render={
-          <Button type="button" variant="ghost" size="icon" className="size-10 text-muted-foreground" title={t("Hantelscheiben-Rechner")} />
+          <Button type="button" variant="ghost" size="icon" className="size-10 text-muted-foreground" title={t("Plate calculator")} />
         }
       >
         <Disc3 className="size-4" />
@@ -31,7 +31,7 @@ export function PlateCalculatorPopover({ targetWeightKg }: { targetWeightKg: num
       <PopoverContent>
         <div className="flex items-center gap-2">
           <Label htmlFor="plate-bar" className="text-xs text-muted-foreground">
-            {t("Stange")}
+            {t("Bar")}
           </Label>
           <Input
             id="plate-bar"
@@ -46,17 +46,17 @@ export function PlateCalculatorPopover({ targetWeightKg }: { targetWeightKg: num
         </div>
         {barOnly ? (
           <p className="text-sm text-muted-foreground">
-            {t("{weight} liegt bei/unter dem Stangengewicht - keine Scheiben nötig.", { weight: `${target}${unitLabel}` })}
+            {t("{weight} is at/below the bar weight - no plates needed.", { weight: `${target}${unitLabel}` })}
           </p>
         ) : (
           <div className="flex flex-col gap-1">
-            <p className="text-xs text-muted-foreground">{t("Pro Seite:")}</p>
+            <p className="text-xs text-muted-foreground">{t("Per side:")}</p>
             <p className="text-sm font-medium">
               {plates.length > 0 ? plates.join(" + ") + ` ${unitLabel}` : "—"}
             </p>
             {remainder > 0 && (
               <p className="text-xs text-amber-500">
-                {t("{weight} pro Seite nicht exakt darstellbar mit Standard-Scheiben.", { weight: `${remainder}${unitLabel}` })}
+                {t("{weight} per side can't be made exactly with standard plates.", { weight: `${remainder}${unitLabel}` })}
               </p>
             )}
           </div>

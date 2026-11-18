@@ -46,15 +46,15 @@ export function ExerciseCombobox({
         }
       >
         <span className={cn("truncate", !selected && "text-muted-foreground")}>
-          {selected ? selected.name : t("Wähle aus")}
+          {selected ? selected.name : t("Select")}
         </span>
         <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
       </PopoverTrigger>
       <PopoverContent className="w-[260px] p-0" align="start">
         <Command>
-          <CommandInput placeholder={t("Übung suchen…")} />
+          <CommandInput placeholder={t("Search exercise…")} />
           <CommandList>
-            <CommandEmpty>{t("Keine Übung gefunden.")}</CommandEmpty>
+            <CommandEmpty>{t("No exercise found.")}</CommandEmpty>
             <CommandGroup>
               {exercises.map((ex) => (
                 <CommandItem

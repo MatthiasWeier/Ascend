@@ -20,14 +20,14 @@ export default async function AdminPage() {
     <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Admin</h1>
-        <p className="text-sm text-muted-foreground">{t("Verwaltung dieser Instanz.")}</p>
+        <p className="text-sm text-muted-foreground">{t("Manage this instance.")}</p>
       </div>
       <div>
-        <h2 className="mb-3 text-lg font-semibold tracking-tight">{t("Instanz-Einstellungen")}</h2>
+        <h2 className="mb-3 text-lg font-semibold tracking-tight">{t("Instance settings")}</h2>
         <AdminInstanceSettings />
       </div>
       <div>
-        <h2 className="mb-3 text-lg font-semibold tracking-tight">{t("Nutzer")}</h2>
+        <h2 className="mb-3 text-lg font-semibold tracking-tight">{t("Users")}</h2>
         <AdminUserTable currentUserId={session.user.id} />
       </div>
     </div>

@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { germanDateKey } from "@/lib/german-time";
 import { notifyUsers } from "@/lib/notify";
 
-// The grades the quick "Klettertag" dialog offers (plain Fontainebleau-style
+// The grades the quick "Climbing day" dialog offers (plain Fontainebleau-style
 // numbers). Sends with other grades - V-scale, routes, "6a+" - are logged via
 // the single-send dialog and are never touched by the day dialog.
 export const BOULDER_DAY_GRADES = ["1", "2", "3", "4", "5", "6", "7", "8"];

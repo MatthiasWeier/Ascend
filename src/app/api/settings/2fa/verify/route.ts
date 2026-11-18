@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = bodySchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Bitte einen 6-stelligen Code eingeben" }, { status: 400 });
+    return NextResponse.json({ error: "Please enter a 6-digit code" }, { status: 400 });
   }
 
   const user = await prisma.user.findUniqueOrThrow({
@@ -24,10 +24,10 @@ export async function POST(request: Request) {
     select: { totpSecret: true, totpEnabled: true },
   });
   if (user.totpEnabled) {
-    return NextResponse.json({ error: "2FA ist bereits aktiviert" }, { status: 400 });
+    return NextResponse.json({ error: "2FA is already enabled" }, { status: 400 });
   }
   if (!user.totpSecret || !(await verifyAndConsumeTotp(session.user.id, user.totpSecret, parsed.data.token))) {
-    return NextResponse.json({ error: "Code ist falsch oder abgelaufen" }, { status: 400 });
+    return NextResponse.json({ error: "Code is wrong or expired" }, { status: 400 });
   }
 
   await prisma.user.update({ where: { id: session.user.id }, data: { totpEnabled: true } });

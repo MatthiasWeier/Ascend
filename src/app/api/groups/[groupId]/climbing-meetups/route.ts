@@ -85,7 +85,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ gro
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
   if (parsed.data.dateKey < todayGermanDateKey()) {
-    return NextResponse.json({ error: "Termine lassen sich nur für heute oder später planen" }, { status: 400 });
+    return NextResponse.json({ error: "Events can only be planned for today or later" }, { status: 400 });
   }
 
   const { activity, title, dateKey, time, location, goal, focuses } = parsed.data;

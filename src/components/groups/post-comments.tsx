@@ -115,7 +115,7 @@ export function PostComments({
     setPosting(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte Kommentar nicht speichern."));
+      toast.error(t(data.error ?? "Couldn't save the comment."));
       return false;
     }
     const data: { comment: PostComment } = await res.json();
@@ -131,7 +131,7 @@ export function PostComments({
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte Kommentar nicht speichern."));
+      toast.error(t(data.error ?? "Couldn't save the comment."));
       return;
     }
     const data: { content: string; editedAt: string } = await res.json();
@@ -145,10 +145,10 @@ export function PostComments({
     const res = await fetch(`${base}/${id}`, { method: "DELETE" });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte Kommentar nicht löschen."));
+      toast.error(t(data.error ?? "Couldn't delete the comment."));
       return;
     }
-    toast.success(t("Kommentar gelöscht."));
+    toast.success(t("Comment deleted."));
     const fresh = await fetch(base).then((r) => r.json());
     setComments(fresh.comments);
   }
@@ -179,32 +179,32 @@ export function PostComments({
             <button
               type="button"
               onClick={() => toggleCollapsed(c.id)}
-              aria-label={isCollapsed ? t("Aufklappen") : t("Einklappen")}
+              aria-label={isCollapsed ? t("Expand") : t("Collapse")}
               className="font-mono hover:text-foreground"
             >
               [{isCollapsed ? "+" : "–"}]
             </button>
-            <span className="font-medium text-foreground">{c.deleted ? t("[gelöscht]") : c.user?.name}</span>
+            <span className="font-medium text-foreground">{c.deleted ? t("[deleted]") : c.user?.name}</span>
             <span>{formatTimeAgo(c.createdAt, t, dateLocale)}</span>
-            {c.editedAt && !c.deleted && <span>· {t("bearbeitet")}</span>}
+            {c.editedAt && !c.deleted && <span>· {t("edited")}</span>}
             {isCollapsed && hidden > 0 && (
-              <span>· {hidden === 1 ? t("1 Antwort") : t("{n} Antworten", { n: hidden })}</span>
+              <span>· {hidden === 1 ? t("1 reply") : t("{n} replies", { n: hidden })}</span>
             )}
           </div>
 
           {!isCollapsed && (
             <>
               {c.deleted ? (
-                <p className="text-sm italic text-muted-foreground">{t("[gelöscht]")}</p>
+                <p className="text-sm italic text-muted-foreground">{t("[deleted]")}</p>
               ) : editingId === c.id ? (
                 <div className="flex flex-col gap-2">
                   <Textarea value={editDraft} onChange={(e) => setEditDraft(e.target.value)} autoFocus className="text-sm" />
                   <div className="flex gap-2">
                     <Button type="button" size="sm" disabled={!editDraft.trim()} onClick={() => saveEdit(c.id)}>
-                      {t("Speichern")}
+                      {t("Save")}
                     </Button>
                     <Button type="button" size="sm" variant="ghost" onClick={() => setEditingId(null)}>
-                      {t("Abbrechen")}
+                      {t("Cancel")}
                     </Button>
                   </div>
                 </div>
@@ -215,16 +215,16 @@ export function PostComments({
               {!c.deleted && editingId !== c.id && (
                 <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                   <button type="button" className="hover:text-foreground" onClick={() => { setReplyTo(replyTo === c.id ? null : c.id); setReplyDraft(""); }}>
-                    {t("Antworten")}
+                    {t("Reply")}
                   </button>
                   {canEdit && (
                     <button type="button" className="hover:text-foreground" onClick={() => { setEditingId(c.id); setEditDraft(c.content); }}>
-                      {t("Bearbeiten")}
+                      {t("Edit")}
                     </button>
                   )}
                   {canDelete && (
                     <button type="button" className="hover:text-destructive" onClick={() => remove(c.id)}>
-                      {t("Löschen")}
+                      {t("Delete")}
                     </button>
                   )}
                 </div>
@@ -235,7 +235,7 @@ export function PostComments({
                   <Textarea
                     value={replyDraft}
                     onChange={(e) => setReplyDraft(e.target.value)}
-                    placeholder={t("Antwort schreiben…")}
+                    placeholder={t("Write a reply…")}
                     autoFocus
                     className="text-sm"
                   />
@@ -251,10 +251,10 @@ export function PostComments({
                         }
                       }}
                     >
-                      {t("Antworten")}
+                      {t("Reply")}
                     </Button>
                     <Button type="button" size="sm" variant="ghost" onClick={() => setReplyTo(null)}>
-                      {t("Abbrechen")}
+                      {t("Cancel")}
                     </Button>
                   </div>
                 </div>
@@ -284,7 +284,7 @@ export function PostComments({
       >
         <MessageCircle className="size-4" />
         {label && <span className="text-foreground">{label} ·</span>}
-        {count === 0 ? t("Kommentieren") : count === 1 ? t("1 Kommentar") : t("{n} Kommentare", { n: count })}
+        {count === 0 ? t("Comment") : count === 1 ? t("1 comment") : t("{n} comments", { n: count })}
       </button>
 
       {open && (
@@ -293,7 +293,7 @@ export function PostComments({
             <Textarea
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder={t("Kommentar schreiben…")}
+              placeholder={t("Write a comment…")}
               maxLength={2000}
               className="text-sm"
             />
@@ -306,14 +306,14 @@ export function PostComments({
                 if (await submit(draft.trim(), null)) setDraft("");
               }}
             >
-              {posting ? t("Posten…") : t("Kommentieren")}
+              {posting ? t("Posting…") : t("Comment")}
             </Button>
           </div>
 
           {comments == null ? (
             <Skeleton className="h-16 w-full" />
           ) : roots.length === 0 ? (
-            <p className="text-center text-sm text-muted-foreground">{t("Noch keine Kommentare. Sei der Erste!")}</p>
+            <p className="text-center text-sm text-muted-foreground">{t("No comments yet. Be the first!")}</p>
           ) : (
             <div className="flex flex-col gap-1.5">{roots.map((c) => renderNode(c, 0))}</div>
           )}

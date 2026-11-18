@@ -36,7 +36,7 @@ export function InjuryCheckinReminder() {
       body: JSON.stringify({ painLevel }),
     });
     setBusy(null);
-    if (!res.ok) return toast.error(t("Konnte nicht speichern."));
+    if (!res.ok) return toast.error(t("Couldn't save."));
     setPending((prev) => prev?.filter((p) => p.id !== injuryId) ?? null);
   }
 
@@ -44,8 +44,8 @@ export function InjuryCheckinReminder() {
     setBusy(injuryId);
     const res = await fetch(`/api/injuries/${injuryId}`, { method: "PATCH" });
     setBusy(null);
-    if (!res.ok) return toast.error(t("Konnte nicht speichern."));
-    toast.success(t("Als ausgeheilt markiert."));
+    if (!res.ok) return toast.error(t("Couldn't save."));
+    toast.success(t("Marked as healed."));
     setPending((prev) => prev?.filter((p) => p.id !== injuryId) ?? null);
   }
 
@@ -58,12 +58,12 @@ export function InjuryCheckinReminder() {
           <div className="flex items-center gap-2">
             <HeartPulse className="size-4 shrink-0 text-amber-500" />
             <span className="font-medium">
-              {t("{part}: Immer noch verletzt?", { part: t(BODY_PART_LABEL[p.bodyPart]) })}
+              {t("{part}: Still hurts?", { part: t(BODY_PART_LABEL[p.bodyPart]) })}
             </span>
           </div>
           {picking === p.id ? (
             <div className="flex flex-wrap items-center gap-1.5 pl-6">
-              <span className="text-xs text-muted-foreground">{t("Schmerz-Level:")}</span>
+              <span className="text-xs text-muted-foreground">{t("Pain level:")}</span>
               {LEVELS.map((n) => (
                 <button
                   key={n}
@@ -80,16 +80,16 @@ export function InjuryCheckinReminder() {
                 onClick={() => setPicking(null)}
                 className="ml-1 text-xs text-muted-foreground underline-offset-2 hover:underline"
               >
-                {t("Abbrechen")}
+                {t("Cancel")}
               </button>
             </div>
           ) : (
             <div className="flex flex-wrap gap-2 pl-6">
               <Button size="sm" variant="outline" className={cn(busy === p.id && "opacity-60")} disabled={busy === p.id} onClick={() => setPicking(p.id)}>
-                {t("Ja, tut noch weh")}
+                {t("Yes, still hurts")}
               </Button>
               <Button size="sm" disabled={busy === p.id} onClick={() => markHealed(p.id)}>
-                {t("Nein, ausgeheilt")}
+                {t("No, healed")}
               </Button>
             </div>
           )}

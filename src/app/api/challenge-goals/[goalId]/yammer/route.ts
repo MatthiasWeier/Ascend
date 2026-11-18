@@ -31,7 +31,7 @@ export async function POST(
     return NextResponse.json({ error: "Not a member" }, { status: 403 });
   }
   if (goal.userId === session.user.id) {
-    return NextResponse.json({ error: "Du kannst nicht gegen dein eigenes Ziel yammern" }, { status: 400 });
+    return NextResponse.json({ error: "You can't yammer against your own goal" }, { status: 400 });
   }
 
   await prisma.yammerVote.upsert({

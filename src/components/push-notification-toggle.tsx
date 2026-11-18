@@ -37,7 +37,7 @@ export function PushNotificationToggle() {
 
   useEffect(() => {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      setUnavailableReason(t("Push wird von diesem Browser nicht unterstützt."));
+      setUnavailableReason(t("Push isn't supported by this browser."));
       setChecked(true);
       return;
     }
@@ -47,11 +47,11 @@ export function PushNotificationToggle() {
       .then((r) => r.json())
       .then(async (data: { configured?: boolean; publicKey?: string | null; error?: string }) => {
         if (data.error) {
-          setUnavailableReason(t("Push-Konfiguration konnte nicht geladen werden ({error}).", { error: data.error }));
+          setUnavailableReason(t("Couldn't load the push configuration ({error}).", { error: data.error }));
           return;
         }
         if (!data.configured || !data.publicKey) {
-          setUnavailableReason(t("Push ist auf dem Server nicht eingerichtet."));
+          setUnavailableReason(t("Push isn't set up on the server."));
           return;
         }
         setPublicKey(data.publicKey);
@@ -62,7 +62,7 @@ export function PushNotificationToggle() {
         if (subscription) setPushHost(new URL(subscription.endpoint).host);
       })
       .catch((err) => {
-        setUnavailableReason(t("Push-Konfiguration konnte nicht geladen werden ({error}).", { error: err?.message ?? String(err) }));
+        setUnavailableReason(t("Couldn't load the push configuration ({error}).", { error: err?.message ?? String(err) }));
       })
       .finally(() => setChecked(true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -76,13 +76,13 @@ export function PushNotificationToggle() {
       if (next) {
         if (Notification.permission === "denied") {
           setPermission("denied");
-          toast.error(t("Benachrichtigungen sind im Browser blockiert."));
+          toast.error(t("Notifications are blocked in the browser."));
           return;
         }
         const permissionResult = await Notification.requestPermission();
         setPermission(permissionResult);
         if (permissionResult !== "granted") {
-          toast.error(t("Ohne Erlaubnis keine Benachrichtigungen."));
+          toast.error(t("No notifications without permission."));
           return;
         }
         const registration = await navigator.serviceWorker.register("/sw.js");
@@ -102,7 +102,7 @@ export function PushNotificationToggle() {
           throw new Error(data.error ?? `HTTP ${res.status}`);
         }
         setEnabled(true);
-        toast.success(t("Push-Benachrichtigungen an."));
+        toast.success(t("Push notifications on."));
       } else {
         const registration = await navigator.serviceWorker.getRegistration();
         const subscription = await registration?.pushManager.getSubscription();
@@ -116,13 +116,13 @@ export function PushNotificationToggle() {
         }
         setEnabled(false);
         setPushHost(null);
-        toast(t("Push-Benachrichtigungen aus."));
+        toast(t("Push notifications off."));
       }
     } catch (err) {
       console.error("Push toggle failed", err);
       const message = describeError(err);
       setLastError(message);
-      toast.error(t("Konnte Push-Einstellung nicht ändern ({error}).", { error: message }));
+      toast.error(t("Couldn't change the push setting ({error}).", { error: message }));
     } finally {
       setBusy(false);
     }
@@ -152,9 +152,9 @@ export function PushNotificationToggle() {
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <Label>{t("Push-Benachrichtigungen")}</Label>
+          <Label>{t("Push notifications")}</Label>
           <p className="text-xs text-muted-foreground">
-            {t("Erhalte eine Benachrichtigung, wenn jemand in deinen Gruppen ein Workout postet oder eine Challenge schafft.")}
+            {t("Get a notification when someone in your groups posts a workout or completes a challenge.")}
           </p>
         </div>
         <Switch checked={enabled} onCheckedChange={handleToggle} disabled={busy} />
@@ -163,18 +163,18 @@ export function PushNotificationToggle() {
       {enabled && (
         <Button type="button" variant="outline" size="sm" className="w-fit" disabled={busy} onClick={sendTest}>
           <Bell className="size-4" />
-          {t("Test-Benachrichtigung an dieses Konto senden")}
+          {t("Send test notification to this account")}
         </Button>
       )}
 
       {testResults && (
         <div className="rounded-lg border border-border bg-secondary/30 p-2.5 text-xs">
           {testResults.length === 0 ? (
-            <p>{t("Für dein Konto ist kein Gerät angemeldet.")}</p>
+            <p>{t("No device is registered for your account.")}</p>
           ) : (
             testResults.map((r, i) => (
               <p key={i} className={r.ok ? "text-success" : "text-destructive"}>
-                {r.host}: {r.ok ? t("gesendet - kommt es an?") : `${t("Fehler")} ${r.statusCode ?? ""} ${r.detail ?? ""}`}
+                {r.host}: {r.ok ? t("sent - did it arrive?") : `${t("Error")} ${r.statusCode ?? ""} ${r.detail ?? ""}`}
               </p>
             ))
           )}
@@ -182,14 +182,14 @@ export function PushNotificationToggle() {
       )}
 
       <div className="rounded-lg border border-dashed border-border p-2.5 text-xs text-muted-foreground">
-        <p className="mb-1 font-medium text-foreground">{t("Diagnose")}</p>
-        <p>{t("Erlaubnis")}: {permission}</p>
-        <p>{t("Push-Dienst")}: {pushHost ?? "-"}</p>
-        <p>{t("Abo aktiv")}: {enabled ? t("ja") : t("nein")}</p>
-        {lastError && <p className="text-destructive">{t("Letzter Fehler")}: {lastError}</p>}
+        <p className="mb-1 font-medium text-foreground">{t("Diagnostics")}</p>
+        <p>{t("Permission")}: {permission}</p>
+        <p>{t("Push service")}: {pushHost ?? "-"}</p>
+        <p>{t("Subscription active")}: {enabled ? t("yes") : t("no")}</p>
+        {lastError && <p className="text-destructive">{t("Last error")}: {lastError}</p>}
         {permission === "denied" && (
           <p className="mt-1">
-            {t("Blockiert: in den Website-Einstellungen des Browsers (Schloss-Symbol neben der Adresse) Benachrichtigungen auf 'Zulassen' stellen und die Seite neu laden.")}
+            {t("Blocked: in the browser's site settings (lock icon next to the address) set notifications to 'Allow' and reload the page.")}
           </p>
         )}
       </div>

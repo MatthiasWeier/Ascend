@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
   const active = await getActiveInjuries(userId);
   if (active.length >= MAX_ACTIVE) {
-    return NextResponse.json({ error: "Zu viele aktive Verletzungen" }, { status: 400 });
+    return NextResponse.json({ error: "Too many active injuries" }, { status: 400 });
   }
   // One entry per body part: adding it again replaces severity/end date.
   const existing = active.find((i) => i.bodyPart === parsed.data.bodyPart);

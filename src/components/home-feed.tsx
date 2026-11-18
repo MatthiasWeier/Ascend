@@ -40,8 +40,8 @@ type TypeFilter = "workouts" | "messages" | "photos" | "challenges";
 
 const TYPE_LABELS: Record<TypeFilter, string> = {
   workouts: "Workouts",
-  messages: "Nachrichten",
-  photos: "Bilder",
+  messages: "Messages",
+  photos: "Images",
   challenges: "Challenges",
 };
 
@@ -88,7 +88,7 @@ function SharedWorkoutRow({ item }: { item: Extract<ActivityItem, { workoutSessi
   const lines = (item.content ?? "").split("\n").slice(1).filter(Boolean);
   const exercises = new Set(lines.map((l) => l.split(":")[0].trim())).size;
   const focusText = item.focuses
-    .map((f) => t("{focus}-Fokus", { focus: t(FOCUS_LABEL[f]) }))
+    .map((f) => t("{focus} focus", { focus: t(FOCUS_LABEL[f]) }))
     .join(", ");
 
   return (
@@ -99,14 +99,14 @@ function SharedWorkoutRow({ item }: { item: Extract<ActivityItem, { workoutSessi
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-muted-foreground">
-            <span className="text-base font-semibold text-foreground">{item.userName}</span> {t("hat ein Workout gepostet")}
+            <span className="text-base font-semibold text-foreground">{item.userName}</span> {t("posted a workout")}
           </p>
           {exercises > 0 && (
             <p className="mt-0.5 text-sm text-foreground/80">
               <BoldNumbers
                 text={[
-                  exercises === 1 ? t("1 Übung") : t("{n} Übungen", { n: exercises }),
-                  lines.length === 1 ? t("1 Satz") : t("{n} Sätze", { n: lines.length }),
+                  exercises === 1 ? t("1 exercise") : t("{n} exercises", { n: exercises }),
+                  lines.length === 1 ? t("1 set") : t("{n} sets", { n: lines.length }),
                 ].join(" · ")}
               />
               {focusText && ` · ${focusText}`}
@@ -115,7 +115,7 @@ function SharedWorkoutRow({ item }: { item: Extract<ActivityItem, { workoutSessi
           {item.photoIds.length > 0 && (
             <div className="mt-1.5 flex flex-wrap gap-2">
               {item.photoIds.map((id) => (
-                <ImageLightbox key={id} src={`/api/workout-photos/${id}`} alt={t("Pump Pic")} thumbClassName="max-h-32 max-w-40" />
+                <ImageLightbox key={id} src={`/api/workout-photos/${id}`} alt={t("Pump pic")} thumbClassName="max-h-32 max-w-40" />
               ))}
             </div>
           )}
@@ -130,7 +130,7 @@ function SharedWorkoutRow({ item }: { item: Extract<ActivityItem, { workoutSessi
             aria-expanded={open}
             className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
-            <span>{open ? t("Details ausblenden") : t("Details einblenden")}</span>
+            <span>{open ? t("Hide details") : t("Show details")}</span>
             <ChevronDown className={`size-5 transition-transform ${open ? "rotate-180" : ""}`} />
           </button>
         )}
@@ -139,7 +139,7 @@ function SharedWorkoutRow({ item }: { item: Extract<ActivityItem, { workoutSessi
         <div className="flex flex-col gap-2 pl-11">
           <pre className="whitespace-pre-wrap font-sans text-sm">{lines.join("\n")}</pre>
           <Link href={`/dashboard/groups/${item.groupId}`} className="w-fit text-xs font-medium text-primary hover:underline">
-            {t("In Gruppe öffnen")}
+            {t("Open in group")}
           </Link>
         </div>
       )}
@@ -151,23 +151,23 @@ function GroupItemRow({ item }: { item: ActivityItem }) {
   const { t, dateLocale } = useLocale();
   if (item.kind === "WORKOUT_SHARE") return <SharedWorkoutRow item={item} />;
   let Icon = Dumbbell;
-  let text: React.ReactNode = t("hat ein Workout gepostet");
+  let text: React.ReactNode = t("posted a workout");
   let iconColor = "text-primary";
   if (item.kind === "CHAT_PHOTO") {
     Icon = ImageIcon;
-    text = t("hat ein Foto gepostet");
+    text = t("posted a photo");
   } else if (item.kind === "CLIMBING") {
     Icon = Mountain;
-    text = t("hat einen Klettertag eingetragen");
+    text = t("logged a climbing day");
   } else if (item.kind === "CHAT_TEXT") {
     Icon = MessageSquare;
-    text = t("hat geschrieben: \"{text}\"", { text: item.content ?? "" });
+    text = t("wrote: \"{text}\"", { text: item.content ?? "" });
   } else if (item.kind === "CHALLENGE_COMPLETED") {
     Icon = Check;
     iconColor = "text-success";
     text = (
       <BoldNumbers
-        text={t("hat \"{name}\" geschafft ({cur}/{target})", { name: item.templateName, cur: item.currentReps, target: item.targetRepsSnapshot })}
+        text={t("completed \"{name}\" ({cur}/{target})", { name: item.templateName, cur: item.currentReps, target: item.targetRepsSnapshot })}
       />
     );
   } else if (item.kind === "CHALLENGE_ENDED_EARLY") {
@@ -176,7 +176,7 @@ function GroupItemRow({ item }: { item: ActivityItem }) {
     text = (
       <BoldNumbers
         className="text-destructive"
-        text={t("hat \"{name}\" abgebrochen ({cur}/{target})", { name: item.templateName, cur: item.currentReps, target: item.targetRepsSnapshot })}
+        text={t("gave up on \"{name}\" ({cur}/{target})", { name: item.templateName, cur: item.currentReps, target: item.targetRepsSnapshot })}
       />
     );
   }
@@ -213,7 +213,7 @@ function GroupItemRow({ item }: { item: ActivityItem }) {
         </p>
         {item.kind === "CLIMBING" && <ClimbingBody content={item.content} className="mt-1" />}
         {item.kind === "CHAT_PHOTO" && item.imageUrl && (
-          <ImageLightbox className="mt-1.5" thumbClassName="max-h-64" src={item.imageUrl} alt={t("Gruppen-Foto")} />
+          <ImageLightbox className="mt-1.5" thumbClassName="max-h-64" src={item.imageUrl} alt={t("Group photo")} />
         )}
         <p className="mt-0.5 text-xs text-muted-foreground">
           {item.groupName} · {formatTimeAgo(item.timestamp, t, dateLocale)}
@@ -324,7 +324,7 @@ export function HomeFeed({
       <div className="flex flex-col gap-2">
         <div className="-mx-1 flex items-center gap-1.5 overflow-x-auto px-1 pb-0.5">
           <Chip active={sources.includes("me")} onClick={() => toggleSource("me")}>
-            {t("Ich")}
+            {t("Me")}
           </Chip>
           {groups.map((g) => (
             <Chip key={g.id} active={sources.includes(g.id)} onClick={() => toggleSource(g.id)}>
@@ -340,7 +340,7 @@ export function HomeFeed({
           ))}
           {filtersActive && (
             <button type="button" onClick={reset} className="shrink-0 px-1 text-xs text-muted-foreground hover:underline">
-              {t("Zurücksetzen")}
+              {t("Reset")}
             </button>
           )}
         </div>
@@ -349,7 +349,7 @@ export function HomeFeed({
       {entries.length === 0 ? (
         <p className="flex h-24 items-center justify-center gap-2 rounded-lg border border-dashed border-border text-sm text-muted-foreground">
           <Trophy className="size-4" />
-          {filtersActive ? t("Nichts gefunden - Filter anpassen?") : t("Noch nichts los.")}
+          {filtersActive ? t("Nothing found - adjust the filters?") : t("Nothing going on yet.")}
         </p>
       ) : (
         <>
@@ -403,7 +403,7 @@ export function HomeFeed({
               onClick={() => setVisible((v) => v + PAGE_SIZE)}
               className="self-center rounded-full border border-border px-4 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary"
             >
-              {t("Mehr anzeigen")}
+              {t("Show more")}
             </button>
           )}
         </>

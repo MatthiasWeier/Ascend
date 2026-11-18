@@ -25,7 +25,7 @@ export function InviteButton({ inviteCode }: { inviteCode: string }) {
     const ok = await copyToClipboard(url);
     if (ok) {
       setCopied(true);
-      toast.success(t("Invite-Link kopiert!"));
+      toast.success(t("Invite link copied!"));
       setTimeout(() => setCopied(false), 2000);
       return;
     }
@@ -38,15 +38,15 @@ export function InviteButton({ inviteCode }: { inviteCode: string }) {
     <>
       <Button variant="outline" size="sm" onClick={handleCopy}>
         {copied ? <Check className="size-4" /> : <Link2 className="size-4" />}
-        {t("Einladen")}
+        {t("Invite")}
       </Button>
 
       <Dialog open={!!fallbackUrl} onOpenChange={(open) => !open && setFallbackUrl(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>{t("Invite-Link")}</DialogTitle>
+            <DialogTitle>{t("Invite link")}</DialogTitle>
             <DialogDescription>
-              {t("Automatisches Kopieren hat nicht geklappt - markier den Link und kopier ihn manuell.")}
+              {t("Automatic copying didn't work - select the link and copy it manually.")}
             </DialogDescription>
           </DialogHeader>
           <Input readOnly value={fallbackUrl ?? ""} onFocus={(e) => e.currentTarget.select()} autoFocus />

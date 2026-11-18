@@ -53,10 +53,10 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
     setBusyId(null);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte Admin-Status nicht ändern."));
+      toast.error(t(data.error ?? "Couldn't change the admin status."));
       return;
     }
-    toast.success(next ? t("Zum Admin gemacht.") : t("Admin-Rechte entfernt."));
+    toast.success(next ? t("Made admin.") : t("Admin rights removed."));
     refetch();
   }
 
@@ -70,10 +70,10 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
     setBusyId(null);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte 2FA nicht zurücksetzen."));
+      toast.error(t(data.error ?? "Couldn't reset 2FA."));
       return;
     }
-    toast.success(t("2FA für diesen Nutzer zurückgesetzt."));
+    toast.success(t("2FA reset for this user."));
     refetch();
   }
 
@@ -83,10 +83,10 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
     setBusyId(null);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte Nutzer nicht löschen."));
+      toast.error(t(data.error ?? "Couldn't delete the user."));
       return;
     }
-    toast.success(t("Nutzer gelöscht."));
+    toast.success(t("User deleted."));
     refetch();
   }
 
@@ -106,7 +106,7 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
                 {u.name} <span className="text-muted-foreground">@{u.username}</span>
               </p>
               <p className="text-xs text-muted-foreground">
-                {t("{workouts} Workouts · {groups} Gruppen · seit {date}", {
+                {t("{workouts} workouts · {groups} groups · since {date}", {
                   workouts: u._count.workoutSessions,
                   groups: u._count.groupMemberships,
                   date: new Date(u.createdAt).toLocaleDateString(dateLocale),
@@ -119,7 +119,7 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
                 checked={u.isAdmin}
                 disabled={isSelf || busyId === u.id}
                 onCheckedChange={(v) => toggleAdmin(u.id, v)}
-                title={isSelf ? t("Du kannst deinen eigenen Admin-Status nicht ändern") : undefined}
+                title={isSelf ? t("You can't change your own admin status") : undefined}
               />
             </div>
             {u.totpEnabled && (
@@ -132,7 +132,7 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
                       size="icon-sm"
                       className="text-muted-foreground hover:text-foreground"
                       disabled={busyId === u.id}
-                      title={t("2FA für diesen Nutzer zurücksetzen")}
+                      title={t("Reset 2FA for this user")}
                     />
                   }
                 >
@@ -140,15 +140,15 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>{t("2FA für {name} zurücksetzen?", { name: u.name })}</AlertDialogTitle>
+                    <AlertDialogTitle>{t("Reset 2FA for {name}?", { name: u.name })}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      {t("Deaktiviert die Zwei-Faktor-Authentifizierung für dieses Konto und löscht alle Backup-Codes - für den Fall, dass die Person ihre Authenticator-App und Backup-Codes verloren hat. Sie kann 2FA danach in den Einstellungen neu einrichten.")}
+                      {t("Disables two-factor authentication for this account and deletes all backup codes - in case the person lost their authenticator app and backup codes. They can set up 2FA again in Settings afterwards.")}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>{t("Abbrechen")}</AlertDialogCancel>
+                    <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
                     <AlertDialogAction onClick={() => disableTotp(u.id)}>
-                      {t("Zurücksetzen")}
+                      {t("Reset")}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -163,7 +163,7 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
                     size="icon-sm"
                     className="text-muted-foreground hover:text-destructive"
                     disabled={isSelf || busyId === u.id}
-                    title={isSelf ? t("Nutze die Konto-Löschung in den Einstellungen") : t("Nutzer löschen")}
+                    title={isSelf ? t("Use account deletion in Settings") : t("Delete user")}
                   />
                 }
               >
@@ -171,14 +171,14 @@ export function AdminUserTable({ currentUserId }: { currentUserId: string }) {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>{t("{name} (@{username}) löschen?", { name: u.name, username: u.username })}</AlertDialogTitle>
+                  <AlertDialogTitle>{t("Delete {name} (@{username})?", { name: u.name, username: u.username })}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    {t("Löscht das Konto und alle zugehörigen Daten (Workouts, Gruppen-Mitgliedschaften, eigene Gruppen) endgültig. Das kann nicht rückgängig gemacht werden.")}
+                    {t("Permanently deletes the account and all related data (workouts, group memberships, own groups). This can't be undone.")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>{t("Abbrechen")}</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => deleteUser(u.id)}>{t("Löschen")}</AlertDialogAction>
+                  <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => deleteUser(u.id)}>{t("Delete")}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

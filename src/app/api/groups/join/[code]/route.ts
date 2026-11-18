@@ -14,7 +14,7 @@ export async function POST(
 
   const group = await prisma.group.findUnique({ where: { inviteCode: code } });
   if (!group) {
-    return NextResponse.json({ error: "Invite-Link ungültig" }, { status: 404 });
+    return NextResponse.json({ error: "Invite link is invalid" }, { status: 404 });
   }
 
   await prisma.groupMember.upsert({

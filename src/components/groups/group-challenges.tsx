@@ -91,10 +91,10 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Fehlgeschlagen."));
+      toast.error(t(data.error ?? "Failed."));
       return;
     }
-    toast.success(t("Challenge aktiviert!"));
+    toast.success(t("Challenge activated!"));
     setActivateOpen(false);
     setStakesInput("");
     refetch();
@@ -103,7 +103,7 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
   async function deactivate(id: string) {
     const res = await fetch(`/api/groups/${groupId}/daily-challenges/${id}`, { method: "DELETE" });
     if (!res.ok) {
-      toast.error(t("Fehlgeschlagen."));
+      toast.error(t("Failed."));
       return;
     }
     refetch();
@@ -114,7 +114,7 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
       method: goal.myVote ? "DELETE" : "POST",
     });
     if (!res.ok) {
-      toast.error(t("Fehlgeschlagen."));
+      toast.error(t("Failed."));
       return;
     }
     refetch();
@@ -124,7 +124,7 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
     const res = await fetch(`/api/challenge-goals/${goal.id}/attempts`, { method: "POST" });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte nicht starten."));
+      toast.error(t(data.error ?? "Couldn't start."));
       return;
     }
     const data = await res.json();
@@ -151,17 +151,17 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
             render={<Button size="sm" className="self-end" disabled={!canActivateMore} onClick={openActivateDialog} />}
           >
             <Plus className="size-4" />
-            {t("Challenge aktivieren")} {!canActivateMore && t("(max. 4)")}
+            {t("Activate challenge")} {!canActivateMore && t("(max. 4)")}
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{t("Challenge-Thema wählen")}</DialogTitle>
-              <DialogDescription>{t("Jeder setzt danach sein eigenes Reps-Ziel.")}</DialogDescription>
+              <DialogTitle>{t("Choose challenge theme")}</DialogTitle>
+              <DialogDescription>{t("Everyone then sets their own rep goal.")}</DialogDescription>
             </DialogHeader>
             <Input
               value={stakesInput}
               onChange={(e) => setStakesInput(e.target.value)}
-              placeholder={t("Einsatz (optional), z.B. „Verlierer macht 20 Liegestütze“")}
+              placeholder={t("Stakes (optional), e.g. \"Loser does 20 push-ups\"")}
               maxLength={200}
             />
             {templates == null ? (
@@ -193,7 +193,7 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
         <Skeleton className="h-32 w-full" />
       ) : challenges.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          {t("Noch keine Daily Challenges aktiv.")} {isLeader ? t("Aktivier eine!") : t("Der Leader kann welche aktivieren.")}
+          {t("No daily challenges active yet.")} {isLeader ? t("Activate one!") : t("The leader can activate some.")}
         </p>
       ) : (
         <FeedList>
@@ -209,7 +209,7 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
                     {dc.stakes && (
                       <p className="mt-1 flex items-center gap-1 text-xs font-medium text-amber-500">
                         <Zap className="size-3" />
-                        {t("Einsatz: {stakes}", { stakes: dc.stakes })}
+                        {t("Stakes: {stakes}", { stakes: dc.stakes })}
                       </p>
                     )}
                   </div>
@@ -220,8 +220,8 @@ export function GroupChallenges({ groupId, isLeader }: { groupId: string; isLead
                         variant="ghost"
                         size="icon-sm"
                         className="text-muted-foreground hover:text-destructive"
-                        title={t("Challenge deaktivieren")}
-                        aria-label={t("Challenge deaktivieren")}
+                        title={t("Deactivate challenge")}
+                        aria-label={t("Deactivate challenge")}
                         onClick={() => deactivate(dc.id)}
                       >
                         <X className="size-4" />
@@ -312,7 +312,7 @@ function GoalRow({
   return (
     <div className="flex items-center gap-2 rounded-lg bg-secondary/40 px-3 py-2 text-sm">
       <span
-        title={rank ? t("Platz {n} heute", { n: rank }) : t("Noch nicht gestartet")}
+        title={rank ? t("Rank {n} today", { n: rank }) : t("Not started yet")}
         className={cn(
           "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold",
           rank ? (RANK_STYLE[rank - 1] ?? "bg-secondary text-foreground") : "text-muted-foreground"
@@ -322,16 +322,16 @@ function GoalRow({
       </span>
       <span className={cn("flex-1 font-medium", goal.isInvalidated && "text-muted-foreground line-through")}>
         {goal.userName}
-        {goal.isMe && ` (${t("du")})`}
+        {goal.isMe && ` (${t("you")})`}
       </span>
       <span className="text-xs text-muted-foreground">
         {goal.todayAttempt ? (
           <BoldNumbers
             className="text-sm"
-            text={t("{cur}/{target} Wdh", { cur: goal.todayAttempt.currentReps, target: goal.todayAttempt.targetRepsSnapshot })}
+            text={t("{cur}/{target} reps", { cur: goal.todayAttempt.currentReps, target: goal.todayAttempt.targetRepsSnapshot })}
           />
         ) : (
-          t("{n} Wdh", { n: goal.targetReps })
+          t("{n} reps", { n: goal.targetReps })
         )}
       </span>
 
@@ -339,7 +339,7 @@ function GoalRow({
 
       {goal.isInvalidated && (
         <Badge variant="destructive" className="text-[10px]">
-          {t("Angefochten")}
+          {t("Challenged")}
         </Badge>
       )}
 
@@ -351,7 +351,7 @@ function GoalRow({
                 variant={goal.myVote ? "default" : "outline"}
                 size="icon-sm"
                 onClick={onYammer}
-                aria-label={t("Ziel anfechten")}
+                aria-label={t("Challenge target")}
               />
             }
           >
@@ -359,8 +359,8 @@ function GoalRow({
           </TooltipTrigger>
           <TooltipContent>
             {goal.myVote
-              ? t("Anfechtung zurückziehen ({votes}/{needed})", { votes: goal.voteCount, needed: goal.votesNeeded })
-              : t("Ziel zu niedrig? Anfechten ({votes}/{needed})", { votes: goal.voteCount, needed: goal.votesNeeded })}
+              ? t("Withdraw challenge ({votes}/{needed})", { votes: goal.voteCount, needed: goal.votesNeeded })
+              : t("Target too low? Challenge it ({votes}/{needed})", { votes: goal.voteCount, needed: goal.votesNeeded })}
           </TooltipContent>
         </Tooltip>
       )}
@@ -377,7 +377,7 @@ function GoalRow({
               <Button
                 size="icon-sm"
                 onClick={onStart}
-                aria-label={needsRating ? t("Schwierigkeit bewerten") : t("Challenge starten")}
+                aria-label={needsRating ? t("Rate difficulty") : t("Start challenge")}
               />
             }
           >
@@ -385,10 +385,10 @@ function GoalRow({
           </TooltipTrigger>
           <TooltipContent>
             {needsRating
-              ? t("Schwierigkeit bewerten")
+              ? t("Rate difficulty")
               : goal.todayAttempt
-                ? t("Challenge fortsetzen")
-                : t("Challenge starten")}
+                ? t("Continue challenge")
+                : t("Start challenge")}
           </TooltipContent>
         </Tooltip>
       )}
@@ -434,8 +434,8 @@ function HistoryButton({
             variant="ghost"
             size="icon-sm"
             className="text-muted-foreground"
-            title={t("Verlauf anzeigen")}
-            aria-label={t("Verlauf anzeigen")}
+            title={t("Show history")}
+            aria-label={t("Show history")}
             onClick={load}
           />
         }
@@ -444,20 +444,20 @@ function HistoryButton({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("Verlauf: {title}", { title })}</DialogTitle>
-          <DialogDescription>{t("Wer hat wann geschafft, aufgegeben oder gar nicht erst versucht.")}</DialogDescription>
+          <DialogTitle>{t("History: {title}", { title })}</DialogTitle>
+          <DialogDescription>{t("Who completed, gave up or didn't even try, and when.")}</DialogDescription>
         </DialogHeader>
         {members == null ? (
           <Skeleton className="h-40 w-full" />
         ) : members.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t("Noch niemand hat ein Ziel für diese Challenge gesetzt.")}</p>
+          <p className="text-sm text-muted-foreground">{t("Nobody has set a goal for this challenge yet.")}</p>
         ) : (
           <div className="flex max-h-96 flex-col gap-4 overflow-y-auto">
             {members.map((m) => (
               <div key={m.userId} className="flex flex-col gap-1.5">
                 <p className="text-sm font-medium">{m.userName}</p>
                 {m.history.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">{t("Noch keine Versuche.")}</p>
+                  <p className="text-xs text-muted-foreground">{t("No attempts yet.")}</p>
                 ) : (
                   <div className="flex flex-col gap-1">
                     {m.history.map((h) => (
@@ -476,7 +476,7 @@ function HistoryButton({
                           <Play className="size-3.5 shrink-0 text-primary" />
                         )}
                         <span className="flex-1">
-                          {t("{cur}/{target} Wdh", { cur: h.currentReps, target: h.targetRepsSnapshot })}
+                          {t("{cur}/{target} reps", { cur: h.currentReps, target: h.targetRepsSnapshot })}
                         </span>
                         <span className="font-mono text-muted-foreground">{h.percent}%</span>
                       </div>
@@ -517,7 +517,7 @@ function SetGoalInline({
     });
     setSaving(false);
     if (!res.ok) {
-      toast.error(t("Fehlgeschlagen."));
+      toast.error(t("Failed."));
       return;
     }
     setValue("");
@@ -529,7 +529,7 @@ function SetGoalInline({
       onSubmit={handleSubmit}
       className="flex items-center gap-2 rounded-lg border border-dashed border-border px-3 py-2"
     >
-      <span className="flex-1 text-sm text-muted-foreground">{t("Dein Ziel (Reps)")}</span>
+      <span className="flex-1 text-sm text-muted-foreground">{t("Your goal (reps)")}</span>
       <Input
         type="number"
         min={1}
@@ -539,7 +539,7 @@ function SetGoalInline({
         required
       />
       <Button type="submit" size="sm" disabled={saving}>
-        {t("Setzen")}
+        {t("Set")}
       </Button>
     </form>
   );

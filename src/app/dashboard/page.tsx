@@ -125,10 +125,10 @@ export default async function DashboardPage() {
                 {streak > 0 ? (
                   <p className="flex items-center gap-1 text-sm font-medium text-amber-500">
                     <Flame className="size-4" />
-                    {streak === 1 ? t("1 Tag Streak") : t("{n} Tage Streak", { n: streak })}
+                    {streak === 1 ? t("1 day streak") : t("{n} day streak", { n: streak })}
                   </p>
                 ) : (
-                  <p className="text-sm text-muted-foreground">{t("Schön, dass du da bist.")}</p>
+                  <p className="text-sm text-muted-foreground">{t("Good to see you.")}</p>
                 )}
               </div>
               <div className="hidden items-center gap-2 sm:flex">
@@ -147,7 +147,7 @@ export default async function DashboardPage() {
             <div className="grid grid-cols-[1fr_auto] gap-2 sm:hidden">
               <Button render={<Link href="/dashboard/workouts/new" />} size="lg">
                 <PlusCircle className="size-4" />
-                {t("Workout eintragen")}
+                {t("Log workout")}
               </Button>
               <AddClimbingDayButton size="lg" />
             </div>

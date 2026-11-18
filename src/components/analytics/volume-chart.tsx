@@ -13,7 +13,7 @@ type Point = { date: string; volumeKg: number };
 export function VolumeChart() {
   const { t, dateLocale } = useLocale();
   const chartConfig = {
-    volumeKg: { label: t("Volumen"), color: "var(--chart-1)" },
+    volumeKg: { label: t("Volume"), color: "var(--chart-1)" },
   } satisfies ChartConfig;
   const [rawPoints, setRawPoints] = useState<Point[] | null>(null);
   const { toDisplay, unitLabel } = useWeightUnit();
@@ -28,7 +28,7 @@ export function VolumeChart() {
 
   if (rawPoints.length === 0) {
     return (
-      <EmptyChart variant="bars" message={t("Noch keine Reps-Workouts in den letzten 90 Tagen.")} />
+      <EmptyChart variant="bars" message={t("No rep-based workouts in the last 90 days.")} />
     );
   }
 
@@ -51,13 +51,13 @@ export function VolumeChart() {
           axisLine={false}
           tickMargin={8}
           width={72}
-          label={{ value: `${t("Volumen")} (${unitLabel})`, angle: -90, position: "insideLeft", offset: 4, style: { textAnchor: "middle" }, fill: "var(--muted-foreground)", fontSize: 11 }}
+          label={{ value: `${t("Volume")} (${unitLabel})`, angle: -90, position: "insideLeft", offset: 4, style: { textAnchor: "middle" }, fill: "var(--muted-foreground)", fontSize: 11 }}
         />
         <ChartTooltip
           content={
             <ChartTooltipContent
               labelFormatter={(v) => new Date(v).toLocaleDateString(dateLocale)}
-              formatter={(value) => [`${value} ${unitLabel}`, t("Volumen")]}
+              formatter={(value) => [`${value} ${unitLabel}`, t("Volume")]}
             />
           }
         />

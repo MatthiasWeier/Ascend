@@ -6,9 +6,9 @@ export default async function BodyPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
       <div className="mb-4">
-        <h1 className="text-2xl font-bold tracking-tight">{t("Körper")}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("Body")}</h1>
         <p className="text-sm text-muted-foreground">
-          {t("Wie stark hast du welchen Muskel zuletzt trainiert? Grau = kaum, Rot = viel. Blau markiert deine Wünsche, Orange Verletzungen.")}
+          {t("How much have you trained each muscle lately? Grey = barely, red = a lot. Blue marks your wishes, orange injuries.")}
         </p>
       </div>
       <BodyView />

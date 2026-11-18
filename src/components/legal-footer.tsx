@@ -10,10 +10,10 @@ export function LegalFooter({ className }: { className?: string }) {
     <footer className={className}>
       <nav className="flex justify-center gap-4 text-xs text-muted-foreground">
         <Link href="/impressum" className="hover:text-foreground hover:underline">
-          {t("Impressum")}
+          {t("Legal notice")}
         </Link>
         <Link href="/datenschutz" className="hover:text-foreground hover:underline">
-          {t("Datenschutz")}
+          {t("Privacy")}
         </Link>
       </nav>
       <p className="mt-1 text-center text-[10px] text-muted-foreground">Ascend v{APP_VERSION}</p>

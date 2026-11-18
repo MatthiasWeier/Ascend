@@ -22,20 +22,20 @@ export const ALL_MUSCLES: Muscle[] = [
 
 // German source text = i18n key.
 export const MUSCLE_LABEL: Record<Muscle, string> = {
-  CHEST: "Brust",
-  SHOULDERS: "Schultern",
-  BICEPS: "Bizeps",
-  TRICEPS: "Trizeps",
-  FOREARMS: "Unterarme",
-  LATS: "Latissimus",
-  UPPER_BACK: "Oberer Rücken",
-  LOWER_BACK: "Unterer Rücken",
-  ABS: "Bauch",
-  OBLIQUES: "Seitliche Bauchmuskeln",
-  GLUTES: "Gesäß",
-  QUADS: "Quadrizeps",
-  HAMSTRINGS: "Beinbeuger",
-  CALVES: "Waden",
+  CHEST: "Chest",
+  SHOULDERS: "Shoulders",
+  BICEPS: "Biceps",
+  TRICEPS: "Triceps",
+  FOREARMS: "Forearms",
+  LATS: "Lats",
+  UPPER_BACK: "Upper back",
+  LOWER_BACK: "Lower back",
+  ABS: "Abs",
+  OBLIQUES: "Obliques",
+  GLUTES: "Glutes",
+  QUADS: "Quads",
+  HAMSTRINGS: "Hamstrings",
+  CALVES: "Calves",
 };
 
 // The coarse bucket a muscle belongs to - lets muscle-level wishes steer the

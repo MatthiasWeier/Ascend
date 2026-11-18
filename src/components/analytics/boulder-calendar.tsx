@@ -8,7 +8,7 @@ import { BoulderDayDialog } from "@/components/analytics/boulder-day-dialog";
 import { ClimbingMeetupDayDialog } from "@/components/analytics/climbing-meetup-day-dialog";
 import { useLocale } from "@/components/locale-provider";
 
-const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 function pad(n: number) {
   return n.toString().padStart(2, "0");
@@ -92,11 +92,11 @@ export function BoulderCalendar() {
           const future = isFuture(dateKey);
           const label = future
             ? hasMeetup
-              ? t("Termin geplant - klicken für Details")
-              : t("Klicken, um einen Termin zu planen")
+              ? t("Event planned - click for details")
+              : t("Click to plan an event")
             : marked
-              ? t("Klettertag eingetragen - klicken zum Bearbeiten")
-              : t("Klicken, um einen Klettertag einzutragen");
+              ? t("Climbing day logged - click to edit")
+              : t("Click to log a climbing day");
           return (
             <button
               key={i}
@@ -123,7 +123,7 @@ export function BoulderCalendar() {
 
       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
         <Mountain className="size-3 text-emerald-600 dark:text-emerald-400" />
-        {t("Termin geplant")}
+        {t("Event planned")}
       </div>
 
       {selectedDate &&

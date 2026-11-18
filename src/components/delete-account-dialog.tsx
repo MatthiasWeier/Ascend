@@ -46,7 +46,7 @@ export function DeleteAccountDialog() {
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Löschen fehlgeschlagen."));
+      toast.error(t(data.error ?? "Deletion failed."));
       setDeleting(false);
       return;
     }
@@ -57,29 +57,29 @@ export function DeleteAccountDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button variant="destructive" />}>
         <Trash2 className="size-4" />
-        {t("Account löschen")}
+        {t("Delete account")}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("Account endgültig löschen?")}</DialogTitle>
+          <DialogTitle>{t("Delete account permanently?")}</DialogTitle>
           <DialogDescription>
-            {t("Das löscht alle deine Workouts, dein Körpergewicht-Verlauf, deine Klettereinträge und deine Mitgliedschaften in Gruppen. Das kann nicht rückgängig gemacht werden.")}
+            {t("This deletes all your workouts, your body weight history, your climbing entries and your group memberships. This can't be undone.")}
           </DialogDescription>
         </DialogHeader>
 
         {ownedGroups && ownedGroups.length > 0 && (
           <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-            {ownedGroups.length === 1 ? t("Du bist Leader von dieser Gruppe:") : t("Du bist Leader von diesen Gruppen:")}{" "}
+            {ownedGroups.length === 1 ? t("You are the leader of this group:") : t("You are the leader of these groups:")}{" "}
             <strong>{ownedGroups.map((g) => g.name).join(", ")}</strong>.{" "}
             {ownedGroups.length === 1
-              ? t("Übergib die Leitung zuerst (in der Gruppe), sonst wird diese Gruppe komplett gelöscht — auch für alle anderen Mitglieder.")
-              : t("Übergib die Leitung zuerst (in der jeweiligen Gruppe), sonst werden diese Gruppen komplett gelöscht — auch für alle anderen Mitglieder.")}
+              ? t("Transfer leadership first (in the group), otherwise this group will be deleted completely — for all other members too.")
+              : t("Transfer leadership first (in each group), otherwise these groups will be deleted completely — for all other members too.")}
           </div>
         )}
 
         <form onSubmit={handleDelete} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="delete-password">{t("Passwort zur Bestätigung")}</Label>
+            <Label htmlFor="delete-password">{t("Password to confirm")}</Label>
             <Input
               id="delete-password"
               type="password"
@@ -91,7 +91,7 @@ export function DeleteAccountDialog() {
           </div>
           <DialogFooter>
             <Button type="submit" variant="destructive" disabled={deleting}>
-              {deleting ? t("Löschen…") : t("Endgültig löschen")}
+              {deleting ? t("Deleting…") : t("Delete permanently")}
             </Button>
           </DialogFooter>
         </form>

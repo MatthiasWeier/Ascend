@@ -28,7 +28,7 @@ export function WeeklySets() {
         <div key={d.focus} className="flex flex-col gap-1">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">{t(d.label)}</span>
-            <span className="font-medium tabular-nums">{t("{n} Sätze", { n: d.count })}</span>
+            <span className="font-medium tabular-nums">{t("{n} sets", { n: d.count })}</span>
           </div>
           <Progress value={Math.round((d.count / max) * 100)} />
         </div>

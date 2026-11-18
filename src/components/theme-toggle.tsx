@@ -24,7 +24,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       className="size-9"
-      aria-label={isDark ? t("Zu Light Mode wechseln") : t("Zu Dark Mode wechseln")}
+      aria-label={isDark ? t("Switch to light mode") : t("Switch to dark mode")}
       onClick={() => setTheme(isDark ? "light" : "dark")}
     >
       {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}

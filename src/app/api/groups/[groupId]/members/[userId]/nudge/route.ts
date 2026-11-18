@@ -18,7 +18,7 @@ export async function POST(
   const { groupId, userId } = await params;
 
   if (userId === session.user.id) {
-    return NextResponse.json({ error: "Du kannst dich nicht selbst anstupsen" }, { status: 400 });
+    return NextResponse.json({ error: "You can't nudge yourself" }, { status: 400 });
   }
 
   const [myMembership, targetMembership] = await Promise.all([

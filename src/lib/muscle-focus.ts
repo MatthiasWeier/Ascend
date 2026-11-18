@@ -4,7 +4,7 @@ import { effectiveLoadKg } from "@/lib/effective-load";
 export const FOCUS_LABEL: Record<MuscleFocus, string> = {
   PUSH: "Push",
   PULL: "Pull",
-  LEGS: "Beine",
+  LEGS: "Legs",
   CORE: "Core",
   GRIP: "Grip",
 };

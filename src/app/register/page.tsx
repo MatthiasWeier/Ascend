@@ -62,8 +62,8 @@ function RegisterForm() {
       const data = await res.json().catch(() => ({}));
       setError(
         data.error === "Username already registered"
-          ? t("Benutzername bereits vergeben.")
-          : t(data.error ?? "Registrierung fehlgeschlagen.")
+          ? t("Username already taken.")
+          : t(data.error ?? "Registration failed.")
       );
       setLoading(false);
       return;
@@ -86,18 +86,18 @@ function RegisterForm() {
       <div className="w-full max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">{t("Account erstellen")}</CardTitle>
+            <CardTitle className="text-xl">{t("Create account")}</CardTitle>
             <CardDescription>
               {inviteFromLink
-                ? t("Du wurdest zu einer Gruppe eingeladen - nach dem Anlegen bist du direkt Mitglied.")
-                : t("Push dich selbst. Push deine Crew.")}
+                ? t("You've been invited to a group - you'll be a member right after signing up.")
+                : t("Push yourself. Push your crew.")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               {(inviteOnly || inviteFromLink) && (
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="inviteCode">{t("Einladungscode")}</Label>
+                  <Label htmlFor="inviteCode">{t("Invite code")}</Label>
                   <Input
                     id="inviteCode"
                     required={inviteOnly}
@@ -108,7 +108,7 @@ function RegisterForm() {
                   />
                   {inviteOnly && !inviteFromLink && (
                     <p className="text-xs text-muted-foreground">
-                      {t("Diese Instanz ist nur mit Einladungslink zugänglich.")}
+                      {t("This instance is invite-only.")}
                     </p>
                   )}
                 </div>
@@ -124,7 +124,7 @@ function RegisterForm() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="username">{t("Benutzername")}</Label>
+                <Label htmlFor="username">{t("Username")}</Label>
                 <Input
                   id="username"
                   required
@@ -135,10 +135,10 @@ function RegisterForm() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">{t("Nur Buchstaben, Zahlen, _ . -")}</p>
+                <p className="text-xs text-muted-foreground">{t("Letters, numbers, _ . - only")}</p>
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="password">{t("Passwort")}</Label>
+                <Label htmlFor="password">{t("Password")}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -148,22 +148,22 @@ function RegisterForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">{t("Mindestens 8 Zeichen")}</p>
+                <p className="text-xs text-muted-foreground">{t("At least 8 characters")}</p>
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" disabled={loading} className="mt-2">
-                {loading ? t("Einen Moment…") : t("Registrieren")}
+                {loading ? t("One moment…") : t("Sign up")}
               </Button>
             </form>
           </CardContent>
         </Card>
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          {t("Schon einen Account?")}{" "}
+          {t("Already have an account?")}{" "}
           <Link
             href={`/login${callbackUrl !== "/dashboard" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
             className="font-medium text-primary hover:underline"
           >
-            {t("Anmelden")}
+            {t("Log in")}
           </Link>
         </p>
       </div>

@@ -25,7 +25,7 @@ export const DELETE = withErrorLogging("DELETE /api/account", async (request) =>
   const body = await request.json().catch(() => ({}));
   const parsed = deleteSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Passwort erforderlich" }, { status: 400 });
+    return NextResponse.json({ error: "Password required" }, { status: 400 });
   }
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
@@ -35,7 +35,7 @@ export const DELETE = withErrorLogging("DELETE /api/account", async (request) =>
 
   const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
   if (!valid) {
-    return NextResponse.json({ error: "Falsches Passwort" }, { status: 403 });
+    return NextResponse.json({ error: "Wrong password" }, { status: 403 });
   }
 
   const photos = await prisma.workoutPhoto.findMany({ where: { userId: session.user.id } });

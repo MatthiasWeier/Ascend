@@ -29,10 +29,10 @@ export async function PATCH(
   }
   const comment = await loadComment(groupId, postId, commentId);
   if (!comment || comment.deletedAt) {
-    return NextResponse.json({ error: "Kommentar nicht gefunden" }, { status: 404 });
+    return NextResponse.json({ error: "Comment not found" }, { status: 404 });
   }
   if (comment.userId !== session.user.id) {
-    return NextResponse.json({ error: "Keine Berechtigung" }, { status: 403 });
+    return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   }
   const parsed = editSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
@@ -46,7 +46,7 @@ export async function PATCH(
   return NextResponse.json({ content: updated.content, editedAt: updated.editedAt });
 }
 
-// A comment with replies becomes a "[gelöscht]" stub so the thread stays
+// A comment with replies becomes a "[deleted]" stub so the thread stays
 // readable; one without replies is removed outright, and any already-deleted
 // ancestors that were only kept alive by it are pruned too.
 export async function DELETE(
@@ -64,10 +64,10 @@ export async function DELETE(
   }
   const comment = await loadComment(groupId, postId, commentId);
   if (!comment || comment.deletedAt) {
-    return NextResponse.json({ error: "Kommentar nicht gefunden" }, { status: 404 });
+    return NextResponse.json({ error: "Comment not found" }, { status: 404 });
   }
   if (comment.userId !== session.user.id && membership.role !== "LEADER") {
-    return NextResponse.json({ error: "Keine Berechtigung" }, { status: 403 });
+    return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   }
 
   const replyCount = await prisma.postComment.count({ where: { parentId: commentId } });

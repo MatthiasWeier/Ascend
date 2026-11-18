@@ -71,10 +71,10 @@ function onlineStatusLabel(
   t: TFunction,
   dateLocale: string
 ): { text: string; online: boolean } {
-  if (!lastActiveAt) return { text: t("noch nie online"), online: false };
+  if (!lastActiveAt) return { text: t("never online"), online: false };
   const online = Date.now() - new Date(lastActiveAt).getTime() <= ONLINE_THRESHOLD_MS;
   return {
-    text: online ? t("Online") : t("zuletzt online {when}", { when: formatTimeAgo(lastActiveAt, t, dateLocale) }),
+    text: online ? t("Online") : t("last online {when}", { when: formatTimeAgo(lastActiveAt, t, dateLocale) }),
     online,
   };
 }
@@ -125,8 +125,8 @@ export function GroupDetail({ groupId }: { groupId: string }) {
     setGroup({ ...group, members: group.members.filter((m) => m.id !== userId) });
 
     undoableAction({
-      message: t("{name} aus der Gruppe entfernt.", { name: userName }),
-      undoLabel: t("Rückgängig"),
+      message: t("{name} removed from the group.", { name: userName }),
+      undoLabel: t("Undo"),
       onCommit: () => {
         fetch(`/api/groups/${groupId}/members/${userId}`, { method: "DELETE" }).catch(() => {});
       },
@@ -149,10 +149,10 @@ export function GroupDetail({ groupId }: { groupId: string }) {
     setLeaving(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte Gruppe nicht verlassen."));
+      toast.error(t(data.error ?? "Couldn't leave the group."));
       return;
     }
-    toast.success(t("Gruppe verlassen."));
+    toast.success(t("Left the group."));
     router.push("/dashboard/groups");
   }
 
@@ -167,10 +167,10 @@ export function GroupDetail({ groupId }: { groupId: string }) {
     });
     setRenaming(false);
     if (!res.ok) {
-      toast.error(t("Konnte Gruppe nicht umbenennen."));
+      toast.error(t("Couldn't rename the group."));
       return;
     }
-    toast.success(t("Gruppe umbenannt."));
+    toast.success(t("Group renamed."));
     setRenameOpen(false);
     refetch();
   }
@@ -181,10 +181,10 @@ export function GroupDetail({ groupId }: { groupId: string }) {
     setNudging(null);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte nicht anstupsen."));
+      toast.error(t(data.error ?? "Couldn't nudge."));
       return;
     }
-    toast.success(t("Angestupst!"));
+    toast.success(t("Nudged!"));
   }
 
   async function handleTransfer(userId: string) {
@@ -197,10 +197,10 @@ export function GroupDetail({ groupId }: { groupId: string }) {
     setTransferringTo(null);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast.error(t(data.error ?? "Konnte Leitung nicht übergeben."));
+      toast.error(t(data.error ?? "Couldn't hand over leadership."));
       return;
     }
-    toast.success(t("Leitung übergeben."));
+    toast.success(t("Leadership handed over."));
     refetch();
   }
 
@@ -221,10 +221,10 @@ export function GroupDetail({ groupId }: { groupId: string }) {
     );
     setCopyingId(null);
     if (!res.ok) {
-      toast.error(t("Konnte Vorlage nicht kopieren."));
+      toast.error(t("Couldn't copy the template."));
       return;
     }
-    toast.success(t("Vorlage in deine Bibliothek kopiert!"));
+    toast.success(t("Template copied to your library!"));
   }
 
   if (group == null) {
@@ -258,8 +258,8 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                       variant="ghost"
                       size="icon-sm"
                       className="text-muted-foreground"
-                      title={t("Gruppe umbenennen")}
-                      aria-label={t("Gruppe umbenennen")}
+                      title={t("Rename group")}
+                      aria-label={t("Rename group")}
                     />
                   }
                 >
@@ -268,7 +268,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                 <DialogContent>
                   <form onSubmit={handleRename}>
                     <DialogHeader>
-                      <DialogTitle>{t("Gruppe umbenennen")}</DialogTitle>
+                      <DialogTitle>{t("Rename group")}</DialogTitle>
                     </DialogHeader>
                     <Input
                       value={renameValue}
@@ -279,7 +279,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                     />
                     <DialogFooter>
                       <Button type="submit" disabled={renaming}>
-                        {renaming ? t("Speichern…") : t("Speichern")}
+                        {renaming ? t("Saving…") : t("Save")}
                       </Button>
                     </DialogFooter>
                   </form>
@@ -288,7 +288,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
             )}
           </div>
           <p className="text-sm text-muted-foreground">
-            {group.members.length === 1 ? t("1 Mitglied") : t("{n} Mitglieder", { n: group.members.length })}
+            {group.members.length === 1 ? t("1 member") : t("{n} members", { n: group.members.length })}
           </p>
         </div>
         <div className="flex items-center gap-1.5">
@@ -301,8 +301,8 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                     variant="ghost"
                     size="icon"
                     className="text-muted-foreground hover:text-destructive"
-                    title={t("Gruppe verlassen")}
-                    aria-label={t("Gruppe verlassen")}
+                    title={t("Leave group")}
+                    aria-label={t("Leave group")}
                   />
                 }
               >
@@ -310,15 +310,15 @@ export function GroupDetail({ groupId }: { groupId: string }) {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>{t("Gruppe verlassen?")}</AlertDialogTitle>
+                  <AlertDialogTitle>{t("Leave group?")}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    {t("Du verlierst den Zugriff auf Feed, Ziele und Challenges dieser Gruppe. Du kannst mit einem neuen Invite-Link wieder beitreten.")}
+                    {t("You'll lose access to this group's feed, goals and challenges. You can rejoin with a new invite link.")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>{t("Abbrechen")}</AlertDialogCancel>
+                  <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
                   <AlertDialogAction disabled={leaving} onClick={handleLeave}>
-                    {leaving ? t("Verlassen…") : t("Verlassen")}
+                    {leaving ? t("Leaving…") : t("Leave")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -332,11 +332,11 @@ export function GroupDetail({ groupId }: { groupId: string }) {
           <TabsList className="w-max justify-start [&>*]:shrink-0">
             <TabsTrigger value="feed">{t("Feed")}</TabsTrigger>
             <TabsTrigger value="challenges">{t("Challenges")}</TabsTrigger>
-            <TabsTrigger value="goals">{t("Ziele")}</TabsTrigger>
+            <TabsTrigger value="goals">{t("Goals")}</TabsTrigger>
             <TabsTrigger value="quests">{t("Sidequests")}</TabsTrigger>
-            <TabsTrigger value="climbing">{t("Klettern")}</TabsTrigger>
+            <TabsTrigger value="climbing">{t("Climbing")}</TabsTrigger>
             <TabsTrigger value="analytics">{t("Analytics")}</TabsTrigger>
-            <TabsTrigger value="members">{t("Mitglieder")}</TabsTrigger>
+            <TabsTrigger value="members">{t("Members")}</TabsTrigger>
           </TabsList>
         </div>
 
@@ -402,7 +402,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                     variant="ghost"
                     size="icon-sm"
                     className="text-muted-foreground"
-                    title={t("Kalender ansehen")}
+                    title={t("View calendar")}
                     onClick={() => setCalendarMember({ id: m.id, name: m.name })}
                   >
                     <CalendarDays className="size-4" />
@@ -412,7 +412,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                       variant="ghost"
                       size="icon-sm"
                       className="text-muted-foreground"
-                      title={t("Körper ansehen")}
+                      title={t("View body")}
                       onClick={() => setBodyMember({ id: m.id, name: m.name })}
                     >
                       <PersonStanding className="size-4" />
@@ -423,7 +423,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                       variant="ghost"
                       size="icon-sm"
                       className="text-muted-foreground"
-                      title={t("Vorlagen ansehen")}
+                      title={t("View templates")}
                       onClick={() => openTemplates({ id: m.id, name: m.name })}
                     >
                       <ClipboardList className="size-4" />
@@ -435,7 +435,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                       size="icon-sm"
                       className="text-muted-foreground"
                       disabled={nudging === m.id}
-                      title={t("Anstupsen")}
+                      title={t("Nudge")}
                       onClick={() => handleNudge(m.id)}
                     >
                       <Bell className="size-4" />
@@ -451,7 +451,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                             size="icon-sm"
                             className="text-muted-foreground"
                             disabled={transferringTo === m.id}
-                            title={t("Leitung übergeben")}
+                            title={t("Hand over leadership")}
                           />
                         }
                       >
@@ -459,14 +459,14 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>{t("Leitung an {name} übergeben?", { name: m.name })}</AlertDialogTitle>
+                          <AlertDialogTitle>{t("Hand over leadership to {name}?", { name: m.name })}</AlertDialogTitle>
                           <AlertDialogDescription>
-                            {t("{name} wird neuer Leader (inkl. Kick-Rechten); du wirst normales Mitglied. Löscht {name} später den Account, geht die Gruppe an sie/ihn über - nicht mehr an dich.", { name: m.name })}
+                            {t("{name} becomes the new leader (including kick rights); you become a regular member. If {name} later deletes their account, the group goes to them - no longer to you.", { name: m.name })}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>{t("Abbrechen")}</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleTransfer(m.id)}>{t("Übergeben")}</AlertDialogAction>
+                          <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleTransfer(m.id)}>{t("Hand over")}</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -475,7 +475,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                       variant="ghost"
                       size="icon-sm"
                       className="text-muted-foreground hover:text-destructive"
-                      title={t("Entfernen")}
+                      title={t("Remove")}
                       onClick={() => handleKick(m.id, m.name)}
                     >
                       <UserX className="size-4" />
@@ -492,8 +492,8 @@ export function GroupDetail({ groupId }: { groupId: string }) {
       <Dialog open={calendarMember != null} onOpenChange={(open) => !open && setCalendarMember(null)}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>{t("Kalender von {name}", { name: calendarMember?.name ?? "" })}</DialogTitle>
-            <DialogDescription>{t("Nur Workouts, die in dieser Gruppe geteilt wurden.")}</DialogDescription>
+            <DialogTitle>{t("{name}'s calendar", { name: calendarMember?.name ?? "" })}</DialogTitle>
+            <DialogDescription>{t("Only workouts that were shared in this group.")}</DialogDescription>
           </DialogHeader>
           {calendarMember && (
             <ActivityCalendar
@@ -510,8 +510,8 @@ export function GroupDetail({ groupId }: { groupId: string }) {
       <Dialog open={bodyMember != null} onOpenChange={(open) => !open && setBodyMember(null)}>
         <DialogContent className="max-h-[92dvh] max-w-3xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{t("Körper von {name}", { name: bodyMember?.name ?? "" })}</DialogTitle>
-            <DialogDescription>{t("Nur Training, das in dieser Gruppe geteilt wurde, plus aktive Verletzungen.")}</DialogDescription>
+            <DialogTitle>{t("{name}'s body", { name: bodyMember?.name ?? "" })}</DialogTitle>
+            <DialogDescription>{t("Only training shared into this group, plus active injuries.")}</DialogDescription>
           </DialogHeader>
           {bodyMember && (
             <BodyView key={bodyMember.id} apiUrl={`/api/groups/${groupId}/members/${bodyMember.id}/body`} readOnly />
@@ -522,13 +522,13 @@ export function GroupDetail({ groupId }: { groupId: string }) {
       <Dialog open={templatesMember != null} onOpenChange={(open) => !open && setTemplatesMember(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("Vorlagen von {name}", { name: templatesMember?.name ?? "" })}</DialogTitle>
-            <DialogDescription>{t("Kopieren übernimmt die Übungs-Reihenfolge in deine eigene Bibliothek.")}</DialogDescription>
+            <DialogTitle>{t("{name}'s templates", { name: templatesMember?.name ?? "" })}</DialogTitle>
+            <DialogDescription>{t("Copying takes the exercise order into your own library.")}</DialogDescription>
           </DialogHeader>
           {memberTemplates == null ? (
             <Skeleton className="h-24 w-full" />
           ) : memberTemplates.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">{t("Noch keine Vorlagen.")}</p>
+            <p className="py-4 text-center text-sm text-muted-foreground">{t("No templates yet.")}</p>
           ) : (
             <div className="flex flex-col gap-2">
               {memberTemplates.map((tpl) => (
@@ -543,7 +543,7 @@ export function GroupDetail({ groupId }: { groupId: string }) {
                       onClick={() => handleCopyTemplate(tpl.id)}
                     >
                       <ClipboardCopy className="size-3.5" />
-                      {copyingId === tpl.id ? t("Kopieren…") : t("Kopieren")}
+                      {copyingId === tpl.id ? t("Copying…") : t("Copy")}
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">

@@ -21,7 +21,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ que
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   if (quest._count.steps >= MAX_STEPS_PER_QUEST) {
-    return NextResponse.json({ error: "Zu viele Schritte." }, { status: 400 });
+    return NextResponse.json({ error: "Too many steps." }, { status: 400 });
   }
 
   const parsed = createSchema.safeParse(await request.json().catch(() => null));

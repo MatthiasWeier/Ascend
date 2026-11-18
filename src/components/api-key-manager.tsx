@@ -67,7 +67,7 @@ export function ApiKeyManager() {
     });
     setCreating(false);
     if (!res.ok) {
-      toast.error(t("Konnte API-Key nicht erstellen."));
+      toast.error(t("Couldn't create the API key."));
       return;
     }
     const data: { rawKey: string } = await res.json();
@@ -81,16 +81,16 @@ export function ApiKeyManager() {
   async function handleRevoke(keyId: string) {
     const res = await fetch(`/api/settings/api-keys/${keyId}`, { method: "DELETE" });
     if (!res.ok) {
-      toast.error(t("Konnte Key nicht widerrufen."));
+      toast.error(t("Couldn't revoke the key."));
       return;
     }
-    toast.success(t("Key widerrufen."));
+    toast.success(t("Key revoked."));
     refetch();
   }
 
   function copyNewKey() {
     if (!newRawKey) return;
-    navigator.clipboard.writeText(newRawKey).then(() => toast.success(t("Kopiert.")));
+    navigator.clipboard.writeText(newRawKey).then(() => toast.success(t("Copied.")));
   }
 
   return (
@@ -98,35 +98,35 @@ export function ApiKeyManager() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogTrigger render={<Button type="button" variant="outline" size="sm" className="self-start" />}>
           <Key className="size-3.5" />
-          {t("Neuer API-Key")}
+          {t("New API key")}
         </DialogTrigger>
         <DialogContent>
           <form onSubmit={handleCreate}>
             <DialogHeader>
-              <DialogTitle>{t("API-Key erstellen")}</DialogTitle>
-              <DialogDescription>{t("Für eigene Scripts/Automationen gegen /api/v1/*.")}</DialogDescription>
+              <DialogTitle>{t("Create API key")}</DialogTitle>
+              <DialogDescription>{t("For your own scripts/automations against /api/v1/*.")}</DialogDescription>
             </DialogHeader>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={t("z.B. Homeassistant-Script")}
+              placeholder={t("e.g. Home Assistant script")}
               className="my-2"
               required
             />
             <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-2.5">
               <div className="flex flex-col gap-0.5">
                 <Label htmlFor="apikey-readwrite" className="text-sm font-normal">
-                  {t("Schreibzugriff erlauben")}
+                  {t("Allow write access")}
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  {t("Standardmäßig nur lesend - erlaubt dem Key, Daten zu ändern (Workouts anlegen, Körpergewicht eintragen, ...).")}
+                  {t("Read-only by default - lets the key change data (create workouts, log body weight, ...).")}
                 </p>
               </div>
               <Switch id="apikey-readwrite" checked={readWrite} onCheckedChange={setReadWrite} />
             </div>
             <DialogFooter>
               <Button type="submit" disabled={creating}>
-                {creating ? t("Erstellen…") : t("Erstellen")}
+                {creating ? t("Creating…") : t("Create")}
               </Button>
             </DialogFooter>
           </form>
@@ -136,7 +136,7 @@ export function ApiKeyManager() {
       {keys == null ? (
         <Skeleton className="h-16 w-full" />
       ) : keys.length === 0 ? (
-        <p className="text-xs text-muted-foreground">{t("Noch keine API-Keys.")}</p>
+        <p className="text-xs text-muted-foreground">{t("No API keys yet.")}</p>
       ) : (
         <div className="flex flex-col gap-1.5">
           {keys.map((k) => (
@@ -144,10 +144,10 @@ export function ApiKeyManager() {
               <div>
                 <p className="text-sm font-medium">{k.name}</p>
                 <p className="font-mono text-xs text-muted-foreground">
-                  {k.keyPrefix}… · {k.scope === "READ_WRITE" ? t("Lese-/Schreibzugriff") : t("nur lesend")} ·{" "}
+                  {k.keyPrefix}… · {k.scope === "READ_WRITE" ? t("read/write access") : t("read-only")} ·{" "}
                   {k.lastUsedAt
-                    ? t("zuletzt genutzt {date}", { date: new Date(k.lastUsedAt).toLocaleDateString(dateLocale) })
-                    : t("noch nie genutzt")}
+                    ? t("last used {date}", { date: new Date(k.lastUsedAt).toLocaleDateString(dateLocale) })
+                    : t("never used")}
                 </p>
               </div>
               <AlertDialog>
@@ -156,14 +156,14 @@ export function ApiKeyManager() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>{t("\"{name}\" widerrufen?", { name: k.name })}</AlertDialogTitle>
+                    <AlertDialogTitle>{t("Revoke \"{name}\"?", { name: k.name })}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      {t("Scripts, die diesen Key benutzen, verlieren sofort den Zugriff.")}
+                      {t("Scripts using this key lose access immediately.")}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>{t("Abbrechen")}</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleRevoke(k.id)}>{t("Widerrufen")}</AlertDialogAction>
+                    <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleRevoke(k.id)}>{t("Revoke")}</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -175,9 +175,9 @@ export function ApiKeyManager() {
       <Dialog open={newRawKey != null} onOpenChange={(open) => !open && setNewRawKey(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("Dein neuer API-Key")}</DialogTitle>
+            <DialogTitle>{t("Your new API key")}</DialogTitle>
             <DialogDescription>
-              {t("Wird nur dieses eine Mal angezeigt - jetzt kopieren und sicher speichern.")}
+              {t("Shown only this once - copy it now and store it safely.")}
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center gap-2">
@@ -188,7 +188,7 @@ export function ApiKeyManager() {
           </div>
           <DialogFooter>
             <Button type="button" onClick={() => setNewRawKey(null)}>
-              {t("Fertig")}
+              {t("Done")}
             </Button>
           </DialogFooter>
         </DialogContent>

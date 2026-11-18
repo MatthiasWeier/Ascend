@@ -20,25 +20,25 @@ export const BODY_PARTS: BodyPart[] = [
 
 // German source text = i18n key.
 export const BODY_PART_LABEL: Record<BodyPart, string> = {
-  NECK: "Nacken",
-  SHOULDER: "Schulter",
-  ELBOW: "Ellbogen",
-  FOREARM: "Unterarm",
-  WRIST: "Handgelenk",
-  FINGERS: "Finger",
-  CHEST: "Brust",
-  UPPER_BACK: "Oberer Rücken",
-  LOWER_BACK: "Unterer Rücken",
-  HIP: "Hüfte",
-  KNEE: "Knie",
-  ANKLE: "Sprunggelenk/Fuß",
+  NECK: "Neck",
+  SHOULDER: "Shoulder",
+  ELBOW: "Elbow",
+  FOREARM: "Forearm",
+  WRIST: "Wrist",
+  FINGERS: "Fingers",
+  CHEST: "Chest",
+  UPPER_BACK: "Upper back",
+  LOWER_BACK: "Lower back",
+  HIP: "Hip",
+  KNEE: "Knee",
+  ANKLE: "Ankle/foot",
 };
 
 export const SEVERITIES: InjurySeverity[] = ["MILD", "MODERATE", "SEVERE"];
 export const SEVERITY_LABEL: Record<InjurySeverity, string> = {
-  MILD: "Leicht",
-  MODERATE: "Mittel",
-  SEVERE: "Schwer",
+  MILD: "Mild",
+  MODERATE: "Moderate",
+  SEVERE: "Severe",
 };
 
 // Mild = only a warning while logging; moderate/severe additionally take the

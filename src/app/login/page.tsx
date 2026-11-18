@@ -74,8 +74,8 @@ function LoginForm() {
     if (result?.error) {
       setError(
         needsTotp
-          ? t("Benutzername, Passwort oder Code ist falsch.")
-          : t("Benutzername oder Passwort ist falsch.")
+          ? t("Username, password or code is wrong.")
+          : t("Username or password is wrong.")
       );
       return;
     }
@@ -94,13 +94,13 @@ function LoginForm() {
       <div className="w-full max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">{t("Willkommen zurück")}</CardTitle>
-            <CardDescription>{t("Melde dich an, um weiterzutrainieren.")}</CardDescription>
+            <CardTitle className="text-xl">{t("Welcome back")}</CardTitle>
+            <CardDescription>{t("Log in to keep training.")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="username">{t("Benutzername")}</Label>
+                <Label htmlFor="username">{t("Username")}</Label>
                 <Input
                   id="username"
                   required
@@ -111,7 +111,7 @@ function LoginForm() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="password">{t("Passwort")}</Label>
+                <Label htmlFor="password">{t("Password")}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -124,13 +124,13 @@ function LoginForm() {
               </div>
               {needsTotp && (
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="totp">{t("2FA-Code")}</Label>
+                  <Label htmlFor="totp">{t("2FA code")}</Label>
                   <Input
                     id="totp"
                     required
                     autoFocus
                     inputMode="numeric"
-                    placeholder={t("123456 oder Backup-Code")}
+                    placeholder={t("123456 or backup code")}
                     autoComplete="one-time-code"
                     value={totpToken}
                     onChange={(e) => setTotpToken(e.target.value)}
@@ -139,7 +139,7 @@ function LoginForm() {
               )}
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" disabled={loading} className="mt-2">
-                {loading ? t("Einen Moment…") : needsTotp ? t("Bestätigen") : t("Anmelden")}
+                {loading ? t("One moment…") : needsTotp ? t("Confirm") : t("Log in")}
               </Button>
               {needsTotp && (
                 <button
@@ -151,19 +151,19 @@ function LoginForm() {
                     setError(null);
                   }}
                 >
-                  {t("Zurück")}
+                  {t("Back")}
                 </button>
               )}
             </form>
           </CardContent>
         </Card>
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          {t("Noch kein Account?")}{" "}
+          {t("No account yet?")}{" "}
           <Link
             href={`/register${callbackUrl !== "/dashboard" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
             className="font-medium text-primary hover:underline"
           >
-            {t("Registrieren")}
+            {t("Sign up")}
           </Link>
         </p>
       </div>

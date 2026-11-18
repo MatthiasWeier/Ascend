@@ -19,7 +19,7 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   if (suggestion.meetup.createdById !== session.user.id) {
-    return NextResponse.json({ error: "Nur wer den Termin geplant hat, kann Vorschläge ablehnen" }, { status: 403 });
+    return NextResponse.json({ error: "Only whoever planned the event can decline suggestions" }, { status: 403 });
   }
   if (suggestion.status !== "PENDING") {
     return NextResponse.json({ error: "Bereits bearbeitet" }, { status: 400 });

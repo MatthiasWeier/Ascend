@@ -70,19 +70,19 @@ export function QuestCard({
   let deadlineText: string;
   let deadlineTone = "text-muted-foreground";
   if (completed) {
-    deadlineText = t("Geschafft!");
+    deadlineText = t("Completed!");
     deadlineTone = "text-emerald-500";
   } else if (daysLeft < 0) {
-    deadlineText = t("Frist überschritten");
+    deadlineText = t("Overdue");
     deadlineTone = "text-destructive";
   } else if (daysLeft === 0) {
-    deadlineText = t("Frist ist heute");
+    deadlineText = t("Deadline is today");
     deadlineTone = "text-amber-500";
   } else if (daysLeft === 1) {
-    deadlineText = t("noch 1 Tag");
+    deadlineText = t("1 day left");
     deadlineTone = daysLeft <= 7 ? "text-amber-500" : deadlineTone;
   } else {
-    deadlineText = t("noch {days} Tage", { days: daysLeft });
+    deadlineText = t("{days} days left", { days: daysLeft });
     if (daysLeft <= 7) deadlineTone = "text-amber-500";
   }
 
@@ -118,8 +118,8 @@ export function QuestCard({
             </p>
           )}
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {t("Bis {date}", { date: dateLabel })} · <span className={deadlineTone}>{deadlineText}</span>
-            {actions && !quest.sharedWithGroups && <> · {t("Nur für dich sichtbar")}</>}
+            {t("Until {date}", { date: dateLabel })} · <span className={deadlineTone}>{deadlineText}</span>
+            {actions && !quest.sharedWithGroups && <> · {t("Only visible to you")}</>}
           </p>
           {quest.description && <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{quest.description}</p>}
         </div>
@@ -128,7 +128,7 @@ export function QuestCard({
       {total > 0 && (
         <div className="mt-3 flex flex-col gap-1.5">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{t("{done}/{total} Schritte", { done: doneCount, total })}</span>
+            <span>{t("{done}/{total} steps", { done: doneCount, total })}</span>
             <span>{Math.round((doneCount / total) * 100)}%</span>
           </div>
           <Progress value={Math.round((doneCount / total) * 100)} className="w-full" />
@@ -145,7 +145,7 @@ export function QuestCard({
                   type="button"
                   disabled={!actions}
                   onClick={() => actions?.onToggleStep(step.id, !done)}
-                  aria-label={done ? t("Als offen markieren") : t("Als erledigt markieren")}
+                  aria-label={done ? t("Mark as open") : t("Mark as done")}
                   className={cn(
                     "flex size-6 shrink-0 items-center justify-center rounded-full border text-xs transition-colors",
                     done
@@ -167,7 +167,7 @@ export function QuestCard({
                       size="icon-sm"
                       disabled={i === 0}
                       onClick={() => actions.onMoveStep(step.id, "up")}
-                      aria-label={t("Nach oben")}
+                      aria-label={t("Move up")}
                     >
                       <ChevronUp className="size-4" />
                     </Button>
@@ -177,7 +177,7 @@ export function QuestCard({
                       size="icon-sm"
                       disabled={i === total - 1}
                       onClick={() => actions.onMoveStep(step.id, "down")}
-                      aria-label={t("Nach unten")}
+                      aria-label={t("Move down")}
                     >
                       <ChevronDown className="size-4" />
                     </Button>
@@ -186,7 +186,7 @@ export function QuestCard({
                       variant="ghost"
                       size="icon-sm"
                       onClick={() => actions.onDeleteStep(step.id)}
-                      aria-label={t("Schritt löschen")}
+                      aria-label={t("Delete step")}
                     >
                       <X className="size-4" />
                     </Button>
@@ -204,9 +204,9 @@ export function QuestCard({
             value={newStep}
             onChange={(e) => setNewStep(e.target.value)}
             maxLength={80}
-            placeholder={total === 0 ? t("Erster Schritt der Progression (optional)") : t("Nächster Schritt")}
+            placeholder={total === 0 ? t("First step of the progression (optional)") : t("Next step")}
           />
-          <Button type="submit" size="icon" variant="secondary" disabled={adding || !newStep.trim()} aria-label={t("Schritt hinzufügen")}>
+          <Button type="submit" size="icon" variant="secondary" disabled={adding || !newStep.trim()} aria-label={t("Add step")}>
             <Plus className="size-4" />
           </Button>
         </form>
@@ -217,21 +217,21 @@ export function QuestCard({
           {completed ? (
             <Button type="button" size="sm" variant="secondary" onClick={actions.onReopen}>
               <RotateCcw className="size-4" />
-              {t("Wieder öffnen")}
+              {t("Reopen")}
             </Button>
           ) : (
             <Button type="button" size="sm" onClick={actions.onComplete}>
               <Check className="size-4" />
-              {t("Abschließen")}
+              {t("Complete")}
             </Button>
           )}
           <Button type="button" size="sm" variant="ghost" onClick={actions.onEdit}>
             <Pencil className="size-4" />
-            {t("Bearbeiten")}
+            {t("Edit")}
           </Button>
           <Button type="button" size="sm" variant="ghost" onClick={() => setConfirmDelete(true)}>
             <Trash2 className="size-4" />
-            {t("Löschen")}
+            {t("Delete")}
           </Button>
         </div>
       )}
@@ -240,14 +240,14 @@ export function QuestCard({
         <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>{t("Sidequest \"{title}\" löschen?", { title: quest.title })}</AlertDialogTitle>
+              <AlertDialogTitle>{t("Delete sidequest \"{title}\"?", { title: quest.title })}</AlertDialogTitle>
               <AlertDialogDescription>
-                {t("Die Sidequest samt allen Schritten wird endgültig gelöscht. Das kann nicht rückgängig gemacht werden.")}
+                {t("The sidequest and all its steps will be permanently deleted. This can't be undone.")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>{t("Abbrechen")}</AlertDialogCancel>
-              <AlertDialogAction onClick={actions.onDelete}>{t("Löschen")}</AlertDialogAction>
+              <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
+              <AlertDialogAction onClick={actions.onDelete}>{t("Delete")}</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

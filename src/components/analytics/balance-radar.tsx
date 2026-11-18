@@ -26,8 +26,8 @@ type FocusDatum = { focus: string; label: string; actualPercent: number; goalPer
 export function BalanceRadar() {
   const t = useT();
   const chartConfig = {
-    actualPercent: { label: t("Aktuell"), theme: VIZ_CATEGORICAL.actual },
-    goalPercent: { label: t("Ziel"), theme: VIZ_CATEGORICAL.goal },
+    actualPercent: { label: t("Current"), theme: VIZ_CATEGORICAL.actual },
+    goalPercent: { label: t("Target"), theme: VIZ_CATEGORICAL.goal },
   } satisfies ChartConfig;
   const [data, setData] = useState<FocusDatum[] | null>(null);
   const [hasGoals, setHasGoals] = useState(false);
@@ -46,7 +46,7 @@ export function BalanceRadar() {
   const total = data.reduce((a, d) => a + d.actualPercent, 0);
   if (total === 0) {
     return (
-      <EmptyChart className="h-72" message={t("Noch keine Daten für die Balance-Analyse.")} />
+      <EmptyChart className="h-72" message={t("No data for the balance analysis yet.")} />
     );
   }
 
@@ -61,7 +61,7 @@ export function BalanceRadar() {
           <PolarGrid />
           <PolarRadiusAxis angle={90} tick={false} axisLine={false} />
           <Radar
-            name={t("Aktuell")}
+            name={t("Current")}
             dataKey="actualPercent"
             stroke="var(--color-actualPercent)"
             fill="var(--color-actualPercent)"
@@ -69,7 +69,7 @@ export function BalanceRadar() {
           />
           {hasGoals && (
             <Radar
-              name={t("Ziel")}
+              name={t("Target")}
               dataKey="goalPercent"
               stroke="var(--color-goalPercent)"
               fill="var(--color-goalPercent)"
@@ -82,7 +82,7 @@ export function BalanceRadar() {
       </ChartContainer>
       {!hasGoals && (
         <p className="text-center text-xs text-muted-foreground">
-          {t("Noch keine Ziel-Balance gesetzt — unter Einstellungen konfigurierbar.")}
+          {t("No target balance set yet — configurable under Settings.")}
         </p>
       )}
     </div>
