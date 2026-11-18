@@ -5,6 +5,24 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.58.0] - 2026-11-18
+
+### Changed
+- **BREAKING: `/api/v1/workouts` und `/api/v1/workouts/[id]` - `date`-Format
+  geaendert.** Akzeptierte bisher ein volles ISO-Datetime und lehnte nie
+  ein Zukunftsdatum ab - inkonsistent zur internen `/api/workouts`-API,
+  die schon immer einen Berlin-Datumsschluessel (`YYYY-MM-DD`) nutzt und
+  Zukunftsdatums ablehnt. Jetzt angeglichen: `date` ist `YYYY-MM-DD`, ein
+  Zukunftsdatum gibt `400`. Bestehende Scripts, die hier ein
+  ISO-Datetime schicken, muessen auf das neue Format umgestellt werden.
+
+### Added
+- **API-Key-Scopes**: beim Erstellen eines Keys waehlbar zwischen "nur
+  lesend" (neuer Default) und "Lese-/Schreibzugriff". Ein read-only-Key
+  bekommt auf jede schreibende `/api/v1/*`-Route (POST/PATCH/DELETE)
+  `403`. Bereits bestehende Keys bleiben Lese-/Schreibzugriff, damit
+  nichts bricht, das sich schon auf Schreibrechte verlaesst.
+
 ## [0.57.1] - 2026-11-16
 
 ### Added

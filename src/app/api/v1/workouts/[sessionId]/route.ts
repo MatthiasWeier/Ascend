@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { authenticateApiKey } from "@/lib/api-key-auth";
+import { authenticateApiKey, requireWriteAccess } from "@/lib/api-key-auth";
 import { prisma } from "@/lib/prisma";
 import { syncWorkoutRepsToChallenges } from "@/lib/challenge-workout-sync";
-import { germanDateKey } from "@/lib/german-time";
+import { germanDateKey, todayGermanDateKey } from "@/lib/german-time";
+import { DATE_KEY_RE } from "@/lib/climbing-meetups";
 
 const setSchema = z.object({
   exerciseId: z.string(),
@@ -14,8 +15,10 @@ const setSchema = z.object({
   notes: z.string().max(500).optional(),
 });
 
+// BREAKING CHANGE (v0.58.0): see workouts/route.ts - same dateKey/
+// future-date alignment with the internal API.
 const updateSchema = z.object({
-  date: z.string().datetime().optional(),
+  date: z.string().regex(DATE_KEY_RE).optional(),
   notes: z.string().max(1000).optional(),
   sets: z.array(setSchema).min(1).max(100),
 });
@@ -66,6 +69,9 @@ export async function PATCH(
   }
   const { sessionId } = await params;
 
+  const forbidden = requireWriteAccess(auth);
+  if (forbidden) return forbidden;
+
   const existing = await findOwnedSession(sessionId, auth.userId);
   if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -75,6 +81,9 @@ export async function PATCH(
   const parsed = updateSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  }
+  if (parsed.data.date && parsed.data.date > todayGermanDateKey()) {
+    return NextResponse.json({ error: "Das Datum liegt in der Zukunft" }, { status: 400 });
   }
 
   const oldSetIds = (
@@ -89,7 +98,7 @@ export async function PATCH(
     prisma.workoutSession.update({
       where: { id: sessionId },
       data: {
-        date: parsed.data.date ? new Date(parsed.data.date) : undefined,
+        date: parsed.data.date ? new Date(`${parsed.data.date}T12:00:00.000Z`) : undefined,
         notes: parsed.data.notes,
         sets: {
           create: parsed.data.sets.map((set, index) => ({
@@ -128,6 +137,9 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { sessionId } = await params;
+
+  const forbidden = requireWriteAccess(auth);
+  if (forbidden) return forbidden;
 
   const existing = await findOwnedSession(sessionId, auth.userId);
   if (!existing) {

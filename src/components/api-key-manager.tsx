@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { Copy, Key, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -32,6 +34,7 @@ type ApiKeyInfo = {
   id: string;
   name: string;
   keyPrefix: string;
+  scope: "READ_ONLY" | "READ_WRITE";
   createdAt: string;
   lastUsedAt: string | null;
 };
@@ -41,6 +44,7 @@ export function ApiKeyManager() {
   const [keys, setKeys] = useState<ApiKeyInfo[] | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState("");
+  const [readWrite, setReadWrite] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newRawKey, setNewRawKey] = useState<string | null>(null);
 
@@ -59,7 +63,7 @@ export function ApiKeyManager() {
     const res = await fetch("/api/settings/api-keys", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: name.trim() }),
+      body: JSON.stringify({ name: name.trim(), scope: readWrite ? "READ_WRITE" : "READ_ONLY" }),
     });
     setCreating(false);
     if (!res.ok) {
@@ -68,6 +72,7 @@ export function ApiKeyManager() {
     }
     const data: { rawKey: string } = await res.json();
     setName("");
+    setReadWrite(false);
     setCreateOpen(false);
     setNewRawKey(data.rawKey);
     refetch();
@@ -108,6 +113,17 @@ export function ApiKeyManager() {
               className="my-2"
               required
             />
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-2.5">
+              <div className="flex flex-col gap-0.5">
+                <Label htmlFor="apikey-readwrite" className="text-sm font-normal">
+                  {t("Schreibzugriff erlauben")}
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {t("Standardmäßig nur lesend - erlaubt dem Key, Daten zu ändern (Workouts anlegen, Körpergewicht eintragen, ...).")}
+                </p>
+              </div>
+              <Switch id="apikey-readwrite" checked={readWrite} onCheckedChange={setReadWrite} />
+            </div>
             <DialogFooter>
               <Button type="submit" disabled={creating}>
                 {creating ? t("Erstellen…") : t("Erstellen")}
@@ -128,7 +144,7 @@ export function ApiKeyManager() {
               <div>
                 <p className="text-sm font-medium">{k.name}</p>
                 <p className="font-mono text-xs text-muted-foreground">
-                  {k.keyPrefix}… ·{" "}
+                  {k.keyPrefix}… · {k.scope === "READ_WRITE" ? t("Lese-/Schreibzugriff") : t("nur lesend")} ·{" "}
                   {k.lastUsedAt
                     ? t("zuletzt genutzt {date}", { date: new Date(k.lastUsedAt).toLocaleDateString(dateLocale) })
                     : t("noch nie genutzt")}

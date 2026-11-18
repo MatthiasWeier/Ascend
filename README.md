@@ -263,6 +263,12 @@ Damit gegen `/api/v1/*` authentifizieren:
 curl -H "Authorization: Bearer ascend_..." https://your-instance/api/v1/exercises
 ```
 
+Jeder Key hat einen Scope: **nur lesend** (Default bei neuen Keys) oder
+**Lese-/Schreibzugriff**, beim Erstellen wählbar. Ein read-only-Key
+bekommt auf jede schreibende Route (POST/PATCH/DELETE, in der Tabelle
+unten markiert) `403`. Bereits bestehende Keys von vor diesem Feature
+bleiben Lese-/Schreibzugriff.
+
 | Endpoint | Methode | Beschreibung |
 |---|---|---|
 | `/api/v1/me` | GET | Eigenes Profil (Name, Avatar, Gewichtseinheit, aktuelles Körpergewicht) |
@@ -272,22 +278,24 @@ curl -H "Authorization: Bearer ascend_..." https://your-instance/api/v1/exercise
 | `/api/v1/daily-challenges` | GET | Heutiger Stand jeder aktiven Daily-Challenge über alle Gruppen |
 | `/api/v1/quests` | GET | Eigene Sidequests inkl. Schritte |
 | `/api/v1/climbing-sends` | GET | Letzte geloggte Sends (`?limit=`, max. 200, Default 50) |
-| `/api/v1/climbing-sends` | POST | Send loggen (`{style, grade, attempts?, count?, date?}`) |
+| `/api/v1/climbing-sends` | POST 🔒 | Send loggen (`{style, grade, attempts?, count?, date?}`) |
 | `/api/v1/group-goals` | GET | Fortschritt aller Gruppenziele über alle eigenen Gruppen (read-only) |
 | `/api/v1/balance-goals` | GET | Ziel- vs. Ist-Trainingsanteil pro Fokus (Push/Pull/Beine/Core/Grip) |
-| `/api/v1/balance-goals` | PATCH | Balance-Ziele setzen (`{goals: [{focus, targetPercent}]}`) |
+| `/api/v1/balance-goals` | PATCH 🔒 | Balance-Ziele setzen (`{goals: [{focus, targetPercent}]}`) |
 | `/api/v1/injuries` | GET | Aktive Verletzungen |
 | `/api/v1/muscle-preferences` | GET | Muskel-Wunschliste (0 = passt, 1 = mehr, 2 = viel mehr) |
 | `/api/v1/workout-templates` | GET | Eigene Workout-Vorlagen inkl. Übungen |
 | `/api/v1/exercises` | GET | Sichtbare Übungen (eigene + Default + Gruppen) |
-| `/api/v1/exercises` | POST | Eigene Übung anlegen (gleiche Validierung wie in der App) |
+| `/api/v1/exercises` | POST 🔒 | Eigene Übung anlegen (gleiche Validierung wie in der App) |
 | `/api/v1/workouts` | GET | Eigene Workouts (`?limit=`, max. 200, Default 50) |
-| `/api/v1/workouts` | POST | Workout anlegen (`{date?, notes?, sets: [{exerciseId, reps?, weightKg?, durationSec?, setType?, notes?}]}`) |
-| `/api/v1/workouts/[id]` | GET/PATCH/DELETE | Einzelnes Workout lesen/bearbeiten/löschen |
+| `/api/v1/workouts` | POST 🔒 | Workout anlegen (`{date?, notes?, sets: [{exerciseId, reps?, weightKg?, durationSec?, setType?, notes?}]}`, `date` als `YYYY-MM-DD`, Zukunftsdatum → 400) |
+| `/api/v1/workouts/[id]` | GET/PATCH 🔒/DELETE 🔒 | Einzelnes Workout lesen/bearbeiten/löschen (`date` wie bei POST) |
 | `/api/v1/groups` | GET | Eigene Gruppen (id, name, Rolle) |
 | `/api/v1/personal-records` | GET | Aktuelle persönliche Bestleistungen pro Übung |
 | `/api/v1/body-weight` | GET | Letzte Körpergewicht-Einträge (`?limit=`, max. 200, Default 30) |
-| `/api/v1/body-weight` | POST | Körpergewicht eintragen (`{weightKg, date?}`, ein Eintrag pro Tag - erneutes Posten am selben Tag korrigiert) |
+| `/api/v1/body-weight` | POST 🔒 | Körpergewicht eintragen (`{weightKg, date?}`, ein Eintrag pro Tag - erneutes Posten am selben Tag korrigiert) |
+
+🔒 = braucht einen Key mit Lese-/Schreibzugriff, ein read-only-Key bekommt hier `403`.
 
 Bewusst schlank gehalten - kein Ersatz für die interne API, sondern eine
 stabile Fläche für eigene Automationen. Schreibende `/api/v1/*`-Routen

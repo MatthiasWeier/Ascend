@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import type { MuscleFocus } from "@prisma/client";
-import { authenticateApiKey } from "@/lib/api-key-auth";
+import { authenticateApiKey, requireWriteAccess } from "@/lib/api-key-auth";
 import { prisma } from "@/lib/prisma";
 import { computeLoadPercents, ALL_FOCUSES } from "@/lib/muscle-focus";
 import { makeBodyWeightResolver } from "@/lib/bodyweight";
@@ -68,6 +68,9 @@ export async function PATCH(request: Request) {
   if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const forbidden = requireWriteAccess(auth);
+  if (forbidden) return forbidden;
 
   const body = await request.json();
   const parsed = patchSchema.safeParse(body);

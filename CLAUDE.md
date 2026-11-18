@@ -370,6 +370,24 @@ new thing a user would notice as separate" - the former is patch.
   mirrors `lib/pending-challenges.ts`'s query shape but returns full
   today-status (including `NOT_STARTED`) for every active, non-invalidated
   goal, not just the still-pending ones.
+- **API key scopes** (`ApiKey.scope`, `requireWriteAccess()` in
+  `lib/api-key-auth.ts`): `READ_ONLY` or `READ_WRITE`, chosen at
+  creation time in Settings. New keys default to `READ_ONLY` (the zod
+  default in `POST /api/settings/api-keys`'s `createSchema`, not the
+  Prisma column default - the column defaults to `READ_WRITE` purely so
+  the migration backfills pre-existing keys that way, so nothing already
+  depending on write access broke when scopes were introduced). Every
+  `/api/v1/*` route with a write method calls
+  `requireWriteAccess(auth)` right after `authenticateApiKey(request)`,
+  before touching the body - add that same pair to any new writing v1
+  route, don't just add `authenticateApiKey`.
+- **`/api/v1/workouts` and `/api/v1/workouts/[id]` `date` is a Berlin
+  dateKey** (`YYYY-MM-DD`, `DATE_KEY_RE`, future dates rejected) - this
+  used to accept a full ISO datetime and never checked for a future date,
+  inconsistent with the internal `/api/workouts`. Fixed as a deliberate
+  breaking change (v0.58.0, CHANGELOG) rather than silently left
+  inconsistent - if you add date handling to another v1 route, use this
+  same dateKey pattern, not `z.string().datetime()`.
 - **Sidequests (`Quest`/`QuestStep`, UI label "Quests"/"Sidequests").**
   Personal long-term goals with a user-chosen deadline (`targetDateKey`, a
   Berlin day string), user-authored ordered progression steps (never

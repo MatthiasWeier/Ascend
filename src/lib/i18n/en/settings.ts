@@ -107,6 +107,11 @@ export const settings: Record<string, string> = {
   "API-Key erstellen": "Create API key",
   "Für eigene Scripts/Automationen gegen /api/v1/*.": "For your own scripts/automations against /api/v1/*.",
   "z.B. Homeassistant-Script": "e.g. Home Assistant script",
+  "Schreibzugriff erlauben": "Allow write access",
+  "Standardmäßig nur lesend - erlaubt dem Key, Daten zu ändern (Workouts anlegen, Körpergewicht eintragen, ...).":
+    "Read-only by default - lets the key change data (create workouts, log body weight, ...).",
+  "Lese-/Schreibzugriff": "read/write access",
+  "nur lesend": "read-only",
   "Noch keine API-Keys.": "No API keys yet.",
   "zuletzt genutzt {date}": "last used {date}",
   "noch nie genutzt": "never used",

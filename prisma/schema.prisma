@@ -627,14 +627,24 @@ model UserSession {
 // is already a high-entropy random secret, not something to defend
 // against low-entropy guessing); the raw key is shown exactly once, at
 // creation time.
+enum ApiKeyScope {
+  READ_ONLY
+  READ_WRITE
+}
+
 model ApiKey {
-  id         String    @id @default(cuid())
+  id         String      @id @default(cuid())
   userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   name       String
-  keyHash    String    @unique
+  keyHash    String      @unique
   keyPrefix  String
-  createdAt  DateTime  @default(now())
+  // New keys default to READ_ONLY at the application layer (see
+  // POST /api/settings/api-keys) - this column default only backfills
+  // keys that existed before scopes did, as READ_WRITE, so nothing that
+  // already depends on write access breaks.
+  scope      ApiKeyScope @default(READ_WRITE)
+  createdAt  DateTime    @default(now())
   lastUsedAt DateTime?
 
   @@index([userId])
