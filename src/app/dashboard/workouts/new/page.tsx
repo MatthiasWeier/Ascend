@@ -190,6 +190,30 @@ export default function NewWorkoutPage() {
 
   const hitsFor = (e: Exercise | undefined) => (e?.loadedParts ? injuryConflicts(e.loadedParts, injuries) : []);
 
+  // restoreDraft is declared here (not further down) so it's defined
+  // before this effect calls it - react-hooks/immutability wants that
+  // order even though plain JS function hoisting already made it work.
+  function restoreDraft(d: DraftData, updatedAt: string) {
+    const convert = (value: string) => {
+      const n = Number(value);
+      if (value === "" || isNaN(n) || d.unit === weightUnit.unit) return value;
+      return String(roundForDisplay(weightUnit.toDisplay(displayToKg(n, d.unit)), weightUnit.unit));
+    };
+    setRows(
+      d.rows.length > 0
+        ? d.rows.map((r) => ({ ...r, key: rowKey++, weightKg: convert(r.weightKg) }))
+        : [emptyRow()]
+    );
+    setDate(d.date && d.date <= todayGermanDateKey() ? d.date : todayGermanDateKey());
+    setFocusFatigue(d.focusFatigue ?? {});
+    setSkinCondition(d.skinCondition ?? 1);
+    setTrackSkin(!!d.trackSkin);
+    setNotes(d.notes ?? "");
+    setPhotos((d.photoIds ?? []).map((id) => ({ id })));
+    setDraftRestoredAt(updatedAt);
+    hasDraftRef.current = true;
+  }
+
   useEffect(() => {
     Promise.all([
       fetch("/api/exercises").then((r) => r.json()) as Promise<{ exercises: Exercise[] }>,
@@ -275,38 +299,25 @@ export default function NewWorkoutPage() {
     });
   }, [editSessionId]);
 
-  latestDraftRef.current = {
-    unit: weightUnit.unit,
-    date,
-    rows,
-    focusFatigue,
-    skinCondition,
-    trackSkin,
-    notes,
-    photoIds: photos.map((p) => p.id),
-  };
-  draftReadyRef.current = draftReady;
-
-  function restoreDraft(d: DraftData, updatedAt: string) {
-    const convert = (value: string) => {
-      const n = Number(value);
-      if (value === "" || isNaN(n) || d.unit === weightUnit.unit) return value;
-      return String(roundForDisplay(weightUnit.toDisplay(displayToKg(n, d.unit)), weightUnit.unit));
+  // react-hooks/refs (React Compiler readiness rule): these ref writes were
+  // flagged when `pnpm lint` was first actually run against this file (it
+  // was never part of the deploy workflow before, only `pnpm build`). Moved
+  // into their own effect - runs after every render same as before, just
+  // post-commit instead of mid-render, which only matters for code reading
+  // .current synchronously during the SAME render, and nothing here does.
+  useEffect(() => {
+    latestDraftRef.current = {
+      unit: weightUnit.unit,
+      date,
+      rows,
+      focusFatigue,
+      skinCondition,
+      trackSkin,
+      notes,
+      photoIds: photos.map((p) => p.id),
     };
-    setRows(
-      d.rows.length > 0
-        ? d.rows.map((r) => ({ ...r, key: rowKey++, weightKg: convert(r.weightKg) }))
-        : [emptyRow()]
-    );
-    setDate(d.date && d.date <= todayGermanDateKey() ? d.date : todayGermanDateKey());
-    setFocusFatigue(d.focusFatigue ?? {});
-    setSkinCondition(d.skinCondition ?? 1);
-    setTrackSkin(!!d.trackSkin);
-    setNotes(d.notes ?? "");
-    setPhotos((d.photoIds ?? []).map((id) => ({ id })));
-    setDraftRestoredAt(updatedAt);
-    hasDraftRef.current = true;
-  }
+    draftReadyRef.current = draftReady;
+  });
 
   // Autosave: shortly after any change, and immediately when the tab goes to
   // the background (visibilitychange/pagehide via sendBeacon) - that's the

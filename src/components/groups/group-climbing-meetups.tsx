@@ -30,7 +30,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLocale } from "@/components/locale-provider";
 import {
   MEETUP_FOCUS_LABEL,
@@ -74,10 +73,6 @@ type Meetup = {
 
 function initials(name: string) {
   return name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
-}
-
-function activityIcon() {
-  return Mountain; // one icon for now - keeps the meetup list visually simple
 }
 
 function FocusPicker({ activity, value, onChange }: { activity: MeetupActivity; value: ClimbingFocus[]; onChange: (v: ClimbingFocus[]) => void }) {
@@ -366,7 +361,6 @@ function MeetupItem({ groupId, meetup, myId, onChanged }: { groupId: string; mee
   const [busy, setBusy] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const isCreator = meetup.createdBy.id === myId;
-  const Icon = activityIcon();
 
   async function join() {
     setBusy(true);
@@ -406,7 +400,7 @@ function MeetupItem({ groupId, meetup, myId, onChanged }: { groupId: string; mee
     <div className="flex flex-col gap-2 rounded-xl border border-border p-4">
       <div className="flex items-start justify-between gap-2">
         <p className="flex items-center gap-2 text-sm font-semibold">
-          <Icon className="size-4 text-emerald-600 dark:text-emerald-400" />
+          <Mountain className="size-4 text-emerald-600 dark:text-emerald-400" />
           {meetupDisplayName(meetup.activity, meetup.title)}
           <span className="font-normal text-muted-foreground">
             ·{" "}
