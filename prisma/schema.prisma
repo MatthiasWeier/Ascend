@@ -888,7 +888,7 @@ model WorkoutReminder {
 // row is created by its migration, so callers can always assume it exists.
 model AppSettings {
   id                  String   @id @default("global")
-  rateLimitingEnabled Boolean  @default(false)
+  rateLimitingEnabled Boolean  @default(true)
   registrationOpen    Boolean  @default(true)
   updatedAt           DateTime @updatedAt
 }
