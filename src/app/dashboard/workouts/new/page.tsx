@@ -685,7 +685,15 @@ export default function NewWorkoutPage() {
             type="date"
             value={date}
             max={todayGermanDateKey()}
-            onChange={(e) => setDate(e.target.value || todayGermanDateKey())}
+            onChange={(e) => {
+              // `max` only constrains the native picker widget - typing a
+              // date directly (or some browsers' calendar popups) can
+              // still fire onChange with a future value, so clamp it here
+              // too instead of trusting the attribute alone.
+              const value = e.target.value;
+              const today = todayGermanDateKey();
+              setDate(!value ? today : value > today ? today : value);
+            }}
             className="w-auto"
           />
         </div>
