@@ -53,10 +53,10 @@ export const settings: Record<string, string> = {
     "This deletes all your workouts, your body weight history, your climbing entries and your group memberships. This can't be undone.",
   "Du bist Leader von dieser Gruppe:": "You are the leader of this group:",
   "Du bist Leader von diesen Gruppen:": "You are the leader of these groups:",
-  "Da es keine Leader-Übertragung gibt, wird diese Gruppe komplett gelöscht — auch für alle anderen Mitglieder.":
-    "Since there's no leader transfer, this group will be deleted completely — for all other members too.",
-  "Da es keine Leader-Übertragung gibt, werden diese Gruppen komplett gelöscht — auch für alle anderen Mitglieder.":
-    "Since there's no leader transfer, these groups will be deleted completely — for all other members too.",
+  "Übergib die Leitung zuerst (in der Gruppe), sonst wird diese Gruppe komplett gelöscht — auch für alle anderen Mitglieder.":
+    "Transfer leadership first (in the group), otherwise this group will be deleted completely — for all other members too.",
+  "Übergib die Leitung zuerst (in der jeweiligen Gruppe), sonst werden diese Gruppen komplett gelöscht — auch für alle anderen Mitglieder.":
+    "Transfer leadership first (in each group), otherwise these groups will be deleted completely — for all other members too.",
   "Passwort zur Bestätigung": "Password to confirm",
   "Endgültig löschen": "Delete permanently",
 

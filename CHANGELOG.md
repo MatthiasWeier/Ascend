@@ -5,6 +5,20 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.58.1] - 2026-11-18
+
+### Fixed
+- **README/UI: veraltete Aussage zur Gruppen-Leitung korrigiert.** Sowohl
+  die README als auch der Account-Löschen-Dialog behaupteten, es gäbe
+  keine Möglichkeit, die Gruppenleitung zu übertragen - die Funktion
+  existiert längst (`POST /api/groups/[groupId]/transfer-leadership`).
+  Beide Texte korrigiert; der Dialog weist jetzt korrekt darauf hin, die
+  Leitung vorher zu übergeben, statt das fälschlich für unmöglich zu
+  erklären.
+- Kleinere README-Korrekturen: Grammatikfehler ("löscht du" ->
+  "löschst du"), Legende um das bereits genutzte ❓-Symbol
+  ("implementiert, aber nicht manuell getestet") ergänzt.
+
 ## [0.58.0] - 2026-11-18
 
 ### Changed

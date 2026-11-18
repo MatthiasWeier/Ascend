@@ -72,8 +72,8 @@ export function DeleteAccountDialog() {
             {ownedGroups.length === 1 ? t("Du bist Leader von dieser Gruppe:") : t("Du bist Leader von diesen Gruppen:")}{" "}
             <strong>{ownedGroups.map((g) => g.name).join(", ")}</strong>.{" "}
             {ownedGroups.length === 1
-              ? t("Da es keine Leader-Übertragung gibt, wird diese Gruppe komplett gelöscht — auch für alle anderen Mitglieder.")
-              : t("Da es keine Leader-Übertragung gibt, werden diese Gruppen komplett gelöscht — auch für alle anderen Mitglieder.")}
+              ? t("Übergib die Leitung zuerst (in der Gruppe), sonst wird diese Gruppe komplett gelöscht — auch für alle anderen Mitglieder.")
+              : t("Übergib die Leitung zuerst (in der jeweiligen Gruppe), sonst werden diese Gruppen komplett gelöscht — auch für alle anderen Mitglieder.")}
           </div>
         )}
 

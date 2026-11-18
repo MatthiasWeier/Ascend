@@ -91,7 +91,7 @@ jurisdiction.
 
 ## Feature status
 
-Legend: ✅ implemented · 🚧 partial · ⏳ not started
+Legend: ✅ implemented · 🚧 partial · ⏳ not started · ❓ implemented but unverified (not manually tested)
 
 ### Nutzer & Profile
 - ✅ Login per Benutzername + Passwort (keine E-Mail nötig)
@@ -333,6 +333,10 @@ Siehe `prisma/schema.prisma`. Wichtige Design-Entscheidungen:
   Zeitzonen-Bugs an der Tagesgrenze zu vermeiden (`lib/german-time.ts`).
 - **Yammer-Stimmrecht**: die Berechtigung "75% der übrigen Mitglieder" wird
   serverseitig bei jedem Vote neu berechnet, nicht als Snapshot gespeichert.
-- **Account-Löschung kaskadiert**: löscht du deinen Account und bist Owner
-  einer Gruppe, wird die Gruppe komplett mitgelöscht (keine
-  Ownership-Übertragung vorhanden) - die UI warnt vorher explizit.
+- **Account-Löschung kaskadiert**: löschst du deinen Account und bist noch
+  Leader einer Gruppe, wird die Gruppe komplett mitgelöscht - die UI warnt
+  vorher explizit. Es gibt eine Leitungs-Übertragung
+  (`POST /api/groups/[groupId]/transfer-leadership`, verschiebt sowohl die
+  sichtbare Leader-Rolle als auch `Group.ownerId`, das Feld, das beim
+  Löschen tatsächlich kaskadiert) - übergibst du die Leitung vorher an ein
+  anderes Mitglied, bleibt die Gruppe beim Löschen deines Accounts erhalten.
