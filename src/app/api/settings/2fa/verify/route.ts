@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { verifyTotpToken } from "@/lib/totp";
+import { verifyAndConsumeTotp } from "@/lib/totp-replay";
 import { issueBackupCodes } from "@/lib/totp-backup-codes";
 
 const bodySchema = z.object({ token: z.string().min(6).max(6) });
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   if (user.totpEnabled) {
     return NextResponse.json({ error: "2FA ist bereits aktiviert" }, { status: 400 });
   }
-  if (!user.totpSecret || !verifyTotpToken(user.totpSecret, parsed.data.token)) {
+  if (!user.totpSecret || !(await verifyAndConsumeTotp(session.user.id, user.totpSecret, parsed.data.token))) {
     return NextResponse.json({ error: "Code ist falsch oder abgelaufen" }, { status: 400 });
   }
 

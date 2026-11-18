@@ -103,6 +103,11 @@ model User {
   // admin has to reset this from /dashboard/admin (see admin-auth route).
   totpSecret      String?
   totpEnabled     Boolean          @default(false)
+  // 30s HOTP counter of the last accepted TOTP code - rejects the exact
+  // same code (or an older one) being replayed within its still-valid
+  // window. Null for anyone who hasn't logged in with 2FA since this was
+  // added, which just means "no replay history yet", not "insecure".
+  totpLastUsedCounter Int?
   totpBackupCodes TotpBackupCode[]
   sessions        UserSession[]
   // Instance-wide admin (not a per-group role): can manage all users from

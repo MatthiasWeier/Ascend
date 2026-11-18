@@ -68,20 +68,30 @@ export function totpAuthUri(secret: string, username: string, issuer = "Ascend")
 
 // Accepts the current 30s step plus one step of drift either side (90s
 // window total) - generous enough for clock skew between phone and
-// server without meaningfully weakening the 6-digit code.
-export function verifyTotpToken(secret: string, token: string, window = 1): boolean {
+// server without meaningfully weakening the 6-digit code. Returns the
+// matched HOTP counter (not just true/false) so a caller can do replay
+// protection - see lib/totp-replay.ts - without redoing this search.
+export function matchTotpCounter(secret: string, token: string, window = 1): number | null {
   const clean = token.trim();
-  if (!/^\d{6}$/.test(clean)) return false;
+  if (!/^\d{6}$/.test(clean)) return null;
   const key = base32Decode(secret);
   const counter = Math.floor(Date.now() / 1000 / STEP_SECONDS);
   for (let errorWindow = -window; errorWindow <= window; errorWindow++) {
-    const candidate = hotp(key, counter + errorWindow);
+    const candidateCounter = counter + errorWindow;
+    const candidate = hotp(key, candidateCounter);
     if (
       candidate.length === clean.length &&
       crypto.timingSafeEqual(Buffer.from(candidate), Buffer.from(clean))
     ) {
-      return true;
+      return candidateCounter;
     }
   }
-  return false;
+  return null;
+}
+
+// Plain validity check with no replay protection - only for places that
+// genuinely don't have a user record to track a counter against. Prefer
+// verifyAndConsumeTotp (lib/totp-replay.ts) wherever a userId is available.
+export function verifyTotpToken(secret: string, token: string, window = 1): boolean {
+  return matchTotpCounter(secret, token, window) !== null;
 }

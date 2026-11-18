@@ -3,7 +3,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { verifyTotpToken } from "@/lib/totp";
+import { verifyAndConsumeTotp } from "@/lib/totp-replay";
 import { consumeBackupCode } from "@/lib/totp-backup-codes";
 import { checkRateLimit, envInt } from "@/lib/rate-limit";
 
@@ -44,7 +44,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (user.totpEnabled) {
           if (!totpToken) return null;
-          const validTotp = user.totpSecret ? verifyTotpToken(user.totpSecret, totpToken) : false;
+          const validTotp = user.totpSecret ? await verifyAndConsumeTotp(user.id, user.totpSecret, totpToken) : false;
           const validBackup = validTotp ? false : await consumeBackupCode(user.id, totpToken);
           if (!validTotp && !validBackup) return null;
         }
