@@ -407,9 +407,34 @@ new thing a user would notice as separate" - the former is patch.
 
 ## Testing conventions
 
-No automated test suite exists yet - verification is manual, over the
-live deployed app, per the deployment workflow above. When adding
-something with real logic (PR detection, bodyweight resolution, Yammer
-vote thresholds, auto-share dedup), write out the specific edge cases
-you're checking as curl commands against real accounts, not just "it
-built successfully."
+Vitest covers pure/DB-backed logic in `src/lib/*.test.ts` - run with
+`pnpm test` (runs against `ascend_test`, a separate Postgres database on
+the same instance, never the live `ascend` one - the `test` script in
+package.json points `DATABASE_URL` there itself, no `.env.test` needed).
+One-time setup for a fresh environment (already done on this VM and
+expected in CI):
+
+```
+sudo docker exec -i ascend-db-1 psql -U ascend -d ascend -c 'CREATE DATABASE ascend_test;'
+DATABASE_URL='postgresql://ascend:ascend@localhost:5432/ascend_test' pnpm prisma migrate deploy
+DATABASE_URL='postgresql://ascend:ascend@localhost:5432/ascend_test' pnpm prisma db seed
+```
+
+Shared test helpers (`createTestUser`, `createTestExercise`, `createTestGroup`,
+`createSession`, `createSet`, and matching `cleanup*` functions) live in
+`src/lib/test-utils.ts` - not itself a test file (vitest's `include` only
+matches `*.test.ts`), reuse it instead of hand-rolling Prisma setup again.
+Every test that creates rows cleans them up in `afterEach` via those
+helpers' cascading deletes; a DB-backed test file always ends by
+confirming no `test_%`-prefixed rows are left (same spirit as the
+deployment workflow's "clean up test accounts" rule below, just automated).
+
+For anything NOT covered by a unit test yet (most routes/UI still aren't),
+verification stays manual, over the live deployed app, per the deployment
+workflow below: write out the specific edge cases you're checking as curl
+commands against real accounts, not just "it built successfully." Adding
+a Vitest test is the better default going forward for logic in `src/lib`
+specifically; route-level authorization tests are a separate, newer
+layer - see the BUG-D1/BUG-D2/SEC-C* fixes and `docs/ANALYSIS.md` for
+examples of exactly the kind of bug a concurrent-request test catches
+that manual curl testing alone has missed before.

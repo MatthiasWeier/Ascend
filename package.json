@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "DATABASE_URL=postgresql://ascend:ascend@localhost:5432/ascend_test vitest run",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -49,7 +50,8 @@
     "prisma": "7.9.1",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.1.0"
   },
   "packageManager": "pnpm@12.4.2",
   "prisma": {
