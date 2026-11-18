@@ -76,13 +76,14 @@ pnpm dev
 ## Legal pages (`/impressum`, `/datenschutz`)
 
 Ascend is self-hosted: whoever runs an instance is the one legally
-responsible for it, not this project. The Impressum and Datenschutzerklärung
-pages read their operator details (name, address, contact) from environment
+responsible for it, not this project. The legal notice (`/impressum`) and
+privacy policy (`/datenschutz`) pages read their operator details (name,
+address, contact) from environment
 variables and clearly say "not configured" instead of showing placeholder
 fake data until you set them - see `.env.example` for `OPERATOR_NAME`,
 `OPERATOR_ADDRESS`, `OPERATOR_EMAIL`, `OPERATOR_PHONE`.
 
-The Datenschutzerklärung's description of *what data the app processes* is
+The privacy policy's description of *what data the app processes* is
 accurate for the software itself regardless of who's hosting it; only the
 "who is the controller / how to contact them" part needs filling in. This is
 a reasonable-effort template, not legal advice - if you're operating this
@@ -93,220 +94,232 @@ jurisdiction.
 
 Legend: ✅ implemented · 🚧 partial · ⏳ not started · ❓ implemented but unverified (not manually tested)
 
-### Nutzer & Profile
-- ✅ Login per Benutzername + Passwort (keine E-Mail nötig)
-- ✅ Private, strikt getrennte Trainingsdaten pro Nutzer
-- ✅ Körpergewicht als **Verlauf** (`BodyWeightEntry`, ein Eintrag pro Tag),
-  nicht nur ein einzelner Wert
-- ✅ Account-Löschung (Danger Zone in den Einstellungen, Passwort-Bestätigung,
-  kaskadiert korrekt inkl. eigener Gruppen)
-- ✅ Instanzweite Admin-Rolle (`/dashboard/admin`): Nutzerverwaltung,
-  Admin-Rechte vergeben/entziehen, Nutzer löschen, 2FA für ein Konto
-  zurücksetzen (einzige Wiederherstellung, da es keine E-Mail gibt)
-- ✅ **Zwei-Faktor-Authentifizierung (TOTP)**: optional pro Konto,
-  selbst implementiertes RFC 6238 (jede Standard-Authenticator-App),
-  QR-Code-Setup, 10 Einmal-Backup-Codes
-- ✅ **Sitzungsverwaltung** (Settings): aktive Geräte einsehen, einzeln
-  oder alle außer dem aktuellen sofort abmelden - wirkt beim nächsten
-  Zugriff des Geräts, nicht erst nach JWT-Ablauf
-- ✅ **Admin-Einstellungen** (Admin-Seite, nur für Admins): Rate Limits
-  (Login/Registrierung, Brute-Force-Schutz) und offene vs. Invite-only-Registrierung
-  jeweils per Schalter an/aus - wirkt sofort, kein Redeploy nötig
-- ✅ Vollständiger JSON-Datenexport, CSV-Import (Strong/Hevy-kompatibel,
-  best effort), abonnierbarer ICS-Kalender-Feed - alles in Settings
+### Users & Profiles
+- ✅ Username + password login (no email required)
+- ✅ Private, strictly separated training data per user
+- ✅ Body weight as a **history** (`BodyWeightEntry`, one entry per day),
+  not just a single value
+- ✅ Account deletion (Danger Zone in Settings, password confirmation,
+  cascades correctly including owned groups)
+- ✅ Instance-wide admin role (`/dashboard/admin`): user management,
+  grant/revoke admin rights, delete users, reset 2FA for an account
+  (the only recovery path, since there's no email)
+- ✅ **Two-factor authentication (TOTP)**: optional per account,
+  self-implemented RFC 6238 (works with any standard authenticator app),
+  QR code setup, 10 one-time backup codes
+- ✅ **Session management** (Settings): view active devices, sign out
+  individually or all except the current one immediately - takes effect
+  on that device's next request, not only after JWT expiry
+- ✅ **Admin settings** (Admin page, admins only): rate limits
+  (login/registration, brute-force protection) and open vs. invite-only
+  registration, each toggled on/off - takes effect immediately, no
+  redeploy needed
+- ✅ Full JSON data export, CSV import (Strong/Hevy-compatible, best
+  effort), subscribable ICS calendar feed - all in Settings
 
-### Training eintragen
-- ✅ Zwei Übungsarten: Reps+Gewicht (`REPS`) und Zeit-Halten (`HOLD`)
-- ✅ Erschöpfungs-Tracking (perceivedExertion) und Haut-Zustand (skinCondition)
-- ✅ Custom Exercises (eigene oder gruppenweit sichtbare Übungen)
-- ✅ 53 Standardübungen + 8 Daily-Challenge-Themen geseedet
-- ✅ Schnelle Übungssuche (durchsuchbare Combobox statt langer Dropdown-Liste)
-- ✅ Auto-Fill aus der letzten Session (Wdh/Gewicht/Dauer vorausgefüllt, ohne
-  bereits getippte Werte zu überschreiben)
-- ✅ Integrierter Pause-Timer (60/90/120/180s, startet per ✓-Button am Satz)
-- ✅ Trainingsvorlagen: aktuelle Satz-Reihenfolge speichern, per Dropdown
-  wieder laden
-- ✅ "Häufig"-Chips: die 8 meistgenutzten Übungen mit einem Klick als Satz
-  hinzufügen
-- ✅ **Workout bearbeiten & löschen** - inkl. korrekter Nachführung
-  verknüpfter Gruppenziel-Beiträge
-- ✅ **Deutsch/Englisch umschaltbar** (Kopfleiste, Login, Settings): komplette
-  Oberfläche zweisprachig, Sprache per Cookie pro Gerät; Nutzerinhalte und
-  Push-Texte bleiben unübersetzt
-- ✅ **kg/lbs umschaltbar** (Settings): reine Anzeige-Einstellung, intern
-  wird immer in kg gespeichert; Hantelscheiben-/Aufwärm-Rechner rechnen
-  mit dem passenden Scheiben-Satz für die gewählte Einheit
+### Logging Training
+- ✅ Two exercise types: reps+weight (`REPS`) and timed hold (`HOLD`)
+- ✅ Exertion tracking (perceivedExertion) and skin condition (skinCondition)
+- ✅ Custom exercises (personal or group-wide visible)
+- ✅ 53 default exercises + 8 daily-challenge themes seeded
+- ✅ Fast exercise search (searchable combobox instead of a long dropdown
+  list)
+- ✅ Auto-fill from the last session (reps/weight/duration pre-filled,
+  without overwriting values you've already typed)
+- ✅ Built-in rest timer (60/90/120/180s, started via the ✓ button on a set)
+- ✅ Workout templates: save the current set order, reload it via dropdown
+- ✅ "Frequent" chips: add any of your 8 most-used exercises as a set with
+  one click
+- ✅ **Edit & delete a workout** - including correctly updating any linked
+  group-goal contributions
+- ✅ **German/English toggle** (header, login, Settings): the whole UI is
+  bilingual, language stored per device via cookie; user-generated content
+  and push text stay untranslated
+- ✅ **kg/lbs toggle** (Settings): a display-only setting, everything is
+  always stored in kg internally; the plate/warm-up calculators use the
+  matching plate set for whichever unit is selected
 
 ### Workout Brain
-- ✅ Muskel-Fokus-Vorschlag (längste Pause seit dem letzten Training)
-- ✅ Überlastungs-Schutz / Ruhetag-Empfehlung (Ø Anstrengung der letzten
-  3 Tage)
-- ✅ Haut-Regenerations-Timer für Kletterer (blendet Grip-Übungen aus, bis
-  die Haut sich erholt hat)
-- ✅ Daily-Challenge-Reminder auf der Startseite (inline, kein Pop-up):
-  zeigt jede heute noch offene Challenge über allen Gruppen mit direktem
-  Link zur Gruppe/Challenge
-- ✅ "Gruppen-Aktivität" auf der Startseite: geteilte Workouts und
-  Challenge-Ergebnisse aus allen Gruppen, neueste zuerst, mit Zeitstempel
+- ✅ Muscle-focus suggestion (longest gap since it was last trained)
+- ✅ Overload protection / rest-day recommendation (avg. exertion over the
+  last 3 days)
+- ✅ Skin-recovery timer for climbers (hides grip exercises until skin has
+  recovered)
+- ✅ Daily-challenge reminder on the home page (inline, no pop-up): shows
+  every still-open challenge for today across all groups, with a direct
+  link to the group/challenge
+- ✅ "Group activity" on the home page: shared workouts and challenge
+  results from all groups, newest first, with timestamps
 
 ### Analytics
-- ✅ 1RM-Schätzung (Epley) & Maximalkraft-Verlauf
-- ✅ Persönliche-Rekorde-Übersicht: aktueller Bestwert pro Übung
-- ✅ Trainings-Streak auf der Startseite (deutsche Kalendertage)
-- ✅ **Bodyweight-adjustiert**: Klimmzüge & Co. fließen mit dem geloggten
-  Körpergewicht *zum jeweiligen Trainingszeitpunkt* in Power/Workload ein -
-  nicht mit dem aktuellen Gewicht (`lib/bodyweight.ts`)
-- ✅ **PR-Erkennung**: neuer persönlicher Rekord pro Übung wird chronologisch
-  berechnet (bodyweight-adjustiertes 1RM bzw. Haltedauer), im Feed mit
-  Trophäen-Badge markiert und beim Speichern als Toast gefeiert
-- ✅ Volumen-Graph (90 Tage)
-- ✅ Balance-Radar (Ist vs. Ziel pro Muskelgruppe)
-- ✅ Aktivitäts-Kalender (Jahres-Heatmap), Tag anklicken zeigt das exakte
-  Workout (Übungen, Gewicht, Wdh) dieses Tages
-- ✅ Kletter-Pyramide + Boulder-Tages-Kalender (Zähler pro Schwierigkeit,
-  "5x 6er, 3x 4er")
-- ✅ **Termine planen** (Klettern, Gym oder frei benennbar "Sonstiges"): pro Gruppe einen Tag (heute oder später)
-  mit optionalem Titel/Uhrzeit/Ort anlegen, Mitglieder sagen mit eigenem optionalem Ziel und Trainingsfokus zu
-  (Slab/Power/Technik/Ausdauer/Kraft/Mental für Klettern, Push/Pull/Beine/Core/Grip für Gym) - im persönlichen
-  Kalender über alle Gruppen hinweg als grün markierter Tag sichtbar. Mitglieder, die den Termin nicht selbst
-  geplant haben, können eine Änderung (Datum/Uhrzeit/Ort + Notiz) vorschlagen; wer geplant hat, nimmt an oder lehnt ab.
-- ✅ **Sidequests** (Menüpunkt "Quests"): persönliche Ziele mit selbst gewähltem Zieldatum ("Handstand lernen bis Ende
-  2026"), optional mit eigener Progression aus selbst festgelegten Schritten (nichts wird automatisch vorgeschlagen),
-  regelmäßigen Erinnerungen (automatisch je nach Dauer oder fest wählbar) und einem Gruppen-Tab, in dem Mitglieder
-  ihre geteilten Sidequests samt Fortschritt sehen - pro Sidequest abschaltbar
-- ✅ **Erinnerungen** (Einstellungen > Workout-Erinnerungen): eigene wöchentlich wiederkehrende Trainingszeiten
-  ("Montag 13 Uhr, Mittwoch 18 Uhr", unabhängig von Gruppen) sowie ein Vorlauf, wie lange vorher an einen
-  zugesagten Gruppentermin erinnert werden soll (nie / 1 Std. vorher / morgens / am Vorabend) - beides über einen
-  In-Process-Scheduler (`lib/scheduler.ts`, per Next.js Instrumentation-Hook gestartet), kein separater Cron-Dienst nötig
+- ✅ 1RM estimate (Epley) & max-strength history
+- ✅ Personal-records overview: current best value per exercise
+- ✅ Training streak on the home page (German calendar days)
+- ✅ **Bodyweight-adjusted**: pull-ups & co. factor into power/workload
+  using the body weight logged *at the time of that training session* -
+  not your current weight (`lib/bodyweight.ts`)
+- ✅ **PR detection**: a new personal record per exercise is computed
+  chronologically (bodyweight-adjusted 1RM or hold duration), flagged
+  with a trophy badge in the feed, and celebrated with a toast on save
+- ✅ Volume graph (90 days)
+- ✅ Balance radar (actual vs. target per muscle group)
+- ✅ Activity calendar (year heatmap), clicking a day shows the exact
+  workout (exercises, weight, reps) for that day
+- ✅ Climbing pyramid + boulder-day calendar (counter per grade, e.g.
+  "5x grade 6, 3x grade 4")
+- ✅ **Schedule meetups** (climbing, gym, or freely-labeled "other"): create
+  a day (today or later) per group with an optional title/time/location;
+  members RSVP with their own optional goal and training focus
+  (Slab/Power/Technique/Endurance/Strength/Mental for climbing,
+  Push/Pull/Legs/Core/Grip for gym) - shown as a green-marked day in your
+  personal calendar across all groups. Members who didn't plan the meetup
+  themselves can suggest a change (date/time/location + note); whoever
+  planned it accepts or declines.
+- ✅ **Sidequests** (menu item "Quests"): personal goals with a
+  self-chosen target date ("learn a handstand by end of 2026"), optionally
+  with your own progression made of self-defined steps (nothing is ever
+  auto-suggested), recurring reminders (automatic based on duration, or a
+  fixed interval), and a group tab where members see each other's shared
+  sidequests and progress - toggleable per sidequest
+- ✅ **Reminders** (Settings > Workout Reminders): your own weekly
+  recurring training times ("Monday 1pm, Wednesday 6pm", independent of
+  groups) plus a lead time for how far ahead to be reminded about a
+  meetup you've RSVP'd to (never / 1 hour before / that morning / the
+  evening before) - both run through an in-process scheduler
+  (`lib/scheduler.ts`, started via Next.js's instrumentation hook), no
+  separate cron service needed
 
-### Gruppen
-- ✅ Erstellen, Beitreten per Invite-Link
-- ✅ Rollen: **Leader** (Ersteller) / **Member** - jeder darf einladen, nur
-  der Leader darf kicken; Mitglieder können selbst austreten; Leitung kann
-  übergeben werden (überträgt auch die echte Besitzer-Zuordnung, nicht nur
-  die Rolle); Gruppenname vom Leader änderbar
-- ✅ Feed: Text-Posts, Fotos (lokales Docker-Volume), geteilte Workouts
-  einzeln über den Composer oder per Toggle **"Workouts automatisch
-  teilen"** dauerhaft (rückwirkend + alle zukünftigen); bereits geteilte
-  Workouts werden nie doppelt gepostet
-- ✅ Feed-Filter nach Typ (Alle/Text/Workout/Foto) und per Klick auf einen
-  Namen nach Person
-- ✅ Reaktionen auf Posts (👍❤️💪🔥, eine pro Person)
-- ✅ Anstupsen: Mitglieder gegenseitig per Push erinnern (rate-limited)
-- ✅ **Daily Challenges**: Leader aktiviert bis zu 4 Themen aus einem
-  Katalog (`ChallengeTemplate`), jeder setzt sein eigenes Reps-Ziel
-- ✅ **Yammer-System** (Anti-Sandbagging): andere Mitglieder können ein zu
-  niedriges Ziel anfechten; ab 75% Zustimmung der *übrigen* Mitglieder
-  (Ziel-Owner zählt nicht mit) ist das Ziel ungültig, bis es angehoben wird
-- ✅ Ausführung mit Live-Timer + Schnell-Buttons (+1/+2/+5/+10), automatischer
-  Abschluss bei Zielerreichung, Tages-Grenze in **deutscher Zeit**
-  (Europe/Berlin, nicht UTC)
-- ✅ Post-Challenge-Bewertung (5 Smileys) passt das Ziel fürs *nächste* Mal
-  an (±10%/±5%/0%)
-- ✅ **Wetteinsatz**: optionaler Freitext beim Aktivieren einer Daily
-  Challenge (z.B. "Verlierer macht 20 Liegestütze"), für alle sichtbar
-- ✅ **Challenge-Verlauf**: rückwirkend pro Mitglied sehen, an welchem Tag
-  eine Challenge geschafft, aufgegeben oder gar nicht versucht wurde,
-  inkl. Prozentanzeige bei nur teilweise geschafften Versuchen
-- ✅ **Gruppen-Analytics**: Gruppen-Volumen (Sätze/Tag, 30 Tage), Aktivität pro Mitglied sowie Klettertage
-  (wie oft und wann als Gruppe, mit Ort/Uhrzeit/Teilnehmerzahl) und Teilnahme pro Mitglied - eigener Tab
-- ✅ **Kollaborative Gruppenziele**: Leader legt ein gemeinsames Ziel mit
-  Ziel-Wert/Einheit (Enum: Wiederholungen/Sekunden/km/Custom, kein
-  Freitext)/optionaler Frist an; Fortschrittsbalken zeigt die Summe der
-  ganzen Gruppe plus Beitrag pro Person; Titel, Werte und Verknüpfung
-  bleiben für den Leader jederzeit nachträglich bearbeitbar, nicht nur löschbar
-- ✅ **Automatisches Auffüllen von Gruppenzielen**: ein Ziel kann optional
-  mit mehreren Übungen verknüpft werden (`Exercise[]`-Objekte, kein String) -
-  z.B. "3000 Liegestütze" zählt Liegestütze + Diamond + Pike Push-ups zusammen.
-  Danach tragen normale Workouts *und* abgeschlossene/abgebrochene Daily
-  Challenges mit einer der verknüpften Übungen automatisch bei (inkl. rückwirkendem
-  Nachtragen der Vergangenheit beim Verknüpfen); manuelles Eintragen bleibt
-  nur für nicht verknüpfte Ziele (z.B. km) möglich
-- ✅ **Einführungs-Tutorial**: 12-schrittige Tour direkt nach der Registrierung
-  (einmalig, mit Überspringen; in den Einstellungen wiederholbar)
-- ✅ **Daily Challenges zählen mit Workouts**: Wiederholungen der Challenge-Übung
-  aus heutigen Workouts (ohne Aufwärmsätze) zählen automatisch zum Tagesversuch -
-  100 Liegestütze im Workout schließen die 100-Liegestütze-Challenge ab. Bearbeiten
-  oder Löschen des Workouts rechnet nach; Gruppenziele zählen nichts doppelt
+### Groups
+- ✅ Create, join via invite link
+- ✅ Roles: **Leader** (creator) / **Member** - anyone can invite, only the
+  Leader can kick; members can leave on their own; leadership can be
+  transferred (moves the real ownership assignment too, not just the
+  role); group name editable by the Leader
+- ✅ Feed: text posts, photos (local Docker volume), workouts shared
+  individually via the composer or permanently via the **"Auto-share
+  workouts"** toggle (retroactive + all future ones); an already-shared
+  workout is never posted twice
+- ✅ Feed filter by type (All/Text/Workout/Photo) and by clicking a name to
+  filter by person
+- ✅ Reactions on posts (👍❤️💪🔥, one per person)
+- ✅ Nudge: remind fellow members via push notification (rate-limited)
+- ✅ **Daily Challenges**: the Leader activates up to 4 themes from a
+  catalog (`ChallengeTemplate`), everyone sets their own rep target
+- ✅ **Yammer system** (anti-sandbagging): other members can challenge a
+  target they think is too low; once 75% of the *remaining* members agree
+  (the goal owner doesn't count), the target is invalidated until it's
+  raised
+- ✅ Execution with a live timer + quick buttons (+1/+2/+5/+10),
+  auto-completes once the target is reached, daily boundary in **German
+  time** (Europe/Berlin, not UTC)
+- ✅ Post-challenge rating (5 smileys) adjusts the target for *next* time
+  (±10%/±5%/0%)
+- ✅ **Stakes**: optional free text when activating a Daily Challenge (e.g.
+  "loser does 20 push-ups"), visible to everyone
+- ✅ **Challenge history**: see retroactively, per member, which days a
+  challenge was completed, abandoned, or never attempted, including a
+  percentage for partially-completed attempts
+- ✅ **Group analytics**: group volume (sets/day, 30 days), activity per
+  member, plus climbing days (how often and when as a group, with
+  location/time/attendee count) and attendance per member - its own tab
+- ✅ **Collaborative group goals**: the Leader sets up a shared goal with a
+  target value/unit (enum: reps/seconds/km/custom, not free text)/optional
+  deadline; a progress bar shows the whole group's total plus each
+  person's contribution; title, values, and linked exercises stay
+  editable by the Leader at any time afterward, not just deletable
+- ✅ **Automatic group-goal contributions**: a goal can optionally be
+  linked to multiple exercises (`Exercise[]` objects, not a string) - e.g.
+  "3000 push-ups" counts push-ups + diamond + pike push-ups together.
+  From then on, regular workouts *and* completed/abandoned Daily
+  Challenges using any linked exercise contribute automatically
+  (including a retroactive backfill of past history when linking);
+  manual entry only remains possible for goals with no linked exercise
+  (e.g. km)
+- ✅ **Onboarding tutorial**: a 12-step tour right after registration
+  (once, skippable; repeatable from Settings)
+- ✅ **Daily Challenges count workout reps too**: reps of the challenge's
+  exercise from today's workouts (excluding warm-up sets) automatically
+  count toward today's attempt - 100 push-ups logged in a workout
+  complete the 100-push-ups challenge. Editing or deleting the workout
+  recalculates it; group goals never double-count
 
-### Bedienung & Design
-- ✅ Dark-first Theme mit Light-Mode-Toggle (next-themes)
-- ✅ shadcn/ui, CSS-only Enter-Animationen (bewusst kein JS-Animation-Lauf,
-  siehe Design-Entscheidungen unten)
-- ✅ PWA: installierbar ("Zum Homescreen hinzufügen") mit eigenem Icon
-- ✅ **Push-Benachrichtigungen** (Web Push, kein Drittanbieter/Firebase):
-  Toggle in den Einstellungen, benachrichtigt andere Gruppenmitglieder bei
-  neuem Workout-Post oder geschaffter Daily Challenge - optional, siehe
-  `.env.example` (`VAPID_*`); ohne die ist der Toggle einfach ausgeblendet
+### UX & Design
+- ✅ Dark-first theme with a light-mode toggle (next-themes)
+- ✅ shadcn/ui, CSS-only enter animations (deliberately no JS animation
+  runtime - see design decisions below)
+- ✅ PWA: installable ("Add to Home Screen") with its own icon
+- ✅ **Push notifications** (Web Push, no third party/Firebase): a
+  Settings toggle, notifies other group members on a new workout post or
+  a completed Daily Challenge - optional, see `.env.example`
+  (`VAPID_*`); without those set, the toggle is simply hidden
 
 ### Security & Ops
-- ✅ Strukturiertes JSON-Logging (`lib/logger.ts`, sichtbar via
-  `docker compose logs app`) + eigene Error-Boundaries
-- ✅ Automatische DB-Migrationen beim Start (`migrate`-Service in
+- ✅ Structured JSON logging (`lib/logger.ts`, visible via
+  `docker compose logs app`) + custom error boundaries
+- ✅ Automatic DB migrations on startup (`migrate` service in
   `docker-compose.yml`)
-- ✅ Healthcheck (`/api/health`) in Dockerfile + Compose eingebunden
-- ✅ Prometheus-Metriken (`/api/metrics`, hinter `METRICS_TOKEN`)
-- ✅ Backup/Restore-Scripts (`scripts/backup.sh`, `scripts/restore.sh`)
-- ✅ Non-root Container-User
-- ✅ S3/MinIO-Storage-Backend für Uploads (optional, siehe `.env.example`)
-- ⏳ Externes Monitoring/Alerting (Sentry o.ä.) - braucht einen eigenen
-  Account, nicht Teil des Projekts
-- ❓ Mobile/Cross-Browser-UI ist nicht in einem echten Browser getestet -
-  wenn du etwas Kaputtes findest, bitte melden
+- ✅ Healthcheck (`/api/health`) wired into the Dockerfile + Compose
+- ✅ Prometheus metrics (`/api/metrics`, behind `METRICS_TOKEN`)
+- ✅ Backup/restore scripts (`scripts/backup.sh`, `scripts/restore.sh`)
+- ✅ Non-root container user
+- ✅ S3/MinIO storage backend for uploads (optional, see `.env.example`)
+- ⏳ External monitoring/alerting (Sentry or similar) - needs your own
+  account, not part of this project
+- ❓ Mobile/cross-browser UI hasn't been tested in a real browser - if you
+  find something broken, please report it
 
-## API (für eigene Scripts)
+## API (for your own scripts)
 
-API-Keys werden in Settings erstellt (`ascend_...`, nur einmal sichtbar).
-Damit gegen `/api/v1/*` authentifizieren:
+API keys are created in Settings (`ascend_...`, shown only once). Use one
+to authenticate against `/api/v1/*`:
 
 ```bash
 curl -H "Authorization: Bearer ascend_..." https://your-instance/api/v1/exercises
 ```
 
-Jeder Key hat einen Scope: **nur lesend** (Default bei neuen Keys) oder
-**Lese-/Schreibzugriff**, beim Erstellen wählbar. Ein read-only-Key
-bekommt auf jede schreibende Route (POST/PATCH/DELETE, in der Tabelle
-unten markiert) `403`. Bereits bestehende Keys von vor diesem Feature
-bleiben Lese-/Schreibzugriff.
+Every key has a scope: **read-only** (the default for new keys) or
+**read/write**, chosen at creation time. A read-only key gets `403` on
+every writing route (POST/PATCH/DELETE, marked in the table below). Keys
+that already existed before this feature shipped stay read/write.
 
-| Endpoint | Methode | Beschreibung |
+| Endpoint | Method | Description |
 |---|---|---|
-| `/api/v1/me` | GET | Eigenes Profil (Name, Avatar, Gewichtseinheit, aktuelles Körpergewicht) |
-| `/api/v1/today` | GET | Workout-Brain-Empfehlung: was heute trainiert werden sollte (`?lang=de\|en`, Default `de`) |
-| `/api/v1/calendar` | GET | Eigene Workouts + Gruppen-Meetups im Zeitraum (`?from=`/`?to=`, `YYYY-MM-DD`, Default: heute-7 bis heute+30) |
-| `/api/v1/streak` | GET | Aktuelle Trainings-Streak (Tage) |
-| `/api/v1/daily-challenges` | GET | Heutiger Stand jeder aktiven Daily-Challenge über alle Gruppen |
-| `/api/v1/quests` | GET | Eigene Sidequests inkl. Schritte |
-| `/api/v1/climbing-sends` | GET | Letzte geloggte Sends (`?limit=`, max. 200, Default 50) |
-| `/api/v1/climbing-sends` | POST 🔒 | Send loggen (`{style, grade, attempts?, count?, date?}`) |
-| `/api/v1/group-goals` | GET | Fortschritt aller Gruppenziele über alle eigenen Gruppen (read-only) |
-| `/api/v1/balance-goals` | GET | Ziel- vs. Ist-Trainingsanteil pro Fokus (Push/Pull/Beine/Core/Grip) |
-| `/api/v1/balance-goals` | PATCH 🔒 | Balance-Ziele setzen (`{goals: [{focus, targetPercent}]}`) |
-| `/api/v1/injuries` | GET | Aktive Verletzungen |
-| `/api/v1/muscle-preferences` | GET | Muskel-Wunschliste (0 = passt, 1 = mehr, 2 = viel mehr) |
-| `/api/v1/workout-templates` | GET | Eigene Workout-Vorlagen inkl. Übungen |
-| `/api/v1/exercises` | GET | Sichtbare Übungen (eigene + Default + Gruppen) |
-| `/api/v1/exercises` | POST 🔒 | Eigene Übung anlegen (gleiche Validierung wie in der App) |
-| `/api/v1/workouts` | GET | Eigene Workouts (`?limit=`, max. 200, Default 50) |
-| `/api/v1/workouts` | POST 🔒 | Workout anlegen (`{date?, notes?, sets: [{exerciseId, reps?, weightKg?, durationSec?, setType?, notes?}]}`, `date` als `YYYY-MM-DD`, Zukunftsdatum → 400) |
-| `/api/v1/workouts/[id]` | GET/PATCH 🔒/DELETE 🔒 | Einzelnes Workout lesen/bearbeiten/löschen (`date` wie bei POST) |
-| `/api/v1/groups` | GET | Eigene Gruppen (id, name, Rolle) |
-| `/api/v1/personal-records` | GET | Aktuelle persönliche Bestleistungen pro Übung |
-| `/api/v1/body-weight` | GET | Letzte Körpergewicht-Einträge (`?limit=`, max. 200, Default 30) |
-| `/api/v1/body-weight` | POST 🔒 | Körpergewicht eintragen (`{weightKg, date?}`, ein Eintrag pro Tag - erneutes Posten am selben Tag korrigiert) |
+| `/api/v1/me` | GET | Your own profile (name, avatar, weight unit, current body weight) |
+| `/api/v1/today` | GET | Workout Brain recommendation: what to train today (`?lang=de\|en`, default `de`) |
+| `/api/v1/calendar` | GET | Your workouts + group meetups within a range (`?from=`/`?to=`, `YYYY-MM-DD`, default: today-7 to today+30) |
+| `/api/v1/streak` | GET | Current training streak (days) |
+| `/api/v1/daily-challenges` | GET | Today's status of every active daily challenge across all groups |
+| `/api/v1/quests` | GET | Your sidequests including steps |
+| `/api/v1/climbing-sends` | GET | Most recent logged sends (`?limit=`, max 200, default 50) |
+| `/api/v1/climbing-sends` | POST 🔒 | Log a send (`{style, grade, attempts?, count?, date?}`) |
+| `/api/v1/group-goals` | GET | Progress on all group goals across all your groups (read-only) |
+| `/api/v1/balance-goals` | GET | Target vs. actual training share per focus (Push/Pull/Legs/Core/Grip) |
+| `/api/v1/balance-goals` | PATCH 🔒 | Set balance targets (`{goals: [{focus, targetPercent}]}`) |
+| `/api/v1/injuries` | GET | Active injuries |
+| `/api/v1/muscle-preferences` | GET | Muscle wishlist (0 = fine as-is, 1 = more, 2 = much more) |
+| `/api/v1/workout-templates` | GET | Your workout templates including exercises |
+| `/api/v1/exercises` | GET | Visible exercises (your own + defaults + groups) |
+| `/api/v1/exercises` | POST 🔒 | Create a custom exercise (same validation as in the app) |
+| `/api/v1/workouts` | GET | Your workouts (`?limit=`, max 200, default 50) |
+| `/api/v1/workouts` | POST 🔒 | Create a workout (`{date?, notes?, sets: [{exerciseId, reps?, weightKg?, durationSec?, setType?, notes?}]}`, `date` as `YYYY-MM-DD`, a future date → 400) |
+| `/api/v1/workouts/[id]` | GET/PATCH 🔒/DELETE 🔒 | Read/edit/delete a single workout (`date` as in POST) |
+| `/api/v1/groups` | GET | Your groups (id, name, role) |
+| `/api/v1/personal-records` | GET | Current personal records per exercise |
+| `/api/v1/body-weight` | GET | Most recent body-weight entries (`?limit=`, max 200, default 30) |
+| `/api/v1/body-weight` | POST 🔒 | Log body weight (`{weightKg, date?}`, one entry per day - posting again the same day corrects it) |
 
-🔒 = braucht einen Key mit Lese-/Schreibzugriff, ein read-only-Key bekommt hier `403`.
+🔒 = needs a key with read/write access; a read-only key gets `403` here.
 
-Bewusst schlank gehalten - kein Ersatz für die interne API, sondern eine
-stabile Fläche für eigene Automationen. Schreibende `/api/v1/*`-Routen
-lösen keine PR-/Gruppenziel-Nebeneffekte aus - mit einer Ausnahme:
-`/api/v1/workouts/[id]` PATCH/DELETE räumt automatisch verwaiste
-Gruppenziel-Beiträge auf, falls das Workout ursprünglich über die App
-geloggt wurde (sonst würde der Gruppenziel-Fortschritt nie mehr stimmen).
+Deliberately kept lean - not a replacement for the internal API, but a
+stable surface for your own automations. Writing `/api/v1/*` routes don't
+trigger PR/group-goal side effects - with one exception:
+`/api/v1/workouts/[id]` PATCH/DELETE automatically cleans up orphaned
+group-goal contributions if the workout was originally logged through the
+app (otherwise group-goal progress would never be accurate again).
 
-### Beispiel: Home Assistant
+### Example: Home Assistant
 
-REST-Sensor für die Trainingsempfehlung von heute:
+A REST sensor for today's training recommendation:
 
 ```yaml
 sensor:
@@ -322,21 +335,21 @@ sensor:
       - suggestedFocus
 ```
 
-## Datenmodell
+## Data model
 
-Siehe `prisma/schema.prisma`. Wichtige Design-Entscheidungen:
+See `prisma/schema.prisma`. Key design decisions:
 
-- **Bodyweight-Historie statt Einzelwert**: `BodyWeightEntry` pro Tag, damit
-  alte Workouts gegen das damalige Gewicht bewertet werden.
-- **Deutsche Kalendertage als String-Key**: Daily-Challenge- und
-  Boulder-Tage nutzen `YYYY-MM-DD` (Europe/Berlin) statt UTC-`DateTime`, um
-  Zeitzonen-Bugs an der Tagesgrenze zu vermeiden (`lib/german-time.ts`).
-- **Yammer-Stimmrecht**: die Berechtigung "75% der übrigen Mitglieder" wird
-  serverseitig bei jedem Vote neu berechnet, nicht als Snapshot gespeichert.
-- **Account-Löschung kaskadiert**: löschst du deinen Account und bist noch
-  Leader einer Gruppe, wird die Gruppe komplett mitgelöscht - die UI warnt
-  vorher explizit. Es gibt eine Leitungs-Übertragung
-  (`POST /api/groups/[groupId]/transfer-leadership`, verschiebt sowohl die
-  sichtbare Leader-Rolle als auch `Group.ownerId`, das Feld, das beim
-  Löschen tatsächlich kaskadiert) - übergibst du die Leitung vorher an ein
-  anderes Mitglied, bleibt die Gruppe beim Löschen deines Accounts erhalten.
+- **Body-weight history instead of a single value**: `BodyWeightEntry` per
+  day, so old workouts are evaluated against the weight you had back then.
+- **German calendar days as a string key**: daily-challenge and boulder
+  days use `YYYY-MM-DD` (Europe/Berlin) instead of a UTC `DateTime`, to
+  avoid timezone bugs at the day boundary (`lib/german-time.ts`).
+- **Yammer voting threshold**: the "75% of the remaining members" check is
+  recalculated server-side on every vote, not stored as a snapshot.
+- **Account deletion cascades**: delete your account while you're still a
+  group's Leader, and the group is deleted along with it - the UI warns
+  explicitly beforehand. There's a leadership transfer
+  (`POST /api/groups/[groupId]/transfer-leadership`, moves both the
+  visible Leader role and `Group.ownerId`, the field that actually
+  cascades on deletion) - transfer leadership to another member first,
+  and the group survives deleting your account.

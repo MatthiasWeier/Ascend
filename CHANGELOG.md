@@ -8,588 +8,661 @@ nothing is guaranteed stable yet.
 ## [0.58.2] - 2026-11-18
 
 ### Fixed
-- **Workout-Datumsfeld ließ sich trotz `max`-Attribut auf ein
-  Zukunftsdatum stellen**, ohne Fehlermeldung, bis man tatsächlich
-  abgeschickt hat (der Server hat das Datum schon immer korrekt
-  abgelehnt - jetzt verhindert das Feld die Auswahl selbst).
+- **The workout date field could still be set to a future date despite
+  the `max` attribute**, with no error shown until you actually tried to
+  submit (the server has always correctly rejected it - now the field
+  itself prevents picking it).
 
 ## [0.58.1] - 2026-11-18
 
 ### Fixed
-- **README/UI: veraltete Aussage zur Gruppen-Leitung korrigiert.** Sowohl
-  die README als auch der Account-Löschen-Dialog behaupteten, es gäbe
-  keine Möglichkeit, die Gruppenleitung zu übertragen - die Funktion
-  existiert längst (`POST /api/groups/[groupId]/transfer-leadership`).
-  Beide Texte korrigiert; der Dialog weist jetzt korrekt darauf hin, die
-  Leitung vorher zu übergeben, statt das fälschlich für unmöglich zu
-  erklären.
-- Kleinere README-Korrekturen: Grammatikfehler ("löscht du" ->
-  "löschst du"), Legende um das bereits genutzte ❓-Symbol
-  ("implementiert, aber nicht manuell getestet") ergänzt.
+- **README/UI: fixed an outdated claim about group leadership transfer.**
+  Both the README and the account-deletion dialog claimed there was no way
+  to transfer a group's leadership - that feature has existed for a while
+  (`POST /api/groups/[groupId]/transfer-leadership`). Both texts corrected;
+  the dialog now correctly points out that you should transfer leadership
+  first, instead of incorrectly claiming it's impossible.
+- Minor README fixes: a German grammar error, plus the already-used ❓
+  symbol ("implemented but not manually tested") added to the legend.
 
 ## [0.58.0] - 2026-11-18
 
 ### Changed
-- **BREAKING: `/api/v1/workouts` und `/api/v1/workouts/[id]` - `date`-Format
-  geaendert.** Akzeptierte bisher ein volles ISO-Datetime und lehnte nie
-  ein Zukunftsdatum ab - inkonsistent zur internen `/api/workouts`-API,
-  die schon immer einen Berlin-Datumsschluessel (`YYYY-MM-DD`) nutzt und
-  Zukunftsdatums ablehnt. Jetzt angeglichen: `date` ist `YYYY-MM-DD`, ein
-  Zukunftsdatum gibt `400`. Bestehende Scripts, die hier ein
-  ISO-Datetime schicken, muessen auf das neue Format umgestellt werden.
+- **BREAKING: `/api/v1/workouts` and `/api/v1/workouts/[id]` - `date`
+  format changed.** Used to accept a full ISO datetime and never rejected
+  a future date - inconsistent with the internal `/api/workouts` API,
+  which has always used a Berlin date key (`YYYY-MM-DD`) and rejects
+  future dates. Now aligned: `date` is `YYYY-MM-DD`, a future date returns
+  `400`. Existing scripts sending an ISO datetime here need to switch to
+  the new format.
 
 ### Added
-- **API-Key-Scopes**: beim Erstellen eines Keys waehlbar zwischen "nur
-  lesend" (neuer Default) und "Lese-/Schreibzugriff". Ein read-only-Key
-  bekommt auf jede schreibende `/api/v1/*`-Route (POST/PATCH/DELETE)
-  `403`. Bereits bestehende Keys bleiben Lese-/Schreibzugriff, damit
-  nichts bricht, das sich schon auf Schreibrechte verlaesst.
+- **API key scopes**: choosable when creating a key, between "read-only"
+  (new default) and "read/write". A read-only key gets `403` on every
+  writing `/api/v1/*` route (POST/PATCH/DELETE). Existing keys stay
+  read/write, so nothing that already relies on write access breaks.
 
 ## [0.57.1] - 2026-11-16
 
 ### Added
-- **ICS-Kalender-Feed enthaelt jetzt auch Gruppen-Termine**: bisher nur
-  eigene Workouts, jetzt zusaetzlich Klettern/Gym/Sonstiges-Meetups aus
-  allen eigenen Gruppen (mit Ort/Zusagenzahl, als Ganztags- oder
-  Uhrzeit-Termin). Gedacht fuer die Kalender-Integration in externen
-  Tools wie Home Assistant.
+- **The ICS calendar feed now also includes group meetups**: previously
+  just your own workouts, now also climbing/gym/other meetups from all
+  your groups (with location/RSVP count, as an all-day or timed entry).
+  Meant for calendar integration in external tools like Home Assistant.
 
 ## [0.57.0] - 2026-11-16
 
 ### Added
-- **REST-API: deutlich mehr Endpunkte**: `/api/v1/me`, `/api/v1/streak`,
-  `/api/v1/daily-challenges` (heutiger Stand ueber alle Gruppen),
-  `/api/v1/quests`, `/api/v1/climbing-sends` (GET/POST),
-  `/api/v1/group-goals` (Fortschritt, read-only), `/api/v1/injuries`,
+- **REST API: significantly more endpoints**: `/api/v1/me`,
+  `/api/v1/streak`, `/api/v1/daily-challenges` (today's status across all
+  groups), `/api/v1/quests`, `/api/v1/climbing-sends` (GET/POST),
+  `/api/v1/group-goals` (progress, read-only), `/api/v1/injuries`,
   `/api/v1/muscle-preferences`, `/api/v1/workout-templates`,
-  `/api/v1/balance-goals` PATCH (Ziele setzen), `/api/v1/exercises` POST
-  (eigene Uebung anlegen) und `/api/v1/workouts/[id]` GET/PATCH/DELETE fuer
-  einzelne Workouts. Siehe README fuer die vollstaendige Liste.
+  `/api/v1/balance-goals` PATCH (set goals), `/api/v1/exercises` POST
+  (create your own exercise), and `/api/v1/workouts/[id]`
+  GET/PATCH/DELETE for individual workouts. See README for the full list.
 
 ## [0.56.0] - 2026-11-16
 
 ### Added
-- **REST-API erweitert**: `/api/v1/today` (Workout-Brain-Empfehlung, was
-  heute trainiert werden sollte, `?lang=de|en`), `/api/v1/calendar` (eigene
-  Workouts + Gruppen-Meetups als JSON, `?from=`/`?to=`),
-  `/api/v1/balance-goals` (Ziel- vs. Ist-Prozent pro Fokus), `/api/v1/groups`,
-  `/api/v1/personal-records` und `/api/v1/body-weight` (GET/POST, ein
-  Eintrag pro Tag). Gedacht fuer eigene Automationen, z.B. Home Assistant.
-  Siehe README.
+- **REST API expanded**: `/api/v1/today` (Workout Brain recommendation,
+  what to train today, `?lang=de|en`), `/api/v1/calendar` (own workouts +
+  group meetups as JSON, `?from=`/`?to=`), `/api/v1/balance-goals`
+  (target vs. actual percent per focus), `/api/v1/groups`,
+  `/api/v1/personal-records`, and `/api/v1/body-weight` (GET/POST, one
+  entry per day). Meant for your own automations, e.g. Home Assistant.
+  See README.
 
 ## [0.55.1] - 2026-10-24
 
 ### Added
-- **Workouts rückwirkend eintragen**: beim Eintragen (und nachträglich beim Bearbeiten) lässt sich das Datum
-  frei wählen, nicht mehr nur "jetzt" - für alle, die erst eintragen, wenn sie Zeit haben, nicht während des
-  Trainings. Zukünftige Datums sind gesperrt; Tages-Challenges/Gruppenziele rechnen weiterhin nur für den
-  tatsächlich gewählten Tag mit.
+- **Log workouts retroactively**: when logging (and later editing), the
+  date can now be freely chosen instead of only "now" - for anyone who
+  only logs once they have time, not during the workout. Future dates are
+  blocked; daily challenges/group goals still only count toward the day
+  actually chosen.
 
 ## [0.55.0] - 2026-09-30
 
 ### Fixed
-- **Workout Brain / Balance-Ziele rechneten Bodyweight-Übungen praktisch auf 0**: die Trainingslast pro Fokus
-  (Push/Pull/Beine/Core/Grip) wurde als reps*Gewicht berechnet, aber bei Übungen ohne Zusatzgewicht (Liegestütze,
-  Klimmzüge, ...) ist `weightKg` nur das *zusätzliche* Gewicht, oft 0 - wer viele Liegestütze macht, sah trotzdem
-  nur ~1% "Push". Rechnet jetzt wie PRs/1RM das Körpergewicht zum Zeitpunkt des Workouts mit ein.
+- **Workout Brain / balance goals counted bodyweight exercises as
+  practically zero**: training load per focus (Push/Pull/Legs/Core/Grip)
+  was computed as reps*weight, but for exercises with no added weight
+  (push-ups, pull-ups, ...), `weightKg` is only the *additional* weight,
+  often 0 - someone doing lots of push-ups still saw only ~1% "Push".
+  Now factors in bodyweight at the time of the workout, same as
+  PRs/1RM already do.
 
 ### Added
-- **Gruppenziele bearbeiten** (Leader): Titel, Ziel-Wert, Einheit, Start/Frist und verknüpfte Übungen sind jetzt
-  nachträglich änderbar, nicht mehr nur löschbar.
-- **Mehrere Übungen pro Gruppenziel verknüpfen**: "3000 Liegestütze im September" kann jetzt Liegestütze, Diamond
-  Push-ups und Pike Push-ups zusammen zählen, statt nur eine exakte Übung.
-- **Gruppen-Analytics: Klettertage** - wie oft und wann die Gruppe klettern war (Datum, Uhrzeit, Ort, Teilnehmerzahl)
-  sowie wie oft jedes Mitglied zugesagt hatte, als Balkendiagramm.
+- **Edit group goals** (Leader): title, target value, unit, start/deadline,
+  and linked exercises can now be changed after the fact, not just deleted.
+- **Link multiple exercises to one group goal**: "3000 push-ups in
+  September" can now count push-ups, diamond push-ups, and pike push-ups
+  together, instead of only one exact exercise.
+- **Group analytics: climbing days** - how often and when the group went
+  climbing (date, time, location, attendee count), plus how often each
+  member RSVP'd, as a bar chart.
 
 ## [0.54.1] - 2026-09-28
 
 ### Fixed
-- Die Tab-Leiste in der Gruppe (Feed, Challenges, Ziele, Sidequests, ...) ließ sich auf dem Handy nicht
-  wischen; sie sitzt jetzt in einem eigenen horizontal scrollbaren Container (bis zum Bildschirmrand).
+- The tab bar inside a group (Feed, Challenges, Goals, Sidequests, ...)
+  couldn't be swiped on mobile; it now sits in its own horizontally
+  scrollable container (edge to edge).
 
 ## [0.54.0] - 2026-09-28
 
 ### Added
-- **Sidequests** (neuer Menüpunkt "Quests"): persönliche Langzeitziele mit selbst gewähltem Zieldatum, z. B.
-  "Handstand lernen bis Ende 2026". Optional mit eigener **Progression** - Zwischenschritte (Pike Push-ups →
-  Beine an der Wand → ... → Handstand-Hold), die nur du festlegst (nichts wird vorgeschlagen), abhakbar und
-  umsortierbar, mit Fortschrittsbalken. Abschließen/Wieder öffnen/Bearbeiten/Löschen.
-- **Erinnerungen** pro Sidequest um 9 Uhr: automatisch je nach Dauer (bis 2 Wochen alle 2 Tage, bis 2 Monate
-  wöchentlich, bis ~6 Monate alle 2 Wochen, darüber monatlich) oder fest (täglich / alle 3 Tage / wöchentlich /
-  alle 2 Wochen / monatlich / nie), dazu eine Erinnerung am Tag der Frist. Läuft im bestehenden Scheduler.
-- **Gruppen-Tab "Sidequests"**: die Gruppe sieht die geteilten Sidequests ihrer Mitglieder inkl. Fortschritt;
-  pro Sidequest abschaltbar ("Für meine Gruppen sichtbar"). Beim Abschließen bekommt die Gruppe eine
-  Benachrichtigung. Sidequests sind auch im JSON-Datenexport enthalten.
+- **Sidequests** (new "Quests" menu item): personal long-term goals with
+  a self-chosen target date, e.g. "learn a handstand by end of 2026".
+  Optionally with your own **progression** - intermediate steps (pike
+  push-ups → feet on the wall → ... → handstand hold) that only you
+  define (nothing is ever suggested), checkable and reorderable, with a
+  progress bar. Complete/reopen/edit/delete.
+- **Reminders** per sidequest at 9am: automatic based on duration (every
+  2 days up to 2 weeks out, weekly up to 2 months, every 2 weeks up to
+  ~6 months, monthly beyond that) or fixed (daily / every 3 days / weekly
+  / every 2 weeks / monthly / never), plus a reminder on the deadline day.
+  Runs in the existing scheduler.
+- **Group tab "Sidequests"**: the group can see its members' shared
+  sidequests including progress; toggleable per sidequest ("visible to my
+  groups"). The group gets notified when one is completed. Sidequests are
+  also included in the JSON data export.
 
 ## [0.53.0] - 2026-09-22
 
 ### Added
-- **Instanz-Einstellungen** (Admin-Seite, nur für Admins): zwei neue Schalter, wirken sofort ohne Redeploy.
-  - **Rate Limits**: schaltet Login-Lockout, Registrierungs-, Kommentar-, Anstups-, Foto-Upload- und
-    Challenge-Rep-Limits als Ganzes an/aus (Standard: aus, wie bisher). Grenzwerte weiterhin per Env-Var
-    tunbar, siehe `.env.example`.
-  - **Offene Registrierung**: ersetzt das bisherige `INVITE_ONLY`-Env-Var - schließt/öffnet die Registrierung
-    zur Laufzeit statt nur beim Deploy.
+- **Instance settings** (admin page, admins only): two new switches, take
+  effect immediately with no redeploy.
+  - **Rate limits**: toggles login lockout, registration, comment, nudge,
+    photo-upload, and challenge-rep limits as a whole on/off (default:
+    off, as before). Thresholds remain tunable via env vars, see
+    `.env.example`.
+  - **Open registration**: replaces the previous `INVITE_ONLY` env var -
+    closes/opens registration at runtime instead of only at deploy time.
 
 ## [0.52.0] - 2026-09-22
 
 ### Security
-- Added baseline HTTP hardening headers (`Strict-Transport-Security`, `X-Content-Type-Options: nosniff`,
-  `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`) to every response. Prompted by a
-  security review; a Content-Security-Policy was deliberately left out for now since a wrong one breaks
-  pages silently rather than loudly and deserves its own browser-tested change.
+- Added baseline HTTP hardening headers (`Strict-Transport-Security`,
+  `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
+  `Referrer-Policy`, `Permissions-Policy`) to every response. Prompted by
+  a security review; a Content-Security-Policy was deliberately left out
+  for now since a wrong one breaks pages silently rather than loudly and
+  deserves its own browser-tested change.
 
 ## [0.51.0] - 2026-09-22
 
 ### Added
-- **Termine sind jetzt für jede Aktivität** (Klettern, Gym, Sonstiges mit freiem Titel), nicht mehr nur
-  Klettertage - beim Planen wählt man die Art, optional einen Titel ("Beintag"); der Fokus-Picker zeigt passende
-  Tags (Slab/Power/Technik/Ausdauer/Kraft/Mental fürs Klettern, Push/Pull/Beine/Core/Grip fürs Gym). Mehrere
-  Termine können denselben Tag teilen (z.B. Gym morgens, Klettern abends).
-- **Änderungen vorschlagen**: wer einen Termin nicht selbst geplant hat, kann eine Änderung an Datum/Uhrzeit/Ort
-  vorschlagen (mit Notiz) statt nur zuzusagen oder wegzubleiben. Wer geplant hat, sieht die Vorschläge und nimmt
-  sie an (übernimmt die Änderung sofort, informiert die Gruppe) oder lehnt ab.
-- **Workout-Erinnerungen** (neue Settings-Karte): eigene wöchentlich wiederkehrende Trainingszeiten unabhängig
-  von Gruppen ("Montag 13 Uhr, Mittwoch 18 Uhr", mit optionalem Label, einzeln an/ausschaltbar) sowie ein
-  Vorlauf für zugesagte Gruppentermine (nie / 1 Stunde vorher / morgens / am Vorabend). Beides läuft über einen
-  neuen In-Process-Scheduler (`lib/scheduler.ts`, per Next.js-Instrumentation-Hook beim Serverstart gestartet,
-  prüft minütlich) - kein zusätzlicher Cron-Dienst nötig.
+- **Meetups now exist for every activity** (climbing, gym, other with a
+  free-text title), not just climbing days - when planning one, you pick
+  the type and optionally a title ("leg day"); the focus picker shows
+  matching tags (Slab/Power/Technique/Endurance/Strength/Mental for
+  climbing, Push/Pull/Legs/Core/Grip for gym). Multiple meetups can share
+  the same day (e.g. gym in the morning, climbing in the evening).
+- **Suggest changes**: anyone who didn't plan a meetup themselves can
+  suggest a change to date/time/location (with a note) instead of only
+  accepting or skipping it. Whoever planned it sees the suggestions and
+  accepts them (applies the change immediately, notifies the group) or
+  declines.
+- **Workout reminders** (new settings card): your own weekly recurring
+  training times, independent of groups ("Monday 1pm, Wednesday 6pm",
+  with an optional label, individually toggleable), plus a lead time for
+  group meetups you've RSVP'd to (never / 1 hour before / same-day
+  morning / evening before). Both run through a new in-process scheduler
+  (`lib/scheduler.ts`, started via a Next.js instrumentation hook at
+  server start, checks every minute) - no extra cron service needed.
 
 ## [0.50.0] - 2026-09-22
 
 ### Added
-- **Klettertage planen und Kumpels einladen**: neuer Gruppen-Tab "Klettern" - für heute oder später einen
-  Klettertag anlegen (Uhrzeit, Ort, eigenes Ziel, Trainingsfokus wie Slab/Power/Technik/Ausdauer/Kraft/Mental -
-  alles optional außer dem Datum). Die Gruppe wird benachrichtigt. Mitglieder sehen, wer kommt, und sagen mit
-  eigenem optionalem Ziel/Fokus zu oder ab; wer geplant hat, kann Zeit/Ort ändern oder den Tag absagen.
-  Der persönliche Kletter-Kalender (Analytics > Klettern) markiert geplante Tage grün mit einem Berg-Symbol über
-  alle Gruppen hinweg - ein Klick auf einen zukünftigen Tag öffnet die Zu-/Absage-Ansicht statt des
-  Boulder-Log-Dialogs (der bleibt für heute/vergangene Tage wie gehabt); ohne geplanten Tag lässt sich von dort
-  direkt einer anlegen (mit Gruppenauswahl, falls man in mehreren ist).
-- **Bewertung fehlt nicht mehr, wenn eine Challenge übers Workout geschafft wird**: schließt man eine Daily
-  Challenge automatisch durch geloggte Workout-Reps ab (statt über den Challenge-Dialog), fragt der Feed jetzt
-  trotzdem "wie schwer war's" (5 Smileys, wie gewohnt) - vorher blieb das unsichtbar, bis man zufällig den
-  Gruppen-Tab "Challenges" öffnete.
+- **Plan climbing days and invite friends**: new group tab "Climbing" -
+  set up a climbing day for today or later (time, location, your own goal,
+  training focus like Slab/Power/Technique/Endurance/Strength/Mental - all
+  optional except the date). The group gets notified. Members see who's
+  coming and RSVP with their own optional goal/focus or decline; whoever
+  planned it can change time/location or cancel the day.
+  The personal climbing calendar (Analytics > Climbing) marks planned days
+  green with a mountain icon across all groups - clicking a future day
+  opens the RSVP view instead of the boulder-log dialog (which stays as-is
+  for today/past days); with no planned day, one can be created directly
+  from there (with a group picker if you're in more than one).
+- **Rating no longer gets missed when a challenge is completed via a
+  workout**: when a daily challenge auto-completes from logged workout
+  reps (instead of through the challenge dialog), the feed now still asks
+  "how hard was it" (5 smileys, as usual) - previously this stayed
+  invisible unless you happened to open the group's "Challenges" tab.
 
 ### Fixed
-- **Körper-Ansicht eines Gruppenmitglieds**: der Dialog hatte keine Höhenbegrenzung/Scroll, wodurch er bei der
-  3D-Ansicht + Muskelliste + Verletzungen leicht über den sichtbaren Bereich hinausragen und abgeschnitten wirken
-  konnte. Außerdem schlug ein Laden-Fehlschlag (z.B. 403) den Ladezustand tot statt eine Meldung zu zeigen - beide
-  behoben (Dialog scrollt jetzt selbst, Ladefehler zeigen eine Fehlermeldung statt endlos zu laden).
+- **A group member's body view**: the dialog had no height limit/scroll,
+  so with the 3D view + muscle list + injuries it could easily exceed the
+  visible area and look cut off. Also, a load failure (e.g. 403) killed
+  the loading state silently instead of showing a message - both fixed
+  (the dialog now scrolls itself, load errors show an error message
+  instead of loading forever).
 
 ## [0.49.0] - 2026-09-22
 
 ### Fixed
-- **RAM-Analyse: die 3+GB waren nicht die App.** `docker stats` für `ascend-app-1`/`ascend-db-1` lag die ganze Zeit
-  bei ~100MB/~25MB - die tatsächlichen Verbraucher waren zwei von Ascend unabhängige Docker-Altlasten aus vielen
-  Rebuilds in einer Uptime:
-  - Der **`dockerd`-Prozess selbst** hielt ~1,5GB RSS, die er nach vielen Image-Builds nicht mehr freigegeben hat -
-    ein `systemctl restart docker` (Container kommen über `restart: unless-stopped` von selbst wieder hoch) hat das
-    sofort auf ~100MB zurückgesetzt.
-  - **Verwaister Build-Cache** hatte sich auf 3,4GB Festplatte angesammelt (`docker builder prune -af` behoben).
-  - Das **`migrate`-Image war 2,03GB**, weil es die komplette `builder`-Stage (kompletter Quellcode, gebautes
-    `.next`, alle ~90 Laufzeit-/Dev-Dependencies) mitschleppte, nur um einmalig `prisma migrate deploy`
-    auszuführen. Installiert jetzt nur noch `prisma`+`dotenv` isoliert (nicht mehr `FROM builder`) -
-    **2,03GB → 865MB**. Migration nach dem Umbau erfolgreich getestet (26 Migrationen erkannt, korrekt verbunden).
-  - Das eigentliche App-Image (`ascend-app`) war schon vorher schlank: 323MB, davon 238MB die node:22-alpine-Basis,
-    78MB eigener Anteil - das ist auch das, was jemand beim `docker pull` tatsächlich bekommt.
-  - Details und Diagnose-Befehle in [DEPLOYMENT.md](./DEPLOYMENT.md#resource-usage).
+- **RAM analysis: the 3+GB weren't the app.** `docker stats` for
+  `ascend-app-1`/`ascend-db-1` sat at ~100MB/~25MB the whole time - the
+  actual consumers were two pieces of Ascend-unrelated Docker leftovers
+  from many rebuilds over a long uptime:
+  - The **`dockerd` process itself** held onto ~1.5GB RSS it never
+    released after many image builds - a `systemctl restart docker`
+    (containers come back on their own via `restart: unless-stopped`)
+    dropped that straight back to ~100MB.
+  - **Orphaned build cache** had piled up to 3.4GB of disk (`docker
+    builder prune -af` fixed it).
+  - The **`migrate` image was 2.03GB**, because it dragged along the
+    entire `builder` stage (full source code, the built `.next`, all
+    ~90 runtime/dev dependencies) just to run `prisma migrate deploy`
+    once. Now installs only `prisma`+`dotenv` in isolation (no longer
+    `FROM builder`) - **2.03GB → 865MB**. Migration tested successfully
+    after the change (26 migrations detected, connected correctly).
+  - The actual app image (`ascend-app`) was already lean: 323MB, of which
+    238MB is the node:22-alpine base, 78MB is the app's own layer - that's
+    also what someone actually gets with `docker pull`.
+  - Details and diagnostic commands in
+    [DEPLOYMENT.md](./DEPLOYMENT.md#resource-usage).
 
 ## [0.48.0] - 2026-09-22
 
 ### Removed
-- **Alle Rate-Limits entfernt.** Registrierung, Login (Brute-Force-Lockout), Anstupsen, Daily-Challenge-Reps,
-  Gruppen-Kommentare und Pump-Pic-Uploads liefen zuvor über einen In-Memory-Limiter - für dieses selbstgehostete
-  Setup mit einer kleinen, vertrauten Gruppe unnötig. `lib/rate-limit.ts` und die zugehörigen `LOGIN_RATE_LIMIT_*`/
-  `REGISTER_RATE_LIMIT_*`-Env-Vars sind komplett raus (Doku/`.env.example`/`docker-compose.yml` entsprechend
-  bereinigt). Achtung: das nimmt auch den Login-Brute-Force-Schutz raus - für dieses Setup eine bewusste Abwägung.
+- **Removed all rate limits.** Registration, login (brute-force lockout),
+  nudges, daily-challenge reps, group comments, and pump-pic uploads
+  previously ran through an in-memory limiter - unnecessary for this
+  self-hosted setup with a small, trusted group. `lib/rate-limit.ts` and
+  the corresponding `LOGIN_RATE_LIMIT_*`/`REGISTER_RATE_LIMIT_*` env vars
+  are gone entirely (docs/`.env.example`/`docker-compose.yml` cleaned up
+  accordingly). Note: this also removes login brute-force protection - a
+  deliberate tradeoff for this setup.
 
 ## [0.47.0] - 2026-09-22
 
 ### Added
-- **Sidebar einklappbar**: die linke Navigation lässt sich auf einen Icon-Streifen einklappen (Merkt sich das pro
-  Gerät); Admin/Einstellungen/Impressum/Datenschutz/Versionsnummer sind jetzt an die Ansicht angeheftet (sticky) und
-  immer sichtbar, ohne dass man im Feed erst runterscrollen muss.
-- **Verletzung direkt am Körper melden**: auf der Körper-Seite hat jede Muskel-Detailansicht jetzt einen
-  "Verletzung melden"-Button, vorbelegt mit den zur Muskel passenden Körperstellen.
-- **Tägliche Verletzungs-Abfrage**: für jede länger als einen Tag aktive Verletzung fragt der Feed einmal pro Tag
-  "Immer noch verletzt?" - "Ja" öffnet eine 1-10-Schmerz-Skala, "Nein" markiert sie als ausgeheilt
-  (`InjuryCheckin`, ein Eintrag pro Tag und Verletzung).
-- **Körper-Ansicht der Gruppe**: in der Mitgliederliste zeigt "Körper ansehen" die 3D-Ansicht eines Teammitglieds -
-  Trainingslast nur aus Workouts, die in dieser Gruppe geteilt wurden (nie die private Historie), plus aktive
-  Verletzungen inkl. Notiz. Eigene Wünsche bleiben privat und werden dort nie gezeigt.
-- Verletzungsnotizen sind jetzt auch in der eigenen Körper-Ansicht als eigene Karte sichtbar, nicht nur in den
-  Einstellungen.
+- **Collapsible sidebar**: the left navigation can be collapsed to an icon
+  strip (remembered per device); Admin/Settings/Impressum/Privacy
+  Policy/version number are now pinned to the view (sticky) and always
+  visible, without having to scroll down through the feed first.
+- **Report an injury directly on the body**: on the body page, every
+  muscle's detail view now has a "report injury" button, pre-filled with
+  the body parts that match that muscle.
+- **Daily injury check-in**: for any injury active longer than a day, the
+  feed asks once a day "still injured?" - "Yes" opens a 1-10 pain scale,
+  "No" marks it as healed (`InjuryCheckin`, one entry per day and injury).
+- **Group body view**: in the member list, "View body" shows a teammate's
+  3D view - training load only from workouts shared in that group (never
+  the private history), plus active injuries including notes. Your own
+  wishes stay private and are never shown there.
+- Injury notes are now also visible as their own card in your own body
+  view, not just in settings.
 
 ### Fixed
-- **3D-Körperansicht am Handy kaum sichtbar**: der Renderer wurde mit `updateStyle=false` skaliert, wodurch die
-  Canvas-Fläche auf hochauflösenden (Retina-)Bildschirmen ein Vielfaches der sichtbaren Fläche groß wurde und der
-  überstehende Teil einfach abgeschnitten war - besonders auf dem Handy auffällig. Die Canvas-Größe folgt jetzt
-  explizit dem Container.
-- **RAM-Verbrauch eingeordnet und gedeckelt**: der Verbrauch im Betrieb war schon vorher niedrig (App ~150-200MB,
-  Datenbank ~30-50MB) - `docker stats` zeigte nur deshalb mehrere GB "Limit" an, weil keins gesetzt war (das
-  Limit-Feld zeigt dann einfach den gesamten Host-RAM). Beide Container haben jetzt ein hartes Speicherlimit
-  (512M/256M), die App einen Node-Heap-Deckel, und Postgres läuft mit knapperen `shared_buffers`/
-  `max_connections`. Die eine echte Verbrauchsspitze ist der **Build** (`docker compose build`), der jetzt ebenfalls
-  gedeckelt ist (2GB) statt bei zu wenig freiem RAM die VM zum Hängen zu bringen. Details in
+- **3D body view barely visible on mobile**: the renderer was scaled with
+  `updateStyle=false`, so the canvas area became a multiple of the visible
+  area on high-resolution (Retina) screens and the overflow was simply
+  cut off - especially noticeable on mobile. The canvas size now
+  explicitly follows the container.
+- **RAM usage put in context and capped**: actual usage in operation was
+  already low (app ~150-200MB, database ~30-50MB) - `docker stats` only
+  showed several GB of "Limit" because none was set (the Limit field then
+  just shows the whole host's RAM). Both containers now have a hard memory
+  limit (512M/256M), the app has a Node heap cap, and Postgres runs with
+  tighter `shared_buffers`/`max_connections`. The one real usage spike is
+  the **build** (`docker compose build`), which is now also capped (2GB)
+  instead of hanging the VM when free RAM runs low. Details in
   [DEPLOYMENT.md](./DEPLOYMENT.md#resource-usage).
 
 ## [0.46.0] - 2026-09-22
 
 ### Added
-- **Eigene Übungen bearbeiten und löschen**: neue Settings-Karte "Eigene Übungen" (deine selbst angelegten Übungen
-  plus Gruppen-Übungen, die du als Leader verwaltest). Bearbeitbar sind Name, Beschreibung, Art (Wdh/Halten), Fokus,
-  Bodyweight und die trainierten Muskeln. Wechselt die Art, werden bereits geloggte Sätze umgerechnet
-  (Wiederholungen <-> Sekunden), statt falsch angezeigt zu werden - so lässt sich eine versehentlich als "Wdh" angelegte
-  Halte-Übung reparieren. Ist die Übung mit einem Gruppenziel verknüpft, bleibt die Art gesperrt.
-  Löschen geht, solange keine Sätze, Challenges oder Gruppenziele daran hängen (sonst Hinweis mit Anzahl);
-  Vorlagen verlieren nur den Eintrag. Standardübungen bleiben unantastbar.
-- **App-installieren-Hinweis**: Auf dem Handy im Browser (nicht als installierte App) steht oben "Lade Ascend als
-  App runter" mit "Installieren" (Chrome/Android: nativer Dialog) bzw. "So geht's" (Anleitung für Safari/iOS und
-  andere Browser). Schließen (X) blendet ihn bis zum nächsten Besuch aus, "Nicht mehr anzeigen" dauerhaft auf diesem
-  Gerät. In den Einstellungen gibt es die Karte "App installieren" (Installieren/Anleitung, Hinweis wieder einblenden).
+- **Edit and delete your own exercises**: new settings card "My Exercises"
+  (your own custom exercises plus group exercises you manage as Leader).
+  Editable: name, description, type (reps/hold), focus, bodyweight, and
+  the trained muscles. Changing the type converts already-logged sets
+  (reps <-> seconds) instead of displaying them wrong - so a hold exercise
+  accidentally created as "reps" can be repaired. If the exercise is
+  linked to a group goal, the type stays locked. Deleting works as long as
+  no sets, challenges, or group goals depend on it (otherwise a message
+  with the count); templates just lose the entry. Default exercises stay
+  untouchable.
+- **Install-the-app prompt**: on mobile in the browser (not as an
+  installed app), a banner reads "Download Ascend as an app" with
+  "Install" (Chrome/Android: native dialog) or "How to" (instructions for
+  Safari/iOS and other browsers). Closing (X) hides it until the next
+  visit, "Don't show again" hides it permanently on that device. Settings
+  has an "Install app" card (install/instructions, show the hint again).
 
 ## [0.45.0] - 2026-09-21
 
 ### Added
-- **Verletzungen** (Etappe 3): in den Einstellungen Körperstelle (Nacken, Schulter, Ellbogen, Unterarm,
-  Handgelenk, Finger, Brust, Rücken, Hüfte, Knie, Fuß), Schweregrad (leicht/mittel/schwer), Notiz und
-  optionales Enddatum eintragen; "Ausgeheilt" beendet sie. Jede Übung kennt die Körperstellen, die sie belastet
-  (aus ihren Muskeln plus Gelenklasten wie Handgelenke beim Liegestütz). Beim Eintragen bekommt eine betroffene
-  Übung eine Warnung (auch in der Übungsauswahl); bei mittel/schwer verschwindet sie zusätzlich aus dem Workout
-  Brain, ein Fokus ohne verbliebene Übungen wird übersprungen und die Brain-Karte nennt die Rücksicht.
-  Die Karte zeigt jetzt zu jedem Vorschlag Beispielübungen.
-- **Körper-Seite** (Etappe 4, neuer Menüpunkt "Körper"): selbstgebaute, drehbare 3D-Figur (three.js, 14 Muskeln als
-  Ellipsoide), eingefärbt in 5 Stufen von grau (kaum) bis rot (viel) nach gewichteten Sätzen pro Woche
-  (7/14/30 Tage). Blau = Muskel-Wunsch, orange = von Verletzung betroffen. Tippen wählt einen Muskel (Details,
-  Wunsch setzen), Ziehen dreht, Vorne/Hinten/Drehen-Buttons; ohne WebGL gibt es die Muskelliste.
+- **Injuries** (stage 3): in settings, log a body part (neck, shoulder,
+  elbow, forearm, wrist, finger, chest, back, hip, knee, foot), severity
+  (mild/moderate/severe), note, and optional end date; "Healed" ends it.
+  Every exercise knows the body parts it loads (from its muscles plus
+  joint load like wrists during push-ups). When logging, an affected
+  exercise gets a warning (also in the exercise picker); at
+  moderate/severe it also disappears from the Workout Brain, a focus with
+  no exercises left gets skipped, and the Brain card names the reason.
+  The card now shows example exercises for every suggestion.
+- **Body page** (stage 4, new "Body" menu item): a custom, rotatable 3D
+  figure (three.js, 14 muscles as ellipsoids), colored in 5 steps from
+  gray (barely any) to red (a lot) based on weighted sets per week
+  (7/14/30 days). Blue = muscle wish, orange = affected by injury. Tapping
+  selects a muscle (details, set a wish), dragging rotates, front/back/spin
+  buttons; without WebGL there's a muscle list instead.
 
 ## [0.44.0] - 2026-09-21
 
 ### Added
-- **Muskel-Modell** (Etappe 1 der Muskel-/Verletzungs-Guideline): 14 Muskelgruppen (Brust, Schultern, Bizeps,
-  Trizeps, Unterarme, Latissimus, oberer/unterer Rücken, Bauch, seitliche Bauchmuskeln, Gesäß, Quadrizeps,
-  Beinbeuger, Waden). Alle 53 Standardübungen sind mit Haupt-/Nebenmuskeln hinterlegt (`ExerciseMuscle`,
-  `prisma/seed.ts`); eigene Übungen wählen ihre Muskeln beim Anlegen (Tippen: Haupt → Neben → weg), ohne
-  Auswahl gilt eine Schätzung aus dem Fokus. `getMuscleStats` liefert Last und "zuletzt trainiert" pro Muskel.
-- **Muskel-Wünsche** (Etappe 2): in den Einstellungen pro Muskel "Passt / Mehr / Viel mehr". Das Workout Brain
-  schlägt einen gewünschten Muskel wieder vor, sobald er länger als 3 Tage ("Mehr") bzw. 2 Tage ("Viel mehr")
-  nicht trainiert wurde, mit Begründung und drei Beispielübungen (bevorzugt deine eigenen).
+- **Muscle model** (stage 1 of the muscle/injury guideline): 14 muscle
+  groups (chest, shoulders, biceps, triceps, forearms, lats, upper/lower
+  back, abs, obliques, glutes, quads, hamstrings, calves). All 53 default
+  exercises have primary/secondary muscles attached (`ExerciseMuscle`,
+  `prisma/seed.ts`); custom exercises pick their muscles on creation (tap:
+  primary → secondary → off), with no selection an estimate from the focus
+  is used. `getMuscleStats` returns load and "last trained" per muscle.
+- **Muscle wishes** (stage 2): in settings, per muscle "Fine / More / Much
+  more". The Workout Brain suggests a wished muscle again once it hasn't
+  been trained for more than 3 days ("More") or 2 days ("Much more"), with
+  a reason and three example exercises (preferring your own).
 
-Geplant: Verletzungen (Etappe 3), drehbarer 3D-Körper mit Heatmap (Etappe 4).
+Planned: injuries (stage 3), rotatable 3D body with heatmap (stage 4).
 
 ## [0.43.0] - 2026-09-21
 
 ### Fixed
-- **Klettertage erschienen nicht im Feed**: Ein neuer Klettertag löste nur eine Benachrichtigung aus, hatte
-  aber keinen Feed-Eintrag. Jetzt erscheint er als eigener Beitrag (`PostType.CLIMBING`, Inhalt als JSON,
-  pro Gruppe/Person/Tag einer) im Gruppen-Feed und auf der Startseite (Filter "Workouts" bzw. "Klettern"),
-  mit Gesamtzahl und Grad-Aufschlüsselung, kommentierbar. Nachträgliches Bearbeiten des Tages aktualisiert
-  den Beitrag, Leeren des Tages entfernt ihn; die Benachrichtigung kommt nur bei einem neuen Beitrag und
-  führt direkt dorthin. Gilt für den Klettertag-Dialog und "Send eintragen" (Routen zählen mit). Die Klettertage
-  der letzten 30 Tage wurden einmalig nachgetragen (ohne Benachrichtigung).
+- **Climbing days didn't show up in the feed**: a new climbing day only
+  triggered a notification but had no feed entry. It now appears as its
+  own post (`PostType.CLIMBING`, content as JSON, one per group/person/day)
+  in the group feed and on the home page (filters "Workouts" or
+  "Climbing"), with a total count and grade breakdown, commentable.
+  Editing the day afterward updates the post, clearing the day removes it;
+  the notification only fires for a new post and links straight there.
+  Applies to the climbing-day dialog and "log a send" (routes count too).
+  Climbing days from the last 30 days were backfilled once (without a
+  notification).
 
 ## [0.42.0] - 2026-09-21
 
 ### Changed
-- **Feed & Workout-Karten**: Status ("X hat ein Workout gepostet") und Metriken sind klar getrennt -
-  Name fett, Aktion gedämpft, Zahlen wie "2 Übungen · 4 Sätze" oder "100/100" fett in Akzentfarbe
-  (`BoldNumbers`). "Details einblenden" hat eine größere Klickfläche mit größerem Caret;
-  Kommentar-Button größer, immer mit Text.
-- **Workout eintragen**: der Satz-Haken ist jetzt ein Button "Satz & Pause" (danach "Erledigt");
-  "Satz hinzufügen" ist ein deutlich erkennbarer, gestrichelter Vollbreiten-Button; Papierkorb mit Tooltip.
-- **Analytics**: Aktivitätskalender mit echtem Hover-Tooltip (Datum + Intensität, auch per Tastatur)
-  und Farbrampe, die im Dark-Theme von dunkel nach hell läuft (vorher versank die dunkelste Stufe im
-  Schwarz). Y-Achsen beschriftet ("Geschätztes 1RM (kg)", "Volumen (kg)", "Sätze"), X-Achse mit
-  Mindestabstand gegen überlappende Datumsangaben.
-- **Gruppenziele**: Beitragende als Rangliste (Platz 1-3 in Gold/Silber/Bronze, Balken, fetter Betrag).
-- **Kletter-Pyramide** mit Achsentiteln, **Balance-Radar**-Tooltip in %, **Boulder-Kalender** mit Tooltip pro Tag;
-  Tooltips für Gruppe umbenennen/verlassen und Ziel löschen.
-- **Gruppen-Challenges**: Rangliste des Tages (Platz 1-3 in Gold/Silber/Bronze, danach Zahl) inkl.
-  fettem Fortschritt "cur/target"; Tooltips für Play ("Challenge starten/fortsetzen/bewerten"),
-  Anfechten, Verlauf und Deaktivieren.
+- **Feed & workout cards**: status ("X posted a workout") and metrics are
+  now clearly separated - name bold, action muted, numbers like "2
+  exercises · 4 sets" or "100/100" bold in the accent color
+  (`BoldNumbers`). "Show details" has a larger click target with a bigger
+  caret; comment button is larger, always with a label.
+- **Logging a workout**: the set checkmark is now a "Set & rest" button
+  (then "Done"); "Add set" is a clearly recognizable, dashed full-width
+  button; trash icon with a tooltip.
+- **Analytics**: activity calendar with a real hover tooltip (date +
+  intensity, also via keyboard) and a color ramp that runs dark-to-light
+  in dark theme (previously the darkest step sank into black). Y-axes
+  labeled ("Estimated 1RM (kg)", "Volume (kg)", "Sets"), X-axis with
+  minimum spacing against overlapping dates.
+- **Group goals**: contributors as a leaderboard (ranks 1-3 in
+  gold/silver/bronze, bars, bold amount).
+- **Climbing pyramid** with axis titles, **balance radar** tooltip in %,
+  **boulder calendar** with a per-day tooltip; tooltips for renaming/
+  leaving a group and deleting a goal.
+- **Group challenges**: today's leaderboard (ranks 1-3 in
+  gold/silver/bronze, then a number) including bold progress "cur/target";
+  tooltips for play ("start/continue/rate challenge"), contest, history,
+  and deactivate.
 
 ### Fixed
-- Dropdowns zeigten teils den rohen Wert statt des Namens (z.B. die Datenbank-ID im
-  Maximalkraft-Verlauf). Die betroffenen Selects (Übung, Workout-Auswahl, Satz-Typ, Einheiten,
-  Sprache, Übung anlegen, Gruppenziel) übergeben jetzt ihre Labels.
+- Dropdowns sometimes showed the raw value instead of the name (e.g. the
+  database ID in the strength-record history). The affected selects
+  (exercise, workout picker, set type, units, language, create exercise,
+  group goal) now pass their labels.
 
 ## [0.41.0] - 2026-09-20
 
 ### Added
-- **Klettertag-Button auf der Startseite**: "Klettertag" öffnet direkt den Boulder-Dialog für
-  heute (neben "Workout"; am Handy neben "Workout eintragen").
-- **Push + Glocke für Klettertage**: wer einen neuen Klettertag einträgt, benachrichtigt die
-  Mitglieder der Gruppen, in denen er/sie das Teilen des Trainings aktiviert hat
-  ("X war bouldern (12 Boulder)"). Nachträgliches Bearbeiten eines Tages löst nichts aus.
-- **Benachrichtigungen führen zur Nachricht**: ein Klick auf Kommentar-, Antwort- oder
-  Workout-Benachrichtigung öffnet den Gruppen-Feed, scrollt zum Beitrag bzw. Kommentar,
-  klappt die Kommentare auf und hebt die Stelle kurz hervor (auch per Push-Link).
+- **Climbing-day button on the home page**: "Climbing day" opens the
+  boulder dialog for today directly (next to "Workout"; on mobile next to
+  "Log workout").
+- **Push + bell for climbing days**: logging a new climbing day notifies
+  the members of any group where you've enabled sharing your training
+  ("X went bouldering (12 boulders)"). Editing a day afterward doesn't
+  trigger anything.
+- **Notifications lead to the message**: clicking a comment, reply, or
+  workout notification opens the group feed, scrolls to the post or
+  comment, expands the comments, and briefly highlights the spot (also via
+  a push link).
 
 ### Fixed
-- **Kalender "Klettern"**: Ein Klick auf einen markierten Tag öffnete einen leeren Dialog
-  (alle Grade 0). Er lädt jetzt die gespeicherten Boulder des Tages, beim Speichern werden sie
-  ersetzt statt doppelt angehängt; alle auf 0 = Tag leeren. Routen/andere Grade des Tages
-  bleiben unangetastet (mit Hinweis).
+- **"Climbing" calendar**: clicking a marked day opened an empty dialog
+  (all grades at 0). It now loads that day's saved boulders, saving
+  replaces them instead of appending duplicates; all zeros clears the day.
+  Routes/other grades for that day stay untouched (with a note).
 
 ## [0.40.0] - 2026-09-19
 
 ### Added
-- **Einführungs-Tutorial**: direkt nach der Registrierung öffnet sich einmalig eine
-  12-schrittige Tour (Workout eintragen, Pump Pics, Feed, Kalender & Streak, Analytics,
-  Workout Brain, Gruppen, Challenges & Gruppenziele, Benachrichtigungen, Einstellungen).
-  Mit "Überspringen" jederzeit abbrechbar; erscheint danach nie wieder (serverseitig pro
-  Account gemerkt, `User.tutorialCompletedAt`). Bestehende Accounts sehen es nicht.
-  In den Einstellungen gibt es "Tutorial erneut ansehen".
+- **Onboarding tutorial**: right after registration, a 12-step tour opens
+  once (log a workout, pump pics, feed, calendar & streak, analytics,
+  Workout Brain, groups, challenges & group goals, notifications,
+  settings). Can be skipped anytime with "Skip"; never shows again
+  afterward (remembered server-side per account, `User.tutorialCompletedAt`).
+  Existing accounts don't see it. Settings has "Watch the tutorial again".
 
 ## [0.39.0] - 2026-09-19
 
 ### Added
-- **Daily Challenges zählen mit Workouts**: Wiederholungen der Challenge-Übung, die du
-  heute in einem Workout einträgst (Aufwärmsätze zählen nicht), laufen automatisch in den
-  Tagesversuch der Challenge - 100 Liegestütze im Workout erfüllen die Challenge, inkl.
-  Benachrichtigung an die Gruppe. Funktioniert beim Eintragen, Bearbeiten und Löschen von
-  Workouts (sinkt der Stand unter das Ziel und ist noch nicht bewertet, wird die Challenge
-  wieder geöffnet), sowie beim nachträglichen Setzen eines Ziels. Der Challenge-Dialog zeigt
-  "davon X aus deinen Workouts heute".
+- **Daily challenges count with workouts**: reps of the challenge exercise
+  that you log in a workout today (warm-up sets don't count) automatically
+  flow into the challenge's daily attempt - 100 push-ups in a workout
+  completes the challenge, including a notification to the group. Works
+  when logging, editing, and deleting workouts (if the count drops below
+  the target and it's not yet rated, the challenge reopens), as well as
+  when setting a goal retroactively. The challenge dialog shows "of which
+  X from your workouts today".
 
 ### Changed
-- Ein Challenge-Versuch trägt zu Gruppenzielen nur noch die im Dialog getippten Wiederholungen
-  bei (`manualReps`); Workout-Wiederholungen kommen über die Sätze - so wird nichts doppelt gezählt.
+- A challenge attempt now only contributes the reps typed into the dialog
+  to group goals (`manualReps`); workout reps come in through the sets -
+  so nothing gets counted twice.
 
 ## [0.38.0] - 2026-09-19
 
 ### Added
-- **Workout-Entwurf serverseitig**: das "Workout eintragen"-Formular wird automatisch
-  gespeichert (kurz nach jeder Änderung und sofort, wenn der Tab in den Hintergrund geht),
-  z.B. beim Wechsel zu WhatsApp. Beim Zurückkommen wird es wiederhergestellt, mit Hinweis
-  und "Verwerfen". Entwürfe und nie angehängte Fotos verfallen nach 7 Tagen.
-- **Pump Pics**: bis zu 10 Fotos pro Workout (beim Eintragen und Bearbeiten). Sichtbar
-  für dich und für Mitglieder der Gruppen, in denen das Workout geteilt ist - an der
-  Workout-Karte, im Gruppen-Feed, auf der Startseite und im Kalender. Klick vergrößert;
-  Fotos werden nie beschnitten. Löschen von Workout oder Account entfernt auch die Dateien.
+- **Server-side workout draft**: the "log a workout" form is saved
+  automatically (shortly after every change, and immediately when the tab
+  goes to the background), e.g. when switching to WhatsApp. It's restored
+  when you come back, with a notice and "Discard". Drafts and photos never
+  attached to a workout expire after 7 days.
+- **Pump pics**: up to 10 photos per workout (when logging and editing).
+  Visible to you and to members of the groups the workout is shared in -
+  on the workout card, in the group feed, on the home page, and in the
+  calendar. Clicking enlarges; photos are never cropped. Deleting a
+  workout or account also removes the files.
+
 ## [0.37.0] - 2026-09-19
 
 ### Added
-- **Benachrichtigungs-Zentrale (Glocke)** in der Kopfleiste: Zähler für Ungelesenes und eine
-  Liste mit Kommentaren auf eigene Beiträge, Antworten auf eigene Kommentare, Anstupsern,
-  neuen Workouts aus der Gruppe und geschafften Challenges. Funktioniert unabhängig von Web
-  Push (nutzt den Push aber zusätzlich, wenn er eingerichtet ist). Einträge sind sprachneutral
-  gespeichert und erscheinen in der gewählten Sprache; alte werden nach 60 Tagen entfernt.
+- **Notification center (bell)** in the header: an unread counter and a
+  list of comments on your own posts, replies to your own comments,
+  nudges, new workouts from the group, and completed challenges. Works
+  independently of Web Push (uses push additionally when it's set up).
+  Entries are stored language-neutral and appear in whichever language is
+  selected; old ones are removed after 60 days.
+
 ## [0.36.3] - 2026-09-19
 
 ### Added
-- **Push-Diagnose** (Einstellungen → Benachrichtigungen): zeigt Erlaubnis-Status, Push-Dienst,
-  Abo-Status und den exakten Fehler beim Aktivieren; "Test-Benachrichtigung" schickt eine
-  Push an die eigenen Geräte und meldet, was der Push-Dienst geantwortet hat.
-  Pushes gehen jetzt mit TTL und hoher Dringlichkeit raus.
+- **Push diagnostics** (Settings → Notifications): shows permission
+  status, push service, subscription status, and the exact error when
+  enabling it; "Test notification" sends a push to your own devices and
+  reports what the push service replied with.
+  Pushes now go out with a TTL and high urgency.
+
 ## [0.36.1] - 2026-09-19
 
 ### Fixed
-- **Fotos werden nie mehr beschnitten**: Bilder im Gruppen-Feed und auf der Startseite
-  erscheinen vollständig (kleiner statt abgeschnitten) und lassen sich per Klick
-  groß öffnen (Lightbox, mit Link zum Original).
-- **Kommentare auf der Startseite**: unter Gruppen-Posts (Text, Foto, Workout) und
-  unter den eigenen, in Gruppen geteilten Workouts sind Kommentare jetzt auch im
-  Startseiten-Feed les- und schreibbar.
+- **Photos are never cropped anymore**: images in the group feed and on
+  the home page appear in full (smaller instead of cut off) and can be
+  opened full-size by clicking (lightbox, with a link to the original).
+- **Comments on the home page**: comments under group posts (text, photo,
+  workout) and under your own workouts shared in groups are now
+  readable and writable from the home-page feed too.
+
 ## [0.36.0] - 2026-09-19
 
 ### Added
-- **Kommentare mit verschachtelten Antworten (Reddit-Stil)** unter jedem Gruppen-Post
-  (Text, Workout, Foto): Antworten auf Antworten, einzelne Threads einklappbar,
-  eigene Kommentare bearbeiten/löschen, Leader kann moderieren. Ein gelöschter
-  Kommentar mit Antworten bleibt als "[gelöscht]" stehen, damit der Thread lesbar
-  bleibt. Kommentar-Zähler im Feed; Push an Post- bzw. Kommentar-Autor.
+- **Comments with nested replies (Reddit-style)** under every group post
+  (text, workout, photo): replies to replies, individual threads
+  collapsible, edit/delete your own comments, Leader can moderate. A
+  deleted comment with replies stays visible as "[deleted]" so the thread
+  remains readable. Comment counter in the feed; push to the post's or
+  comment's author.
+
 ## [0.35.0] - 2026-09-19
 
 ### Changed
-- **Desktop-Layout**: ab großen Bildschirmen zwei Spalten - rechts bleiben
-  Workout Brain, offene Challenges und eine 12-Wochen-Aktivitätsübersicht
-  sichtbar.
-- **Feeds**: Workouts (eigene und geteilte) zeigen zuerst eine Zusammenfassung
-  ("5 Übungen · 14 Sätze") mit "Details einblenden"; Eintragsarten sind per
-  farbigem Rand und Icon-Kreis schneller unterscheidbar.
-- **Workout eintragen**: größere Eingabefelder und mehr Abstand, die
-  "Häufig"-Pillen sehen wie Buttons aus.
-- **Analytics**: Empty States mit Dummy-Graph und Button, Einheiten an den
-  Y-Achsen, Werte direkt an den Pyramiden-Balken, größerer Aktivitäts-Kalender.
-  "Kraft" listet nur Übungen mit mindestens 2 Trainingstagen (Graph möglich)
-  und wählt die meisttrainierte vor.
-- Hellere Nebentexte im Dark Mode (Kontrast).
-- **Nachgezogen**: Gruppenziele in der Desktop-Spalte; geteilte Workouts zeigen den
-  Muskelfokus ("Core-Fokus") und lassen sich auch auf der Startseite aufklappen;
-  Gruppen, Gruppendetail, Einstellungen (zweispaltig) und Workout-Eintragen nutzen
-  große Bildschirme besser; größere Aktions-Icons in den Satz-Zeilen; der
-  Aktivitäts-Kalender liegt jetzt prominent über den Analytics-Tabs; Kontrast im
-  Light Mode erhöht (5,8:1 auf 7,5:1), sehr blasse Nebentexte entfernt.
+- **Desktop layout**: two columns on large screens - Workout Brain, open
+  challenges, and a 12-week activity overview stay visible on the right.
+- **Feeds**: workouts (own and shared) show a summary first ("5 exercises
+  · 14 sets") with "Show details"; entry types are easier to tell apart
+  via a colored border and icon circle.
+- **Logging a workout**: larger input fields and more spacing, the
+  "Frequent" pills look like buttons.
+- **Analytics**: empty states with a dummy graph and a button, units on
+  the Y-axes, values directly on the pyramid bars, a larger activity
+  calendar. "Strength" only lists exercises with at least 2 training days
+  (so a graph is possible) and pre-selects the most-trained one.
+- Lighter secondary text in dark mode (contrast).
+- **Follow-ups**: group goals in the desktop column; shared workouts show
+  the muscle focus ("Core focus") and can be expanded on the home page
+  too; groups, group detail, settings (two columns), and logging a workout
+  make better use of large screens; larger action icons in set rows; the
+  activity calendar now sits prominently above the analytics tabs;
+  contrast in light mode increased (5.8:1 to 7.5:1), very pale secondary
+  text removed.
+
 ## [0.34.0] - 2026-09-19
 
 ### Added
-- **Englisch/Deutsch umschaltbar**: Umschalter (DE/EN) in der Kopfleiste, auf
-  Login/Registrierung/Startseite und in den Einstellungen. Die gewählte Sprache
-  wird in einem Cookie (`ascend-locale`) pro Gerät gespeichert und gilt auch
-  vor dem Login. Übersetzt sind die gesamte Oberfläche, Workout-Brain-Texte,
-  Zeitangaben/Datumsformate, Fehlermeldungen des Servers sowie Impressum und
-  Datenschutzerklärung (englische Fassung als Serviceübersetzung - die
-  deutsche ist verbindlich).
-- `scripts/check-i18n.mjs` (`pnpm i18n:check`): findet fehlende englische
-  Übersetzungen und noch nicht übersetzte deutsche Texte.
+- **English/German toggle**: a switcher (DE/EN) in the header, on
+  login/registration/home page, and in settings. The chosen language is
+  stored in a cookie (`ascend-locale`) per device and applies even before
+  login. Translated: the whole UI, Workout Brain text, times/date formats,
+  server error messages, as well as the Impressum and privacy policy
+  pages (the English version is a courtesy translation - the German one
+  is authoritative).
+- `scripts/check-i18n.mjs` (`pnpm i18n:check`): finds missing English
+  translations and German text that isn't translated yet.
 
-### Bekannte Grenzen
-- Von Nutzern eingegebene Inhalte (Beiträge, Notizen, eigene Übungen,
-  Gruppennamen) werden nicht übersetzt.
-- Push-Benachrichtigungen werden serverseitig auf Deutsch verschickt (die
-  Sprache des Empfängers ist dort nicht bekannt).
-- Bereits gespeicherte Workout-Zusammenfassungen in Gruppen-Posts bleiben
-  wie geteilt; nur die Kopfzeile ("Workout vom …") wird übersetzt.
+### Known limitations
+- User-entered content (posts, notes, custom exercises, group names) is
+  not translated.
+- Push notifications are sent in German server-side (the recipient's
+  language isn't known there).
+- Already-stored workout summaries in group posts stay as shared; only
+  the heading ("Workout from ...") is translated.
 
 ## [0.33.0] - 2026-09-19
 
 ### Changed
-- **Startseite: ein gemeinsamer Feed statt zwei getrennter Bereiche.** Eigene
-  Workouts, Gruppen-Nachrichten, Fotos, geteilte Workouts und Challenges
-  stehen jetzt in einer Zeitleiste. Filter (bleiben gespeichert):
-  Quelle (Ich / einzelne Gruppen, mehrfach wählbar) und Typ (Workouts /
-  Nachrichten / Bilder / Challenges). Fotos werden direkt als Vorschau
-  angezeigt, "Mehr anzeigen" lädt weiter zurück.
-- **Workout bearbeiten/löschen direkt an der Karte** als sichtbare Buttons
-  statt hinter einem kleinen ⋮-Menü - der Umweg über Analytics → Kalender
-  ist nicht mehr nötig.
+- **Home page: one shared feed instead of two separate sections.** Own
+  workouts, group messages, photos, shared workouts, and challenges now
+  live in a single timeline. Filters (remembered): source (me / individual
+  groups, multi-select) and type (workouts / messages / photos /
+  challenges). Photos show as a direct preview, "Show more" loads further
+  back.
+- **Edit/delete a workout directly on the card** as visible buttons
+  instead of behind a small ⋮ menu - the detour via Analytics → Calendar
+  is no longer needed.
 
 ## [0.32.0] - 2026-09-19
 
 ### Added
-- **Sitzungsverwaltung** (Settings → Sitzungen): zeigt alle Geräte, die
-  aktuell angemeldet sind, mit "zuletzt aktiv"; einzelne Sitzungen oder
-  alle außer der aktuellen lassen sich sofort beenden - das Gerät wird
-  beim nächsten Zugriff automatisch abgemeldet, ganz ohne auf den
-  natürlichen JWT-Ablauf zu warten. Bestehende Logins bleiben beim Update
-  gültig (kein erzwungenes Neu-Anmelden).
+- **Session management** (Settings → Sessions): shows every device
+  currently signed in, with "last active"; individual sessions or all but
+  the current one can be ended immediately - the device gets signed out
+  automatically on its next request, with no need to wait for the natural
+  JWT expiry. Existing logins remain valid across the update (no forced
+  re-login).
 
 ### Changed
-- Technischer Hinweis für zukünftige Arbeit an Auth: ein echter Wechsel
-  von JWT- auf Datenbank-Sessions (wie ursprünglich für dieses Feature
-  angedacht) ist mit dieser App nicht möglich, solange nur der
-  Credentials-Provider konfiguriert ist - Auth.js lehnt
-  `session.strategy = "database"` in dem Fall aktiv ab. Sitzungsverwaltung
-  ist stattdessen als Widerrufs-Liste über dem bestehenden JWT gebaut
-  (siehe CLAUDE.md), was praktisch das gleiche Ergebnis liefert, ohne
-  gegen diese Einschränkung anzukämpfen.
+- Technical note for future auth work: a true switch from JWT to
+  database sessions (as originally envisioned for this feature) isn't
+  possible with this app as long as only the Credentials provider is
+  configured - Auth.js actively rejects `session.strategy = "database"`
+  in that case. Session management is instead built as a revocation list
+  on top of the existing JWT (see CLAUDE.md), which delivers practically
+  the same result without fighting that limitation.
 
 ## [0.31.0] - 2026-09-19
 
 ### Added
-- **Zwei-Faktor-Authentifizierung (TOTP)**: optional, pro Konto in den
-  Einstellungen aktivierbar - RFC-6238-TOTP (kompatibel mit Google/Microsoft
-  Authenticator, Aegis, 1Password, ...) selbst implementiert, kein
-  Cloud-Dienst nötig. QR-Code zum Scannen, 10 Backup-Codes (je einmal
-  gültig) beim Aktivieren. Login fragt den Code nur ab, wenn 2FA für den
-  jeweiligen Account an ist - für alle bestehenden Konten ändert sich ohne
-  eigenes Zutun nichts. Da es keine E-Mail-basierte Konto-Wiederherstellung
-  gibt, können Admins 2FA für ein Konto in `/dashboard/admin` zurücksetzen,
-  falls Authenticator und Backup-Codes beide verloren gehen.
+- **Two-factor authentication (TOTP)**: optional, toggleable per account
+  in settings - RFC 6238 TOTP (compatible with Google/Microsoft
+  Authenticator, Aegis, 1Password, ...) implemented from scratch, no cloud
+  service needed. QR code to scan, 10 backup codes (each usable once) on
+  activation. Login only asks for the code if 2FA is on for that account -
+  nothing changes for any existing account without opting in. Since there's
+  no email-based account recovery, admins can reset 2FA for an account in
+  `/dashboard/admin` if both the authenticator and backup codes are lost.
 
 ## [0.30.0] - 2026-09-19
 
 ### Added
-- **kg/lbs umschaltbar** (Settings → Einheiten): steuert nur die Anzeige -
-  Workout-Sätze, Körpergewicht, PRs und Charts zeigen/akzeptieren Werte in
-  der gewählten Einheit; gespeichert wird intern immer in kg (kein Bruch
-  bei Export/Import/API, die bleiben kg-only). Hantelscheiben- und
-  Aufwärm-Rechner rechnen mit dem passenden Scheiben-/Stangen-Satz für die
-  gewählte Einheit (kg: 20kg-Stange, 25/20/15/10/5/2.5/1.25kg-Scheiben;
-  lbs: 45lbs-Stange, 45/35/25/10/5/2.5lbs-Scheiben).
-- **CONTRIBUTING.md**: Setup, Vorraussetzungen für PRs (Build/Lint/
-  manuelles Testen, Migration statt `db push`, Versionierung) und
-  Konventionen (deutsche UI, keine neuen Pflicht-Cloud-Abhängigkeiten).
+- **kg/lbs toggle** (Settings → Units): controls display only - workout
+  sets, body weight, PRs, and charts show/accept values in the chosen
+  unit; storage is always internally in kg (no mismatch on
+  export/import/the API, which stay kg-only). The plate and warm-up
+  calculators use the matching plate/bar set for the chosen unit (kg:
+  20kg bar, 25/20/15/10/5/2.5/1.25kg plates; lbs: 45lbs bar,
+  45/35/25/10/5/2.5lbs plates).
+- **CONTRIBUTING.md**: setup, requirements for PRs (build/lint/manual
+  testing, migrations instead of `db push`, versioning), and conventions
+  (German UI, no new mandatory cloud dependencies).
 
 ## [0.29.0] - 2026-09-19
 
 ### Added
-- **S3/MinIO-Storage-Backend** (optional): Avatare und Gruppen-Fotos können
-  statt auf lokaler Disk in einem S3-kompatiblen Bucket (z.B. MinIO)
-  abgelegt werden - nützlich für Multi-Host- oder Kubernetes-Deployments,
-  wo das lokale `uploads`-Volume nicht praktikabel ist. Aktiviert durch
-  Setzen von `S3_ENDPOINT`/`S3_BUCKET`/`S3_REGION`/`S3_ACCESS_KEY_ID`/
-  `S3_SECRET_ACCESS_KEY` (siehe `.env.example`); ohne diese bleibt alles
-  beim bisherigen lokalen Disk-Verhalten. Dateien werden nie über eine
-  öffentliche Bucket-URL ausgeliefert, sondern immer über die
-  bestehenden authentifizierten App-Routen gestreamt, damit die
-  Gruppen-Zugriffskontrolle unverändert greift.
+- **S3/MinIO storage backend** (optional): avatars and group photos can
+  be stored in an S3-compatible bucket (e.g. MinIO) instead of on local
+  disk - useful for multi-host or Kubernetes deployments where the local
+  `uploads` volume isn't practical. Enabled by setting
+  `S3_ENDPOINT`/`S3_BUCKET`/`S3_REGION`/`S3_ACCESS_KEY_ID`/
+  `S3_SECRET_ACCESS_KEY` (see `.env.example`); without these, everything
+  stays on the previous local-disk behavior. Files are never served from a
+  public bucket URL, always streamed through the existing authenticated
+  app routes, so group access control still applies unchanged.
 
 ## [0.28.0] - 2026-09-19
 
 ### Added
-- **REST-API mit API-Keys**: `/api/v1/exercises` und `/api/v1/workouts`
-  (GET/POST), authentifiziert über `Authorization: Bearer ascend_...`.
-  Keys werden in Settings erstellt/widerrufen, der Rohschlüssel wird nur
-  einmal angezeigt. Siehe README für Details.
+- **REST API with API keys**: `/api/v1/exercises` and `/api/v1/workouts`
+  (GET/POST), authenticated via `Authorization: Bearer ascend_...`. Keys
+  are created/revoked in Settings, the raw key is only shown once. See
+  README for details.
 
 ## [0.27.0] - 2026-09-19
 
 ### Added
-- **Datenexport** (Settings): vollständiger JSON-Export aller eigenen
-  Daten (Workouts, Sätze, Körpergewicht, Klettern, Balance-Ziele,
-  Vorlagen)
-- **CSV-Import** (Strong/Hevy-kompatibel, best effort): unbekannte
-  Übungen werden automatisch angelegt, Muskel-Fokus wird aus dem
-  Übungsnamen geraten
-- **Abonnierbarer Kalender-Feed** (ICS): pro Nutzer ein privater,
-  token-basierter Link für Apple/Google Kalender etc., in Settings
-  einsehbar und neu generierbar
+- **Data export** (Settings): a full JSON export of all your own data
+  (workouts, sets, body weight, climbing, balance goals, templates)
+- **CSV import** (Strong/Hevy-compatible, best effort): unknown exercises
+  are created automatically, muscle focus is guessed from the exercise
+  name
+- **Subscribable calendar feed** (ICS): a private, token-based link per
+  user for Apple/Google Calendar etc., viewable and regeneratable in
+  Settings
 
 ## [0.26.0] - 2026-09-19
 
 ### Added
-- **Admin-Rolle**: instanzweiter Admin (`User.isAdmin`) mit einer
-  Nutzerverwaltung unter `/dashboard/admin` - Liste aller Nutzer,
-  Admin-Rechte vergeben/entziehen, Nutzer löschen (mit Schutz gegen
-  Selbst-Löschung und Entfernen des letzten Admins)
-- **Invite-only Registrierung**: `INVITE_ONLY=true` schließt die
-  Registrierung, außer man kommt über einen gültigen Gruppen-Invite-Link -
-  Registrierung und Gruppen-Beitritt passieren dann in einem Schritt
+- **Admin role**: an instance-wide admin (`User.isAdmin`) with user
+  management under `/dashboard/admin` - a list of all users, grant/revoke
+  admin rights, delete users (with protection against self-deletion and
+  removing the last admin)
+- **Invite-only registration**: `INVITE_ONLY=true` closes registration
+  unless you come through a valid group invite link - registration and
+  joining a group then happen in one step
 
 ## [0.25.0] - 2026-09-19
 
 ### Added
-- **Automatische DB-Migrationen**: `docker compose up` führt jetzt einen
-  einmaligen `migrate`-Service (`prisma migrate deploy`) aus, bevor die
-  App startet - kein manuelles SSH+Migrations-Kommando mehr nötig
-- **Healthcheck**: `GET /api/health` prüft die echte DB-Erreichbarkeit,
-  eingebunden in Dockerfile-`HEALTHCHECK` und den `app`-Service
-- **Prometheus-Metriken**: `GET /api/metrics`, hinter `METRICS_TOKEN`
-  (per Default deaktiviert/404)
-- **Backup/Restore-Scripts** (`scripts/backup.sh`, `scripts/restore.sh`)
-  für DB-Dump + Uploads-Archiv, siehe `DEPLOYMENT.md`
-- **DEPLOYMENT.md**: Caddy/Traefik-Beispiele, Migrations-/Healthcheck-/
-  Backup-/Metriken-Doku an einem Ort
-- Login-/Registrierungs-Rate-Limits über Env-Vars konfigurierbar
+- **Automatic DB migrations**: `docker compose up` now runs a one-shot
+  `migrate` service (`prisma migrate deploy`) before the app starts - no
+  more manual SSH + migration command
+- **Health check**: `GET /api/health` checks real DB reachability, wired
+  into the Dockerfile `HEALTHCHECK` and the `app` service
+- **Prometheus metrics**: `GET /api/metrics`, behind `METRICS_TOKEN`
+  (disabled/404 by default)
+- **Backup/restore scripts** (`scripts/backup.sh`, `scripts/restore.sh`)
+  for a DB dump + uploads archive, see `DEPLOYMENT.md`
+- **DEPLOYMENT.md**: Caddy/Traefik examples, migration/health-check/
+  backup/metrics docs in one place
+- Login/registration rate limits configurable via env vars
   (`LOGIN_RATE_LIMIT_*`, `REGISTER_RATE_LIMIT_*`)
 
 ### Fixed
-- Docker setzt `HOSTNAME` automatisch auf die Container-ID, wodurch Next's
-  Standalone-Server nur auf die interne Bridge-IP statt auf alle
-  Interfaces gebunden hat - von außen unsichtbar (Port-Forwarding
-  funktionierte zufällig trotzdem), aber jede Verbindung von *innerhalb*
-  des Containers zu `localhost` (wie der neue Healthcheck) schlug fehl.
-  `HOSTNAME=0.0.0.0` im Dockerfile behebt das.
+- Docker automatically sets `HOSTNAME` to the container ID, which made
+  Next's standalone server bind only to the internal bridge IP instead of
+  all interfaces - invisible from outside (port forwarding happened to
+  still work anyway), but any connection from *inside* the container to
+  `localhost` (like the new health check) failed. `HOSTNAME=0.0.0.0` in
+  the Dockerfile fixes it.
 
 ## [0.24.0] - 2026-09-18
 
 ### Added
-- **Satz-Typen**: jeder Satz lässt sich als Warm-up, Normal, Dropsatz oder
-  Failure markieren - Warm-up-Sätze zählen nicht in Rekorde,
-  Trainings-Balance oder Gruppenziele
-- **Notizen pro Satz** (z.B. "langsame Exzentrik"), zusätzlich zur
-  bestehenden Workout-weiten Notiz
-- **Hantelscheiben-Rechner** und **Aufwärm-Rechner** direkt beim Eintragen
-  eines Satzes
-- **"Letztes Mal"-Anzeige** im aktiven Workout, statt nur stillschweigend
-  vorauszufüllen
-- **Sätze pro Muskelgruppe diese Woche** in Analytics (Volumen-Tab) -
-  eine der wichtigsten Volumen-Steuerungs-Metriken
-- **Vorlagen von Gruppenmitgliedern kopieren**: in der Mitgliederliste
-  einsehbar und mit einem Klick in die eigene Bibliothek übernehmbar
+- **Set types**: every set can be marked as warm-up, normal, drop, or
+  failure - warm-up sets don't count toward records, training balance, or
+  group goals
+- **Notes per set** (e.g. "slow eccentric"), in addition to the existing
+  workout-wide note
+- **Plate calculator** and **warm-up calculator** right when logging a set
+- **"Last time" display** in the active workout, instead of only silently
+  pre-filling
+- **Sets per muscle group this week** in Analytics (Volume tab) - one of
+  the most important volume-management metrics
+- **Copy templates from group members**: viewable in the member list and
+  importable into your own library with one click
 
 ## [0.23.1] - 2026-09-18
 
@@ -601,234 +674,229 @@ Geplant: Verletzungen (Etappe 3), drehbarer 3D-Körper mit Heatmap (Etappe 4).
 ## [0.23.0] - 2026-09-18
 
 ### Added
-- **Fatigue pro Muskelgruppe**: statt einer einzigen "Anstrengung
-  insgesamt" fragt das Workout jetzt pro tatsächlich trainiertem Fokus,
-  wie ausgelastet er ist - Workout Brain nutzt das jetzt: ein Fokus, der
-  gerade hart getroffen wurde, wird nicht sofort wieder vorgeschlagen,
-  selbst wenn er laut Kalender "überfällig" wäre
-- Eigene Nachrichten (Text/Foto-Bildunterschrift) im Gruppen-Feed lassen
-  sich jetzt bearbeiten, nicht nur löschen
+- **Fatigue per muscle group**: instead of a single "overall effort", the
+  workout now asks per focus actually trained how taxed it is - the
+  Workout Brain now uses this: a focus just hit hard isn't suggested again
+  right away, even if the calendar alone would call it "overdue"
+- Your own messages (text/photo caption) in the group feed can now be
+  edited, not just deleted
 
 ### Fixed
-- Ein Hold mit Zusatzgewicht (z.B. Weighted Dead Hang) ließ sich bisher
-  gar nicht mit Gewicht eintragen - das Gewicht wurde stillschweigend
-  verworfen. Zählt jetzt korrekt in Rekorden und der Trainings-Balance.
+- A hold with added weight (e.g. a weighted dead hang) previously couldn't
+  be logged with weight at all - the weight was silently dropped. Now
+  counts correctly toward records and training balance.
 
 ## [0.22.0] - 2026-09-18
 
 ### Added
-- **Gruppen-Aktivität** auf dem Dashboard zeigt jetzt auch Chat-Nachrichten
-  und Fotos, nicht mehr nur geteilte Workouts und Challenges
-- **Start-Datum ("Von")** für Gruppenziele: ohne Start zählte "1000
-  Klimmzüge im Oktober" bisher auch September und früher mit - jetzt lässt
-  sich ein Zeitfenster statt nur einer Frist definieren
-- **Online-Status** in der Mitgliederliste: "Online" oder "zuletzt online
-  vor X"
-- **Mitglieder-Kalender**: der Trainings-Kalender eines anderen
-  Gruppenmitglieds ist jetzt einsehbar - nur mit dem, was in dieser Gruppe
-  tatsächlich geteilt wurde, nie die private Historie
-- Jeder kann jetzt eigene Beiträge (Nachrichten, Fotos, geteilte Workouts)
-  im Gruppen-Feed löschen; der Leader kann zusätzlich fremde
-  Nachrichten/Fotos moderieren, aber keine fremden Workout-Shares
-- Beim Hovern über eine Reaktion sieht man jetzt, wer reagiert hat
+- **Group activity** on the dashboard now also shows chat messages and
+  photos, not just shared workouts and challenges
+- **Start date ("from")** for group goals: without a start, "1000
+  pull-ups in October" previously also counted September and earlier -
+  now a time window can be defined instead of only a deadline
+- **Online status** in the member list: "Online" or "last online X ago"
+- **Member calendar**: another group member's training calendar is now
+  viewable - only what's actually been shared in that group, never the
+  private history
+- Anyone can now delete their own posts (messages, photos, shared
+  workouts) in the group feed; the Leader can additionally moderate
+  others' messages/photos, but not others' workout shares
+- Hovering over a reaction now shows who reacted
 
 ## [0.21.0] - 2026-09-18
 
 ### Changed
-- **Workout Brain berücksichtigt jetzt Balance-Ziele**: ein Fokus mit 0%
-  Ziel wird nie mehr vorgeschlagen, und ein Fokus, der spürbar unter
-  seinem Ziel-Anteil liegt, wird bevorzugt vorgeschlagen statt nur nach
-  "zuletzt trainiert" zu gehen
+- **Workout Brain now takes balance goals into account**: a focus with a
+  0% target is never suggested again, and a focus noticeably below its
+  target share is preferred over just going by "last trained"
 
 ## [0.20.0] - 2026-09-18
 
 ### Added
-- **Onboarding-Checkliste** für neue Nutzer ohne Workouts: "So geht's los"
-  mit drei Schritten (Gewicht eintragen, erstes Workout eintragen, Gruppe
-  erstellen/beitreten) statt einer leeren Liste ohne Anleitung
+- **Onboarding checklist** for new users with no workouts: "Getting
+  started" with three steps (log your weight, log your first workout,
+  create/join a group) instead of an empty list with no guidance
 
 ## [0.19.0] - 2026-09-18
 
 ### Added
-- **Undo-Fenster** statt Bestätigungs-Dialog: Vorlage löschen (neue
-  "Vorlagen verwalten"-Ansicht) und Mitglied aus einer Gruppe entfernen
-  passieren sofort, mit 5 Sekunden Zeit zum Rückgängigmachen im Toast
+- **Undo window** instead of a confirmation dialog: deleting a template
+  (new "manage templates" view) and removing a member from a group now
+  happen immediately, with 5 seconds to undo in a toast
 
 ## [0.18.0] - 2026-09-18
 
 ### Added
-- **Optimistische UI-Updates**: Posten im Gruppen-Feed, Reagieren auf Posts
-  und Beitragen zu Gruppenzielen fühlen sich jetzt sofort an, statt auf die
-  Server-Antwort zu warten (mit automatischem Rollback bei Fehlern)
+- **Optimistic UI updates**: posting in the group feed, reacting to posts,
+  and contributing to group goals now feel instant instead of waiting for
+  the server response (with automatic rollback on errors)
 
 ## [0.17.0] - 2026-09-18
 
 ### Added
-- **Pull-to-refresh** auf Dashboard und Gruppen-Feed: am oberen Rand nach
-  unten ziehen lädt neu, statt die Seite manuell neu laden zu müssen
+- **Pull-to-refresh** on the dashboard and group feed: pulling down at the
+  top reloads, instead of having to manually reload the page
 
 ## [0.16.0] - 2026-09-18
 
 ### Added
-- **Profilbild-Upload**: eigenes Bild statt nur Initialen-Avatar, sichtbar
-  im Nutzermenü, in den Einstellungen und in der Mitgliederliste jeder
-  Gruppe
+- **Profile picture upload**: your own image instead of just an initials
+  avatar, visible in the user menu, in settings, and in every group's
+  member list
 
 ## [0.15.0] - 2026-09-18
 
 ### Added
-- **Anstupsen**: jedes Mitglied kann jedes andere Mitglied per Push
-  anstupsen ("Zieh dein Workout durch!"), max. einmal pro Stunde pro Person
-- **Reaktionen** auf Feed-Posts (👍❤️💪🔥) - eine Reaktion pro Person und
-  Post, ein anderes Emoji wählen ersetzt die alte
-- **Streak-Anzeige** auf der Startseite: aufeinanderfolgende Trainingstage
-  in deutscher Zeitzone, bricht erst nach einem komplett verpassten Tag
-- **Persönliche-Rekorde-Übersicht**: neuer "Rekorde"-Tab in Analytics mit
-  dem aktuellen Bestwert pro Übung (statt nur als Badge im Feed sichtbar)
+- **Nudge**: any member can nudge any other member via push ("Get your
+  workout in!"), max once per hour per person
+- **Reactions** on feed posts (👍❤️💪🔥) - one reaction per person per
+  post, picking a different emoji replaces the old one
+- **Streak display** on the home page: consecutive training days in
+  German time, only breaks after a fully missed day
+- **Personal records overview**: a new "Records" tab in Analytics with
+  the current best per exercise (instead of only visible as a badge in
+  the feed)
 
 ## [0.14.0] - 2026-09-18
 
 ### Added
-- Mitglieder können eine Gruppe jetzt selbst verlassen (bisher nur
-  Kicken durch den Leader möglich)
-- **Leitungs-Übergabe**: Leader kann die Leitung an ein anderes Mitglied
-  übergeben - überträgt sowohl die Rolle als auch die eigentliche
-  Besitzer-Zuordnung, damit die Gruppe beim Löschen des alten
-  Leader-Accounts nicht mehr mitgelöscht wird
-- Gruppenname kann vom Leader nachträglich geändert werden
+- Members can now leave a group themselves (previously only kicking by
+  the Leader was possible)
+- **Leadership transfer**: a Leader can hand off leadership to another
+  member - transfers both the role and the actual owner assignment, so
+  the group no longer gets deleted along with the old Leader's account
+- The group name can be changed afterward by the Leader
 
 ## [0.13.0] - 2026-09-18
 
 ### Added
-- "Häufig"-Chips über der Übungsliste beim Workout-Eintragen: die 8 am
-  häufigsten geloggten Übungen mit einem Klick als neuen Satz hinzufügen,
-  ohne die Suche zu öffnen
-- **Workout bearbeiten und löschen** - bisher nicht möglich. Bearbeiten
-  öffnet dieselbe Eintragen-Seite mit den bestehenden Sätzen vorausgefüllt;
-  beides über ein Menü an jeder Workout-Karte (Feed + Kalender-Ansicht).
-  Verknüpfte Gruppenziel-Beiträge werden beim Bearbeiten/Löschen korrekt
-  nachgezogen, nie doppelt gezählt
+- "Frequent" chips above the exercise list when logging a workout: the 8
+  most frequently logged exercises added as a new set with one click,
+  without opening the search
+- **Edit and delete a workout** - not previously possible. Editing opens
+  the same logging page pre-filled with the existing sets; both available
+  via a menu on every workout card (feed + calendar view). Linked
+  group-goal contributions are correctly adjusted on edit/delete, never
+  double-counted
 
 ## [0.12.0] - 2026-09-18
 
 ### Added
-- Push-Benachrichtigungen (Web Push, ohne Drittanbieter): Toggle in den
-  Einstellungen, Benachrichtigung an alle anderen Gruppenmitglieder wenn
-  jemand ein Workout postet oder eine Daily Challenge schafft. Komplett
-  optional für Selbsthoster - ohne gesetzte `VAPID_*`-Umgebungsvariablen
-  bleibt der Toggle einfach ausgeblendet
+- Push notifications (Web Push, no third party): toggle in settings,
+  notifies every other group member when someone posts a workout or
+  completes a daily challenge. Fully optional for self-hosters - without
+  `VAPID_*` environment variables set, the toggle just stays hidden
 
 ## [0.11.0] - 2026-09-18
 
 ### Added
-- Neuer "Analytics"-Tab in Gruppen: Gruppen-Volumen über die letzten 30
-  Tage (Sätze der ganzen Gruppe pro Tag) und Aktivität pro Mitglied
-  (geloggte Workouts, letzte 30 Tage)
+- New "Analytics" tab in groups: group volume over the last 30 days (the
+  whole group's sets per day) and activity per member (logged workouts,
+  last 30 days)
 
 ## [0.10.0] - 2026-09-18
 
 ### Added
-- Aktivitäts-Kalender: ein Tag anklicken zeigt das exakte Workout (Übungen,
-  Gewicht, Wiederholungen) dieses Tages in einem Dialog
+- Activity calendar: clicking a day shows that day's exact workout
+  (exercises, weight, reps) in a dialog
 
 ## [0.9.0] - 2026-09-18
 
 ### Added
-- Workout-Vorlagen: aktuelle Satz-Reihenfolge als benannte Vorlage
-  speichern und beim nächsten Mal per Dropdown wieder laden (Werte werden
-  weiterhin aus der letzten Session vorausgefüllt)
+- Workout templates: save the current set order as a named template and
+  reload it next time via a dropdown (values are still pre-filled from the
+  last session)
 
 ## [0.8.0] - 2026-09-18
 
 ### Added
-- "Gruppen-Aktivität" auf der Startseite: geteilte Workouts und
-  abgeschlossene/abgebrochene Challenges aus allen eigenen Gruppen,
-  neueste zuerst, mit Zeitangabe und Link zur jeweiligen Gruppe
+- "Group activity" on the home page: shared workouts and
+  completed/abandoned challenges from all your groups, newest first, with
+  a timestamp and a link to the respective group
 
 ## [0.7.0] - 2026-09-18
 
 ### Added
-- Challenge-Verlauf: pro Daily Challenge sehen, wer an welchem Tag
-  geschafft, aufgegeben oder es gar nicht versucht hat, inkl. Prozent bei
-  nur teilweise geschafften Versuchen
+- Challenge history: see per daily challenge who completed, gave up, or
+  never attempted it on which day, including the percentage for partially
+  completed attempts
 
 ## [0.6.0] - 2026-09-18
 
 ### Added
-- Gruppen-Feed-Filter nach Typ (Alle/Text/Workout/Foto)
-- Auf einen Namen im Feed klicken zeigt nur noch dessen Posts
+- Group feed filter by type (all/text/workout/photo)
+- Clicking a name in the feed now shows only that person's posts
 
 ## [0.5.0] - 2026-09-18
 
 ### Added
-- PWA-Icons (App-Icon/Home-Screen, Favicon) aus dem Ascend-Logo generiert
-- **Gruppenziele als echte Objekte statt Strings**: Einheit ist jetzt ein
-  Enum (Wiederholungen / Sekunden / km / Custom) statt Freitext
-- **Automatisches Auffüllen von Gruppenzielen**: ein Ziel kann optional mit
-  einer Übung verknüpft werden - danach tragen sowohl normale Workouts als
-  auch abgeschlossene/abgebrochene Daily Challenges mit dieser Übung
-  automatisch bei, kein manuelles Eintragen mehr nötig. Beim Verknüpfen
-  wird die komplette Vergangenheit rückwirkend nachgetragen. Tägliche
-  Challenges selbst bleiben davon unberührt - die entstehen weiterhin nur
-  über den separaten Challenge-Flow
+- PWA icons (app icon/home screen, favicon) generated from the Ascend logo
+- **Group goals as real objects instead of strings**: the unit is now an
+  enum (reps / seconds / km / custom) instead of free text
+- **Automatic group-goal contribution**: a goal can optionally be linked
+  to an exercise - afterward, both normal workouts and
+  completed/abandoned daily challenges with that exercise contribute
+  automatically, no more manual entry needed. Linking backfills the
+  entire past retroactively. Daily challenges themselves stay unaffected
+  by this - those still only arise through the separate challenge flow
 
 ### Fixed
-- Migration der bestehenden Gruppenziele (Freitext-Einheit -> Enum) ohne
-  Datenverlust durchgeführt
+- Migrated existing group goals (free-text unit -> enum) without
+  data loss
 
 ## [0.4.0] - 2026-09-18
 
 ### Added
-- Daily-Challenge-Reminder auf der Startseite: wer noch eine offene
-  Challenge für heute hat (nicht gestartet oder nicht fertig), sieht das
-  sofort oben über "Hey, Name" - kein Pop-up, kein Wegklicken, direkter
-  Link zur jeweiligen Gruppe/Challenge
+- Daily-challenge reminder on the home page: anyone with an open challenge
+  for today (not started or not finished) sees it immediately above "Hey,
+  name" - no pop-up, nothing to dismiss, a direct link to the respective
+  group/challenge
 
 ## [0.3.1] - 2026-09-18
 
 ### Changed
-- Replaced the "Alle Workouts teilen"-Button mit einem dauerhaften
-  Toggle ("Workouts automatisch teilen") pro Gruppe: einmal aktiviert,
-  wird jedes neue Workout automatisch geteilt, nicht nur der bestehende
-  Rückstand. Deaktivieren stoppt nur zukünftige Shares, bereits geteilte
-  Posts bleiben im Feed.
+- Replaced the "share all workouts" button with a persistent toggle
+  ("auto-share workouts") per group: once enabled, every new workout is
+  shared automatically, not just the existing backlog. Disabling only
+  stops future shares, already-shared posts stay in the feed.
 
 ### Fixed
-- Bulk-Share konnte bei mehrfachem/schnellem Klicken (oder einer erneuten
-  Anfrage) dieselben Workouts doppelt in den Feed einfügen - die
-  Datenbank blockt das jetzt selbst ab (`skipDuplicates`), unabhängig
-  davon wie oft die Aktion ausgelöst wird.
+- Bulk-share could insert the same workouts into the feed twice on
+  multiple/fast clicks (or a repeated request) - the database now blocks
+  that itself (`skipDuplicates`), regardless of how often the action is
+  triggered.
 
 ## [0.3.0] - 2026-09-18
 
 ### Added
-- "Alle Workouts teilen"-Button in Gruppen: teilt mit einem Klick jedes
-  eigene Workout, das noch nicht in dieser Gruppe geteilt wurde, statt sie
-  einzeln über den Composer auszuwählen
-- Bereits geteilte Workouts werden im Composer nicht mehr zur Auswahl
-  angeboten und können nicht doppelt geteilt werden
+- "Share all workouts" button in groups: shares every own workout not yet
+  shared in that group with one click, instead of selecting them one by
+  one via the composer
+- Already-shared workouts are no longer offered for selection in the
+  composer and can't be shared twice
 
 ## [0.2.0] - 2026-09-17
 
 ### Added
-- Schnelle Übungssuche: durchsuchbare Combobox (shadcn Command/Popover)
-  ersetzt die lange Dropdown-Liste beim Workout-Eintragen
-- Auto-Fill aus der letzten Session: Wdh/Gewicht/Dauer werden pro Übung aus
-  dem letzten Log vorausgefüllt, ohne bereits getippte Werte zu überschreiben
-- Integrierter Pause-Timer mit 60/90/120/180s-Presets, startbar per
-  ✓-Button direkt am Satz
-- Satz duplizieren: ein Klick kopiert Übung + Werte eines Satzes in eine
-  neue Zeile darunter, für mehrere Sätze derselben Übung hintereinander
-- PR-Erkennung: chronologische Bestwert-Berechnung pro Übung
-  (bodyweight-adjustiertes 1RM bzw. Haltedauer), Trophäen-Badge im Feed und
-  "Neuer PR!"-Toast beim Speichern
-- Wetteinsatz: optionaler Freitext beim Aktivieren einer Daily Challenge
-- Kollaborative Gruppenziele: gemeinsames Ziel mit Ziel-Wert/Einheit/Frist,
-  jedes Mitglied trägt Beiträge bei, Fortschrittsbalken + Beitrag pro Person
+- Fast exercise search: a searchable combobox (shadcn Command/Popover)
+  replaces the long dropdown list when logging a workout
+- Auto-fill from the last session: reps/weight/duration are pre-filled per
+  exercise from the last log, without overwriting values already typed
+- Built-in rest timer with 60/90/120/180s presets, startable via a
+  ✓ button right on the set
+- Duplicate set: one click copies an exercise + values from a set into a
+  new row below it, for multiple sets of the same exercise in a row
+- PR detection: chronological best-value calculation per exercise
+  (bodyweight-adjusted 1RM or hold duration), trophy badge in the feed,
+  and a "New PR!" toast on save
+- Stakes: optional free text when activating a daily challenge
+- Collaborative group goals: a shared goal with a target value/unit/
+  deadline, every member contributes, progress bar + contribution per
+  person
 
 ### Fixed
-- Absturz beim Öffnen des User-Menüs (Base-UI-Fehler durch fehlenden
-  `Menu.Group`-Wrapper um das Nutzernamen-Label)
+- Crash when opening the user menu (Base UI error from a missing
+  `Menu.Group` wrapper around the username label)
 
 ## [0.1.0] - 2026-09-17
 
@@ -848,7 +916,7 @@ Initial public release.
   execution, post-attempt difficulty rating that adjusts future targets
 - Username + password auth (no email required), per-user data isolation
 - Account deletion (GDPR right to erasure), self-hostable Impressum/
-  Datenschutzerklärung pages configured via environment variables
+  privacy-policy pages configured via environment variables
 - Rate limiting (registration, login brute-force lockout, challenge
   actions), structured logging, custom error boundaries
 - Dark-first theme with light-mode toggle, Docker/Docker Compose deployment
