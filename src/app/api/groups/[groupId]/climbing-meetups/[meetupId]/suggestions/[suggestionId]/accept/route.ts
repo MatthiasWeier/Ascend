@@ -56,7 +56,7 @@ export async function POST(
       snippet: `${activityName}|${updatedMeetup.dateKey}`,
       url: `/dashboard/groups/${groupId}?tab=climbing`,
       pushTitle: group?.name ?? "Ascend",
-      pushBody: `Änderung übernommen für "${activityName}" - schau nochmal rein`,
+      pushBody: `Your suggested change for "${activityName}" was accepted - take another look`,
     }).catch(() => {});
   }
 

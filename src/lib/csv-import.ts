@@ -101,7 +101,7 @@ export function parseWorkoutCsv(text: string): ImportedSession[] {
   const isLbs = weightCol !== -1 && header[weightCol].toLowerCase().includes("lb");
 
   if (dateCol === -1 || exerciseCol === -1) {
-    throw new Error("Konnte Datum- oder Übungs-Spalte in der CSV nicht finden");
+    throw new Error("Could not find a date or exercise column in the CSV");
   }
 
   const sessionsByKey = new Map<string, ImportedSession>();

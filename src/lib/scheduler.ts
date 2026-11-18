@@ -65,7 +65,7 @@ async function checkWorkoutReminders() {
       groupName: "",
       snippet: reminder.label ?? undefined,
       url: "/dashboard/workouts/new",
-      pushTitle: "Zeit für dein Workout!",
+      pushTitle: "Time for your workout!",
       pushBody: reminder.label ? `${reminder.label} steht an.` : "Your scheduled training time is here.",
     }).catch((err) => logger.warn("workout reminder notify failed", { id: reminder.id, error: String(err) }));
   }

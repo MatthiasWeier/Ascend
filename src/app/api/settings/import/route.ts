@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     sessions = parseWorkoutCsv(text);
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Konnte CSV nicht lesen" },
+      { error: err instanceof Error ? err.message : "Could not read the CSV file" },
       { status: 400 }
     );
   }

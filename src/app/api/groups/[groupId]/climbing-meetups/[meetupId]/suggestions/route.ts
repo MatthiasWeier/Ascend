@@ -14,7 +14,7 @@ const suggestSchema = z
     location: z.string().max(120).optional(),
     note: z.string().max(200).optional(),
   })
-  .refine((d) => d.dateKey || d.time || d.location || d.note, "Mindestens ein Vorschlag nötig");
+  .refine((d) => d.dateKey || d.time || d.location || d.note, "At least one suggested change is required");
 
 // Any group member proposes a change to a planned meetup - the creator
 // then accepts (applies it) or declines. Never lets you suggest changing
@@ -65,7 +65,7 @@ export async function POST(
     snippet: `${activityName}|${meetup.dateKey}`,
     url: `/dashboard/groups/${groupId}?tab=climbing`,
     pushTitle: group?.name ?? "Ascend",
-    pushBody: `${name} schlägt eine Änderung für "${activityName}" vor`,
+    pushBody: `${name} is suggesting a change for "${activityName}"`,
   }).catch(() => {});
 
   return NextResponse.json({ suggestion }, { status: 201 });

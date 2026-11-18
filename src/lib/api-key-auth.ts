@@ -38,7 +38,7 @@ export async function authenticateApiKey(request: Request): Promise<ApiKeyAuth |
 // this right after authenticateApiKey, before touching the body/DB.
 export function requireWriteAccess(auth: ApiKeyAuth): NextResponse | null {
   if (auth.scope === "READ_ONLY") {
-    return NextResponse.json({ error: "Dieser API-Key ist nur lesend (read-only)" }, { status: 403 });
+    return NextResponse.json({ error: "This API key is read-only" }, { status: 403 });
   }
   return null;
 }

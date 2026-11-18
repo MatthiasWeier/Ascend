@@ -54,7 +54,7 @@ export function QuestsBoard() {
         await call(`/api/quests/${q.id}/steps`, { method: "POST", body: JSON.stringify({ title }) }, "Couldn't save.");
       },
       onDeleteStep: (stepId: string) => {
-        call(`/api/quests/${q.id}/steps/${stepId}`, { method: "DELETE" }, "Konnte nicht löschen.");
+        call(`/api/quests/${q.id}/steps/${stepId}`, { method: "DELETE" }, "Couldn't delete.");
       },
       onMoveStep: (stepId: string, direction: "up" | "down") => {
         call(`/api/quests/${q.id}/steps/${stepId}`, { method: "PATCH", body: JSON.stringify({ move: direction }) }, "Couldn't save.");
@@ -72,7 +72,7 @@ export function QuestsBoard() {
         setFormOpen(true);
       },
       onDelete: () => {
-        call(`/api/quests/${q.id}`, { method: "DELETE" }, "Konnte nicht löschen.").then(
+        call(`/api/quests/${q.id}`, { method: "DELETE" }, "Couldn't delete.").then(
           (ok) => ok && toast.success(t("Sidequest deleted."))
         );
       },

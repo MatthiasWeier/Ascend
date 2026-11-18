@@ -28,9 +28,9 @@ export default function GlobalError({
             textAlign: "center",
           }}
         >
-          <h1 style={{ fontSize: "1.25rem", fontWeight: 700 }}>Ascend ist gerade abgestürzt / Ascend has crashed</h1>
+          <h1 style={{ fontSize: "1.25rem", fontWeight: 700 }}>Ascend has crashed</h1>
           <p style={{ maxWidth: "24rem", fontSize: "0.875rem", opacity: 0.7 }}>
-            Bitte lad die Seite neu. Falls das öfter passiert, sag Bescheid.
+            Please reload the page. If this keeps happening, let us know.
             <br />
             Please reload the page. If this keeps happening, let us know.
           </p>

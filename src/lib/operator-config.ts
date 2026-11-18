@@ -1,5 +1,5 @@
 // Ascend is open source and meant to be self-hosted by anyone. Impressum and
-// Datenschutzerklärung content necessarily depends on WHO is running a given
+// Privacy policy content necessarily depends on WHO is running a given
 // instance and WHERE - so none of it is hardcoded. Each operator fills these
 // in via environment variables before going live; until then, the legal
 // pages render a clearly-marked placeholder instead of fake data.

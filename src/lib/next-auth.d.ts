@@ -9,7 +9,7 @@ declare module "next-auth" {
     } & DefaultSession["user"];
     // The UserSession row for this specific device/browser - not a
     // secret, just an id, exposed so Settings -> Sitzungen can mark
-    // "dieses Gerät" in the list.
+    // "this device" in the list.
     sid?: string;
   }
 }

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-// Renders a summary string with its numbers ("2 Übungen · 4 Sätze",
+// Renders a summary string with its numbers ("2 exercises · 4 sets",
 // "100/100") picked out in bold accent colour, so the metrics stand out from
 // the surrounding status text. Works on the already translated string, so it
 // is language-independent.

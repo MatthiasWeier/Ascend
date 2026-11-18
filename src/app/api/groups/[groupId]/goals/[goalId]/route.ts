@@ -64,8 +64,8 @@ export async function PATCH(
         {
           error:
             mismatch.type === "HOLD"
-              ? "Diese Übung ist zeitbasiert - die Einheit muss 'Dauer' sein"
-              : "Diese Übung zählt in Wiederholungen - die Einheit muss 'Wiederholungen' sein",
+              ? "This exercise is time-based - the unit must be 'Duration'"
+              : "This exercise counts in reps - the unit must be 'Repetitions'",
         },
         { status: 400 }
       );
