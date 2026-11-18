@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: ascend
+          POSTGRES_PASSWORD: ascend
+          POSTGRES_DB: ascend_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ascend"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ascend:ascend@localhost:5432/ascend_test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable corepack (pins the pnpm version from package.json)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply migrations to the CI test database
+        run: pnpm prisma migrate deploy
+
+      - name: Seed default exercises/challenge templates
+        run: pnpm prisma db seed
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm tsc --noEmit
+
+      - name: i18n coverage (fails on any missing English translation)
+        run: node --experimental-strip-types scripts/check-i18n.mjs
+
+      - name: Unit + integration tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Docker image build
+        run: docker build -t ascend:ci .
+
+      # Non-blocking on purpose: the lockfile carries ~19 "high" advisories
+      # that are all transitive through Prisma's own CLI/Studio tooling
+      # (lodash, mysql2, deepmerge-ts, source-map-js...), verified NOT to
+      # ship in the actual production image (nothing under that name exists
+      # in .next/standalone after a build - see docs/ANALYSIS.md, DEPS-1).
+      # A hard-blocking gate here would be permanently red for a known
+      # non-issue; this still surfaces anything new in the Actions summary
+      # without blocking merges on noise nobody's decided to chase yet.
+      - name: Dependency audit (prod deps, high+critical, non-blocking)
+        run: pnpm audit --prod --audit-level=high
+        continue-on-error: true
