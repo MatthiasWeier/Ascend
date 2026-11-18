@@ -1,9 +1,13 @@
 name: CI
 
+# Manual-only for now (Actions tab -> CI -> "Run workflow") - this repo's
+# GitHub account hit a billing lock on its very first automatic run
+# (account not verified for free public-repo Actions minutes, not a code
+# issue - every step here was separately verified locally first, see
+# docs/REVIEW_REPORT.md). Switch back to `push`/`pull_request` triggers
+# once that's resolved, so every commit gets a real status check again.
 on:
-  push:
-    branches: [master]
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   build-and-test:
