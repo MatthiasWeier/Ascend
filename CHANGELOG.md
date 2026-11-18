@@ -5,6 +5,20 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.59.0] - 2026-11-18
+
+### Changed
+- **English is now the source language throughout the codebase**, not
+  German - this is a public repo. Every UI string, API error message,
+  and push notification text in the source code is now written in
+  English directly (previously German text was the literal `t()` call
+  argument, with English living only in a translation dictionary). The
+  app's actual UI behavior is unchanged: English is now the default
+  display language, and German is still fully available via the
+  existing locale toggle, just the other way around architecturally -
+  German now lives in the dictionary (`src/lib/i18n/de/`) instead of
+  English.
+
 ## [0.58.2] - 2026-11-18
 
 ### Fixed
