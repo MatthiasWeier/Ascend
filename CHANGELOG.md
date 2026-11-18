@@ -5,6 +5,14 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.58.2] - 2026-11-18
+
+### Fixed
+- **Workout-Datumsfeld ließ sich trotz `max`-Attribut auf ein
+  Zukunftsdatum stellen**, ohne Fehlermeldung, bis man tatsächlich
+  abgeschickt hat (der Server hat das Datum schon immer korrekt
+  abgelehnt - jetzt verhindert das Feld die Auswahl selbst).
+
 ## [0.58.1] - 2026-11-18
 
 ### Fixed
