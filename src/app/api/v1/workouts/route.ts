@@ -16,7 +16,7 @@ const setSchema = z.object({
 const workoutSchema = z.object({
   date: z.string().datetime().optional(),
   notes: z.string().max(1000).optional(),
-  sets: z.array(setSchema).min(1),
+  sets: z.array(setSchema).min(1).max(100),
 });
 
 // Read-only-ish personal API for your own scripts/automations - not a

@@ -8,7 +8,7 @@ const batchSchema = z.object({
   date: z.string().regex(DATE_KEY_RE), // YYYY-MM-DD (German calendar day being logged)
   style: z.enum(["BOULDER", "ROUTE"]),
   // Empty = clear the day's quick-dialog entries.
-  entries: z.array(z.object({ grade: z.string().min(1).max(20), count: z.number().int().positive().max(500) })),
+  entries: z.array(z.object({ grade: z.string().min(1).max(20), count: z.number().int().positive().max(500) })).max(100),
 });
 
 // Saves one day from the quick "Klettertag" dialog. The dialog always shows

@@ -25,7 +25,7 @@ const updateSchema = z.object({
   perceivedExertion: z.number().int().min(1).max(10).optional(),
   focusFatigue: focusFatigueSchema,
   skinCondition: z.number().int().min(1).max(10).optional(),
-  sets: z.array(setSchema).min(1),
+  sets: z.array(setSchema).min(1).max(100),
   photoIds: z.array(z.string()).max(10).optional(),
 });
 

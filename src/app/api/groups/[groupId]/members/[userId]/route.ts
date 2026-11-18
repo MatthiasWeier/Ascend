@@ -28,7 +28,10 @@ export async function DELETE(
         { status: 400 }
       );
     }
-    await prisma.groupMember.delete({ where: { id: myMembership.id } });
+    await prisma.$transaction([
+      deleteYammerVotesInGroup(session.user.id, groupId),
+      prisma.groupMember.delete({ where: { id: myMembership.id } }),
+    ]);
     return NextResponse.json({ ok: true });
   }
 
@@ -41,7 +44,20 @@ export async function DELETE(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  await prisma.groupMember.delete({ where: { id: target.id } });
+  await prisma.$transaction([
+    deleteYammerVotesInGroup(userId, groupId),
+    prisma.groupMember.delete({ where: { id: target.id } }),
+  ]);
 
   return NextResponse.json({ ok: true });
+}
+
+// A YammerVote has no cascade on group membership (only on account
+// deletion) - leaving a vote behind after leaving/being kicked would keep
+// counting against eligibleVoters shrinking live, making invalidation
+// unfairly easier to trigger than intended (docs/ANALYSIS.md, BUG-D2).
+function deleteYammerVotesInGroup(voterId: string, groupId: string) {
+  return prisma.yammerVote.deleteMany({
+    where: { voterId, userChallengeGoal: { groupDailyChallenge: { groupId } } },
+  });
 }

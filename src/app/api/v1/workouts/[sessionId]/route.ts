@@ -17,7 +17,7 @@ const setSchema = z.object({
 const updateSchema = z.object({
   date: z.string().datetime().optional(),
   notes: z.string().max(1000).optional(),
-  sets: z.array(setSchema).min(1),
+  sets: z.array(setSchema).min(1).max(100),
 });
 
 async function findOwnedSession(sessionId: string, userId: string) {

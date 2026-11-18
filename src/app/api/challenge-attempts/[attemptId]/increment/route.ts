@@ -57,17 +57,37 @@ export async function POST(
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
-  const newReps = attempt.currentReps + parsed.data.amount;
-  const justCompleted = newReps >= attempt.targetRepsSnapshot;
-
-  const updated = await prisma.dailyChallengeAttempt.update({
+  // Atomic increments on both counters - the previous version computed
+  // currentReps from the stale `attempt` read above and overwrote it
+  // (`currentReps: newReps`), so two concurrent increments (double-tap,
+  // retry on a flaky connection) could lose one of them: both read the
+  // same starting value, both write their own newReps, last write wins.
+  // manualReps was already atomic; currentReps now is too.
+  let updated = await prisma.dailyChallengeAttempt.update({
     where: { id: attemptId },
     data: {
-      currentReps: newReps,
+      currentReps: { increment: parsed.data.amount },
       manualReps: { increment: parsed.data.amount },
-      ...(justCompleted ? { status: "COMPLETED", completedAt: new Date() } : {}),
     },
   });
+
+  // Completion is a separate, conditional step so two concurrent requests
+  // that both push currentReps past the target can't both "just complete"
+  // it - the `status: "IN_PROGRESS"` guard means only whichever request's
+  // updateMany runs first while it's still IN_PROGRESS actually flips it;
+  // the other affects 0 rows, so its justCompleted-gated side effects
+  // (goal contribution, notification) correctly never fire.
+  let justCompleted = false;
+  if (updated.currentReps >= updated.targetRepsSnapshot) {
+    const completion = await prisma.dailyChallengeAttempt.updateMany({
+      where: { id: attemptId, status: "IN_PROGRESS" },
+      data: { status: "COMPLETED", completedAt: new Date() },
+    });
+    justCompleted = completion.count === 1;
+    if (justCompleted) {
+      updated = await prisma.dailyChallengeAttempt.findUniqueOrThrow({ where: { id: attemptId } });
+    }
+  }
 
   if (justCompleted) {
     const groupId = attempt.userChallengeGoal.groupDailyChallenge.groupId;
