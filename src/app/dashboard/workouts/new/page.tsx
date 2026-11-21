@@ -102,6 +102,7 @@ type SetRow = {
   // cardio exercise's distance (km or mi - see lib/distance-units.ts).
   // Only ever shown/used instead of weightKg, never alongside it.
   distance: string;
+  durationUnit: DurationUnit;
   setType: SetType;
   notes: string;
   notesExpanded: boolean;
@@ -116,6 +117,7 @@ const emptyRow = (exerciseId: string = ""): SetRow => ({
   weightKg: "",
   durationSec: "",
   distance: "",
+  durationUnit: "SEC",
   setType: "NORMAL",
   notes: "",
   notesExpanded: false,
@@ -154,19 +156,36 @@ function formatMmSs(totalSeconds: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+type DurationUnit = "SEC" | "MIN";
+
+// Duration is always stored/submitted in seconds; these only convert at
+// the display boundary, same pattern as weightKg/distance - just without
+// a global preference, since the right unit depends on the exercise (a
+// 60-minute swim vs. a 15-second sprint) rather than the user's locale.
+function formatDurationForUnit(seconds: number, unit: DurationUnit): string {
+  return unit === "MIN" ? String(Math.round((seconds / 60) * 100) / 100) : String(seconds);
+}
+
+function durationToSeconds(value: string, unit: DurationUnit): number {
+  const n = Number(value);
+  return unit === "MIN" ? Math.round(n * 60) : Math.round(n);
+}
+
 function formatLastValue(
   last: { reps: number | null; weightKg: number | null; durationSec: number | null; distanceMeters: number | null },
   isCardio: boolean,
+  durationUnit: DurationUnit,
   weight: { format: (kg: number | null | undefined) => string; unitLabel: string },
   distance: { format: (m: number | null | undefined) => string; unitLabel: string }
 ) {
   if (last.durationSec != null) {
+    const durationText = `${formatDurationForUnit(last.durationSec, durationUnit)}${durationUnit === "MIN" ? "min" : "s"}`;
     if (isCardio) {
       return last.distanceMeters != null
-        ? `${last.durationSec}s, ${distance.format(last.distanceMeters)}${distance.unitLabel}`
-        : `${last.durationSec}s`;
+        ? `${durationText}, ${distance.format(last.distanceMeters)}${distance.unitLabel}`
+        : durationText;
     }
-    return last.weightKg ? `${last.durationSec}s @ ${weight.format(last.weightKg)}${weight.unitLabel}` : `${last.durationSec}s`;
+    return last.weightKg ? `${durationText} @ ${weight.format(last.weightKg)}${weight.unitLabel}` : durationText;
   }
   return `${weight.format(last.weightKg ?? 0)}${weight.unitLabel} × ${last.reps ?? "-"}`;
 }
@@ -246,7 +265,13 @@ export default function NewWorkoutPage() {
     };
     setRows(
       d.rows.length > 0
-        ? d.rows.map((r) => ({ ...r, key: rowKey++, weightKg: convert(r.weightKg), distance: convertDistance(r.distance ?? "") }))
+        ? d.rows.map((r) => ({
+            ...r,
+            key: rowKey++,
+            weightKg: convert(r.weightKg),
+            distance: convertDistance(r.distance ?? ""),
+            durationUnit: r.durationUnit ?? "SEC",
+          }))
         : [emptyRow()]
     );
     setDate(d.date && d.date <= todayGermanDateKey() ? d.date : todayGermanDateKey());
@@ -329,7 +354,15 @@ export default function NewWorkoutPage() {
               set.weightKg != null
                 ? String(roundForDisplay(weightUnit.toDisplay(set.weightKg), weightUnit.unit))
                 : "",
-            durationSec: set.durationSec != null ? String(set.durationSec) : "",
+            durationUnit:
+              (exercisesRes.exercises.find((e) => e.id === set.exerciseId)?.isCardio ? "MIN" : "SEC") as DurationUnit,
+            durationSec:
+              set.durationSec != null
+                ? formatDurationForUnit(
+                    set.durationSec,
+                    exercisesRes.exercises.find((e) => e.id === set.exerciseId)?.isCardio ? "MIN" : "SEC"
+                  )
+                : "",
             distance:
               set.distanceMeters != null ? String(roundDistanceForDisplay(distanceUnit.toDisplay(set.distanceMeters))) : "",
             setType: set.setType ?? "NORMAL",
@@ -480,6 +513,37 @@ export default function NewWorkoutPage() {
     return exercises.find((e) => e.id === id);
   }
 
+  // Shared "fill in the last logged values for this exercise" used by the
+  // exercise combobox, the quick-add chips, and template loading - only
+  // ever into fields the row doesn't already have a value in. A cardio
+  // exercise skips weight (it shows distance instead) and defaults
+  // duration to minutes; everything else keeps seconds/weight.
+  function applyLastValues(row: SetRow, ex: Exercise | undefined, last: LastValues[string] | undefined): SetRow {
+    const next = { ...row };
+    if (next.durationSec === "") next.durationUnit = ex?.isCardio ? "MIN" : "SEC";
+    if (!last) return next;
+    if (next.reps === "" && last.reps != null) next.reps = String(last.reps);
+    if (!ex?.isCardio && next.weightKg === "" && last.weightKg != null)
+      next.weightKg = String(roundForDisplay(weightUnit.toDisplay(last.weightKg), weightUnit.unit));
+    if (next.durationSec === "" && last.durationSec != null)
+      next.durationSec = formatDurationForUnit(last.durationSec, next.durationUnit);
+    if (ex?.isCardio && next.distance === "" && last.distanceMeters != null)
+      next.distance = String(roundDistanceForDisplay(distanceUnit.toDisplay(last.distanceMeters)));
+    return next;
+  }
+
+  function toggleDurationUnit(key: number) {
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r.key !== key) return r;
+        const nextUnit: DurationUnit = r.durationUnit === "MIN" ? "SEC" : "MIN";
+        if (r.durationSec === "") return { ...r, durationUnit: nextUnit };
+        const seconds = durationToSeconds(r.durationSec, r.durationUnit);
+        return { ...r, durationUnit: nextUnit, durationSec: formatDurationForUnit(seconds, nextUnit) };
+      })
+    );
+  }
+
   // Only the focuses actually present among the current rows get asked
   // about - training just Push today shouldn't prompt for Leg fatigue.
   const trainedFocuses = useMemo(() => {
@@ -506,26 +570,11 @@ export default function NewWorkoutPage() {
     setRows((prev) =>
       prev.map((r) => {
         if (r.key !== key) return r;
-        const last = lastValues[exerciseId];
         const newEx = exerciseFor(exerciseId);
-        const patch: Partial<SetRow> = { exerciseId };
         // Drop set/failure are strength-training tags that don't apply to
         // a cardio exercise - reset rather than carry over silently.
-        if (newEx?.isCardio && (r.setType === "DROP" || r.setType === "FAILURE")) {
-          patch.setType = "NORMAL";
-        }
-        // Auto-fill from the last time this exercise was logged - only into
-        // fields the user hasn't already touched, so it never clobbers a
-        // value someone's already typed.
-        if (last) {
-          if (r.reps === "" && last.reps != null) patch.reps = String(last.reps);
-          if (!newEx?.isCardio && r.weightKg === "" && last.weightKg != null)
-            patch.weightKg = String(roundForDisplay(weightUnit.toDisplay(last.weightKg), weightUnit.unit));
-          if (newEx?.isCardio && r.distance === "" && last.distanceMeters != null)
-            patch.distance = String(roundDistanceForDisplay(distanceUnit.toDisplay(last.distanceMeters)));
-          if (r.durationSec === "" && last.durationSec != null) patch.durationSec = String(last.durationSec);
-        }
-        return { ...r, ...patch };
+        const base = { ...r, exerciseId, setType: newEx?.isCardio && (r.setType === "DROP" || r.setType === "FAILURE") ? ("NORMAL" as SetType) : r.setType };
+        return applyLastValues(base, newEx, lastValues[exerciseId]);
       })
     );
   }
@@ -534,17 +583,8 @@ export default function NewWorkoutPage() {
   // it was logged - same auto-fill as picking it from the combobox, just
   // without opening the combobox at all.
   function quickAddExercise(exerciseId: string) {
-    const row = emptyRow(exerciseId);
-    const last = lastValues[exerciseId];
     const ex = exerciseFor(exerciseId);
-    if (last) {
-      if (last.reps != null) row.reps = String(last.reps);
-      if (!ex?.isCardio && last.weightKg != null)
-        row.weightKg = String(roundForDisplay(weightUnit.toDisplay(last.weightKg), weightUnit.unit));
-      if (last.durationSec != null) row.durationSec = String(last.durationSec);
-      if (ex?.isCardio && last.distanceMeters != null)
-        row.distance = String(roundDistanceForDisplay(distanceUnit.toDisplay(last.distanceMeters)));
-    }
+    const row = applyLastValues(emptyRow(exerciseId), ex, lastValues[exerciseId]);
     setRows((prev) => [...prev, row]);
   }
 
@@ -591,17 +631,9 @@ export default function NewWorkoutPage() {
     const template = templates.find((tpl) => tpl.id === templateId);
     if (!template) return;
     setRows(
-      template.entries.map((e) => {
-        const row = emptyRow(e.exerciseId);
-        const last = lastValues[e.exerciseId];
-        if (last) {
-          if (last.reps != null) row.reps = String(last.reps);
-          if (last.weightKg != null)
-            row.weightKg = String(roundForDisplay(weightUnit.toDisplay(last.weightKg), weightUnit.unit));
-          if (last.durationSec != null) row.durationSec = String(last.durationSec);
-        }
-        return row;
-      })
+      template.entries.map((e) =>
+        applyLastValues(emptyRow(e.exerciseId), exerciseFor(e.exerciseId), lastValues[e.exerciseId])
+      )
     );
     toast.success(t("Template \"{name}\" loaded.", { name: template.name }));
   }
@@ -683,7 +715,7 @@ export default function NewWorkoutPage() {
         if (ex?.type === "HOLD") {
           return {
             exerciseId: r.exerciseId,
-            durationSec: Number(r.durationSec),
+            durationSec: durationToSeconds(r.durationSec, r.durationUnit),
             weightKg: ex.isCardio || r.weightKg === "" ? undefined : weightUnit.toKg(Number(r.weightKg)),
             distanceMeters: ex.isCardio && r.distance !== "" ? distanceUnit.toMeters(Number(r.distance)) : undefined,
             ...common,
@@ -949,7 +981,7 @@ export default function NewWorkoutPage() {
                       )}
                       {last && (
                         <p className="text-xs text-muted-foreground">
-                          {t("Last time:")} {formatLastValue(last, ex?.isCardio ?? false, weightUnit, distanceUnit)}
+                          {t("Last time:")} {formatLastValue(last, ex?.isCardio ?? false, row.durationUnit, weightUnit, distanceUnit)}
                         </p>
                       )}
                       <div className="flex flex-wrap items-center gap-3">
@@ -962,15 +994,28 @@ export default function NewWorkoutPage() {
 
                         {ex?.type === "HOLD" ? (
                           <>
-                            <Input
-                              type="number"
-                              min={1}
-                              placeholder={t("Sec.")}
-                              required
-                              value={row.durationSec}
-                              onChange={(e) => updateRow(row.key, { durationSec: e.target.value })}
-                              className="h-10 w-24"
-                            />
+                            <div className="flex items-center gap-1">
+                              <Input
+                                type="number"
+                                min={row.durationUnit === "MIN" ? 0.1 : 1}
+                                step={row.durationUnit === "MIN" ? 0.1 : 1}
+                                placeholder={t("Duration")}
+                                required
+                                value={row.durationSec}
+                                onChange={(e) => updateRow(row.key, { durationSec: e.target.value })}
+                                className="h-10 w-20"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-10 px-2 text-xs"
+                                onClick={() => toggleDurationUnit(row.key)}
+                                title={t("Switch between seconds and minutes")}
+                              >
+                                {row.durationUnit === "MIN" ? t("min") : t("sec")}
+                              </Button>
+                            </div>
                             {ex.isCardio ? (
                               <Input
                                 type="number"

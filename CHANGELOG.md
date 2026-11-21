@@ -5,6 +5,19 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.62.0] - 2026-11-21
+
+### Added
+- **Seconds/minutes toggle for any duration-logged exercise** (Plank,
+  Dead Hang, Running, Swimming, ...), right next to the duration field -
+  same idea as the km/mi distance toggle. Typing "3600" for a 60-minute
+  swim was exactly the kind of mental math this app should be doing for
+  you; a 15-second sprint still wants seconds, not "0.25". Each set picks
+  its own unit (defaulting to minutes for cardio, seconds otherwise) and
+  converts the already-typed value when switched, instead of resetting
+  it. Nothing changes in storage or the API - duration is still logged in
+  seconds under the hood.
+
 ## [0.61.0] - 2026-11-21
 
 ### Changed
