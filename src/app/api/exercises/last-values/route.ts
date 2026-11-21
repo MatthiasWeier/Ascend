@@ -15,13 +15,13 @@ export async function GET() {
   const sets = await prisma.workoutSet.findMany({
     where: { session: { userId: session.user.id } },
     orderBy: [{ session: { date: "desc" } }, { order: "desc" }],
-    select: { exerciseId: true, reps: true, weightKg: true, durationSec: true },
+    select: { exerciseId: true, reps: true, weightKg: true, durationSec: true, distanceMeters: true },
     take: 1000,
   });
 
   const lastValues: Record<
     string,
-    { reps: number | null; weightKg: number | null; durationSec: number | null }
+    { reps: number | null; weightKg: number | null; durationSec: number | null; distanceMeters: number | null }
   > = {};
   const useCount = new Map<string, number>();
   for (const set of sets) {
@@ -31,6 +31,7 @@ export async function GET() {
       reps: set.reps,
       weightKg: set.weightKg,
       durationSec: set.durationSec,
+      distanceMeters: set.distanceMeters,
     };
   }
 

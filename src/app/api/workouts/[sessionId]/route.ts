@@ -15,6 +15,7 @@ const setSchema = z.object({
   reps: z.number().int().positive().optional(),
   weightKg: z.number().nonnegative().optional(),
   durationSec: z.number().int().positive().optional(),
+  distanceMeters: z.number().positive().max(200000).optional(),
   setType: z.enum(["WARMUP", "NORMAL", "DROP", "FAILURE"]).optional(),
   notes: z.string().max(500).optional(),
 });
@@ -81,7 +82,7 @@ export async function PATCH(
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   if (parsed.data.date && parsed.data.date > todayGermanDateKey()) {
-    return NextResponse.json({ error: "Das Datum liegt in der Zukunft" }, { status: 400 });
+    return NextResponse.json({ error: "That date is in the future" }, { status: 400 });
   }
 
   const oldSetIds = (
@@ -112,6 +113,7 @@ export async function PATCH(
             reps: set.reps,
             weightKg: set.weightKg,
             durationSec: set.durationSec,
+            distanceMeters: set.distanceMeters,
             setType: set.setType,
             notes: set.notes,
             order: index,

@@ -16,6 +16,9 @@ const setSchema = z.object({
   reps: z.number().int().positive().optional(),
   weightKg: z.number().nonnegative().optional(),
   durationSec: z.number().int().positive().optional(),
+  // Cardio exercises only - meters covered. 200km is a generous upper
+  // bound against garbage input, not a real-world limit.
+  distanceMeters: z.number().positive().max(200000).optional(),
   setType: z.enum(["WARMUP", "NORMAL", "DROP", "FAILURE"]).optional(),
   notes: z.string().max(500).optional(),
 });
@@ -63,7 +66,7 @@ export async function POST(request: Request) {
   const { date, notes, perceivedExertion, focusFatigue, skinCondition, sets, photoIds } = parsed.data;
 
   if (date && date > todayGermanDateKey()) {
-    return NextResponse.json({ error: "Das Datum liegt in der Zukunft" }, { status: 400 });
+    return NextResponse.json({ error: "That date is in the future" }, { status: 400 });
   }
 
   const created = await prisma.workoutSession.create({
@@ -79,6 +82,7 @@ export async function POST(request: Request) {
           reps: set.reps,
           weightKg: set.weightKg,
           durationSec: set.durationSec,
+          distanceMeters: set.distanceMeters,
           setType: set.setType,
           notes: set.notes,
           order: index,

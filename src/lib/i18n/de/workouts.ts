@@ -40,6 +40,7 @@ export const workouts: Record<string, string> = {
   "Last time:": "Letztes Mal:",
   "Sec.": "Sek.",
   "Added weight (optional)": "Zusatzgewicht (optional)",
+  "Distance (optional)": "Strecke (optional)",
   "Reps": "Wdh",
   "Note for this set": "Notiz zu diesem Satz",
   "Set done - starts the rest timer": "Satz fertig - startet die Pause",

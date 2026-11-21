@@ -44,6 +44,13 @@ import { WarmupCalculatorDialog } from "@/components/warmup-calculator-dialog";
 import { useWeightUnit } from "@/components/weight-unit-context";
 import { useLocale } from "@/components/locale-provider";
 import { roundForDisplay, displayToKg, type WeightUnit } from "@/lib/weight-units";
+import {
+  metersToDisplay,
+  displayToMeters,
+  roundForDisplay as roundDistanceForDisplay,
+  distanceUnitLabel,
+  type DistanceUnit,
+} from "@/lib/distance-units";
 import { BODY_PART_LABEL, injuryConflicts } from "@/lib/injuries";
 import type { BodyPart, InjurySeverity } from "@prisma/client";
 import { germanDateKey, todayGermanDateKey } from "@/lib/german-time";
@@ -53,12 +60,13 @@ type Exercise = {
   name: string;
   type: "REPS" | "HOLD";
   focus: MuscleFocus;
+  isCardio: boolean;
   loadedParts?: BodyPart[];
 };
 
 type LastValues = Record<
   string,
-  { reps: number | null; weightKg: number | null; durationSec: number | null }
+  { reps: number | null; weightKg: number | null; durationSec: number | null; distanceMeters: number | null }
 >;
 
 type Template = { id: string; name: string; entries: { exerciseId: string }[] };
@@ -69,6 +77,14 @@ const SET_TYPE_LABEL: Record<SetType, string> = {
   DROP: "Drop set",
   FAILURE: "Failure",
 };
+
+// Drop set/failure are strength-training tags (reduce the weight and keep
+// going / trained to the point you couldn't do another rep) - neither
+// means anything for a duration-logged cardio set.
+function availableSetTypes(ex: Exercise | undefined): SetType[] {
+  const all = Object.keys(SET_TYPE_LABEL) as SetType[];
+  return ex?.isCardio ? all.filter((st) => st === "WARMUP" || st === "NORMAL") : all;
+}
 
 type SetRow = {
   key: number;
@@ -82,6 +98,10 @@ type SetRow = {
   // decimals (e.g. "82.") never get clobbered.
   weightKg: string;
   durationSec: string;
+  // Same raw-typed-value-in-current-unit pattern as weightKg, but for a
+  // cardio exercise's distance (km or mi - see lib/distance-units.ts).
+  // Only ever shown/used instead of weightKg, never alongside it.
+  distance: string;
   setType: SetType;
   notes: string;
   notesExpanded: boolean;
@@ -95,6 +115,7 @@ const emptyRow = (exerciseId: string = ""): SetRow => ({
   reps: "",
   weightKg: "",
   durationSec: "",
+  distance: "",
   setType: "NORMAL",
   notes: "",
   notesExpanded: false,
@@ -121,7 +142,7 @@ type DraftData = {
 
 function isMeaningfulDraft(d: DraftData) {
   return (
-    d.rows.some((r) => r.exerciseId || r.reps || r.weightKg || r.durationSec || r.notes) ||
+    d.rows.some((r) => r.exerciseId || r.reps || r.weightKg || r.durationSec || r.distance || r.notes) ||
     d.notes.trim() !== "" ||
     d.photoIds.length > 0
   );
@@ -134,14 +155,20 @@ function formatMmSs(totalSeconds: number) {
 }
 
 function formatLastValue(
-  last: { reps: number | null; weightKg: number | null; durationSec: number | null },
-  format: (kg: number | null | undefined) => string,
-  unitLabel: string
+  last: { reps: number | null; weightKg: number | null; durationSec: number | null; distanceMeters: number | null },
+  isCardio: boolean,
+  weight: { format: (kg: number | null | undefined) => string; unitLabel: string },
+  distance: { format: (m: number | null | undefined) => string; unitLabel: string }
 ) {
   if (last.durationSec != null) {
-    return last.weightKg ? `${last.durationSec}s @ ${format(last.weightKg)}${unitLabel}` : `${last.durationSec}s`;
+    if (isCardio) {
+      return last.distanceMeters != null
+        ? `${last.durationSec}s, ${distance.format(last.distanceMeters)}${distance.unitLabel}`
+        : `${last.durationSec}s`;
+    }
+    return last.weightKg ? `${last.durationSec}s @ ${weight.format(last.weightKg)}${weight.unitLabel}` : `${last.durationSec}s`;
   }
-  return `${format(last.weightKg ?? 0)}${unitLabel} × ${last.reps ?? "-"}`;
+  return `${weight.format(last.weightKg ?? 0)}${weight.unitLabel} × ${last.reps ?? "-"}`;
 }
 
 export default function NewWorkoutPage() {
@@ -150,6 +177,18 @@ export default function NewWorkoutPage() {
   const editSessionId = searchParams.get("edit");
   const weightUnit = useWeightUnit();
   const { t, dateLocale } = useLocale();
+  // No separate distance-unit setting - LBS users see miles, KG users see
+  // km, same signal the weight preference already carries.
+  const distanceUnit = useMemo(() => {
+    const unit: DistanceUnit = weightUnit.unit === "LBS" ? "MI" : "KM";
+    return {
+      unit,
+      unitLabel: distanceUnitLabel(unit),
+      toDisplay: (m: number) => metersToDisplay(m, unit),
+      toMeters: (displayValue: number) => displayToMeters(displayValue, unit),
+      format: (m: number | null | undefined) => (m == null ? "0" : String(roundDistanceForDisplay(metersToDisplay(m, unit)))),
+    };
+  }, [weightUnit.unit]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [lastValues, setLastValues] = useState<LastValues>({});
   const [rows, setRows] = useState<SetRow[]>([]);
@@ -199,9 +238,15 @@ export default function NewWorkoutPage() {
       if (value === "" || isNaN(n) || d.unit === weightUnit.unit) return value;
       return String(roundForDisplay(weightUnit.toDisplay(displayToKg(n, d.unit)), weightUnit.unit));
     };
+    const convertDistance = (value: string) => {
+      const n = Number(value);
+      if (!value || isNaN(n) || d.unit === weightUnit.unit) return value;
+      const oldUnit: DistanceUnit = d.unit === "LBS" ? "MI" : "KM";
+      return String(roundDistanceForDisplay(distanceUnit.toDisplay(displayToMeters(n, oldUnit))));
+    };
     setRows(
       d.rows.length > 0
-        ? d.rows.map((r) => ({ ...r, key: rowKey++, weightKg: convert(r.weightKg) }))
+        ? d.rows.map((r) => ({ ...r, key: rowKey++, weightKg: convert(r.weightKg), distance: convertDistance(r.distance ?? "") }))
         : [emptyRow()]
     );
     setDate(d.date && d.date <= todayGermanDateKey() ? d.date : todayGermanDateKey());
@@ -234,6 +279,7 @@ export default function NewWorkoutPage() {
                 reps: number | null;
                 weightKg: number | null;
                 durationSec: number | null;
+                distanceMeters: number | null;
                 setType: SetType;
                 notes: string | null;
               }[];
@@ -284,6 +330,8 @@ export default function NewWorkoutPage() {
                 ? String(roundForDisplay(weightUnit.toDisplay(set.weightKg), weightUnit.unit))
                 : "",
             durationSec: set.durationSec != null ? String(set.durationSec) : "",
+            distance:
+              set.distanceMeters != null ? String(roundDistanceForDisplay(distanceUnit.toDisplay(set.distanceMeters))) : "",
             setType: set.setType ?? "NORMAL",
             notes: set.notes ?? "",
             notesExpanded: !!set.notes,
@@ -419,8 +467,12 @@ export default function NewWorkoutPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restSecondsLeft]);
 
-  function handleExerciseCreated(newExercise: Exercise) {
-    setExercises((prev) => [...prev, newExercise].sort((a, b) => a.name.localeCompare(b.name)));
+  function handleExerciseCreated(newExercise: Omit<Exercise, "isCardio">) {
+    // Custom exercises created from this dialog are never cardio - that
+    // flag only exists on the seeded defaults for now.
+    setExercises((prev) =>
+      [...prev, { ...newExercise, isCardio: false }].sort((a, b) => a.name.localeCompare(b.name))
+    );
     setRows((prev) => [...prev, emptyRow(newExercise.id)]);
   }
 
@@ -455,14 +507,22 @@ export default function NewWorkoutPage() {
       prev.map((r) => {
         if (r.key !== key) return r;
         const last = lastValues[exerciseId];
+        const newEx = exerciseFor(exerciseId);
         const patch: Partial<SetRow> = { exerciseId };
+        // Drop set/failure are strength-training tags that don't apply to
+        // a cardio exercise - reset rather than carry over silently.
+        if (newEx?.isCardio && (r.setType === "DROP" || r.setType === "FAILURE")) {
+          patch.setType = "NORMAL";
+        }
         // Auto-fill from the last time this exercise was logged - only into
         // fields the user hasn't already touched, so it never clobbers a
         // value someone's already typed.
         if (last) {
           if (r.reps === "" && last.reps != null) patch.reps = String(last.reps);
-          if (r.weightKg === "" && last.weightKg != null)
+          if (!newEx?.isCardio && r.weightKg === "" && last.weightKg != null)
             patch.weightKg = String(roundForDisplay(weightUnit.toDisplay(last.weightKg), weightUnit.unit));
+          if (newEx?.isCardio && r.distance === "" && last.distanceMeters != null)
+            patch.distance = String(roundDistanceForDisplay(distanceUnit.toDisplay(last.distanceMeters)));
           if (r.durationSec === "" && last.durationSec != null) patch.durationSec = String(last.durationSec);
         }
         return { ...r, ...patch };
@@ -476,11 +536,14 @@ export default function NewWorkoutPage() {
   function quickAddExercise(exerciseId: string) {
     const row = emptyRow(exerciseId);
     const last = lastValues[exerciseId];
+    const ex = exerciseFor(exerciseId);
     if (last) {
       if (last.reps != null) row.reps = String(last.reps);
-      if (last.weightKg != null)
+      if (!ex?.isCardio && last.weightKg != null)
         row.weightKg = String(roundForDisplay(weightUnit.toDisplay(last.weightKg), weightUnit.unit));
       if (last.durationSec != null) row.durationSec = String(last.durationSec);
+      if (ex?.isCardio && last.distanceMeters != null)
+        row.distance = String(roundDistanceForDisplay(distanceUnit.toDisplay(last.distanceMeters)));
     }
     setRows((prev) => [...prev, row]);
   }
@@ -621,7 +684,8 @@ export default function NewWorkoutPage() {
           return {
             exerciseId: r.exerciseId,
             durationSec: Number(r.durationSec),
-            weightKg: r.weightKg === "" ? undefined : weightUnit.toKg(Number(r.weightKg)),
+            weightKg: ex.isCardio || r.weightKg === "" ? undefined : weightUnit.toKg(Number(r.weightKg)),
+            distanceMeters: ex.isCardio && r.distance !== "" ? distanceUnit.toMeters(Number(r.distance)) : undefined,
             ...common,
           };
         }
@@ -885,7 +949,7 @@ export default function NewWorkoutPage() {
                       )}
                       {last && (
                         <p className="text-xs text-muted-foreground">
-                          {t("Last time:")} {formatLastValue(last, weightUnit.format, weightUnit.unitLabel)}
+                          {t("Last time:")} {formatLastValue(last, ex?.isCardio ?? false, weightUnit, distanceUnit)}
                         </p>
                       )}
                       <div className="flex flex-wrap items-center gap-3">
@@ -907,16 +971,29 @@ export default function NewWorkoutPage() {
                               onChange={(e) => updateRow(row.key, { durationSec: e.target.value })}
                               className="h-10 w-24"
                             />
-                            <Input
-                              type="number"
-                              min={0}
-                              step={0.5}
-                              placeholder={`+${weightUnit.unitLabel}`}
-                              title={t("Added weight (optional)")}
-                              value={row.weightKg}
-                              onChange={(e) => updateRow(row.key, { weightKg: e.target.value })}
-                              className="h-10 w-20"
-                            />
+                            {ex.isCardio ? (
+                              <Input
+                                type="number"
+                                min={0}
+                                step={0.01}
+                                placeholder={distanceUnit.unitLabel}
+                                title={t("Distance (optional)")}
+                                value={row.distance}
+                                onChange={(e) => updateRow(row.key, { distance: e.target.value })}
+                                className="h-10 w-20"
+                              />
+                            ) : (
+                              <Input
+                                type="number"
+                                min={0}
+                                step={0.5}
+                                placeholder={`+${weightUnit.unitLabel}`}
+                                title={t("Added weight (optional)")}
+                                value={row.weightKg}
+                                onChange={(e) => updateRow(row.key, { weightKg: e.target.value })}
+                                className="h-10 w-20"
+                              />
+                            )}
                           </>
                         ) : (
                           <>
@@ -950,13 +1027,13 @@ export default function NewWorkoutPage() {
                         <Select
                           value={row.setType}
                           onValueChange={(v) => updateRow(row.key, { setType: v as SetType })}
-                          items={(Object.keys(SET_TYPE_LABEL) as SetType[]).map((st) => ({ value: st, label: t(SET_TYPE_LABEL[st]) }))}
+                          items={availableSetTypes(ex).map((st) => ({ value: st, label: t(SET_TYPE_LABEL[st]) }))}
                         >
                           <SelectTrigger className="h-10! w-[116px]">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {(Object.keys(SET_TYPE_LABEL) as SetType[]).map((st) => (
+                            {availableSetTypes(ex).map((st) => (
                               <SelectItem key={st} value={st}>
                                 {t(SET_TYPE_LABEL[st])}
                               </SelectItem>

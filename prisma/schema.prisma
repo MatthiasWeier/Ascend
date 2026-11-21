@@ -231,6 +231,10 @@ model WorkoutSet {
 
   // HOLD-type exercises
   durationSec Int?
+  // Cardio exercises only (Exercise.isCardio) - distance covered, in
+  // meters. Never set alongside weightKg: a cardio set logs duration +
+  // distance, not duration + added weight.
+  distanceMeters Float?
 
   // Warm-up sets don't count toward volume/PRs/weekly-set-count - they're
   // not working sets. Drop/Failure are purely informational tags.

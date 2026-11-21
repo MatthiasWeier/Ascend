@@ -5,6 +5,23 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.61.0] - 2026-11-21
+
+### Changed
+- **Cardio exercises now log distance instead of added weight.** Logging
+  5kg for a swim never meant anything - the "+kg" field next to a cardio
+  exercise's duration is now a distance field (km, or mi if your weight
+  unit is set to lbs) instead. Non-cardio HOLD exercises (planks, dead
+  hangs, ...) are unaffected and still take optional added weight.
+- **Drop set/Failure are hidden for cardio exercises** in the set-type
+  picker - both are strength-training tags (reduce the weight and keep
+  going / trained to the point of failure) that don't mean anything for a
+  duration-logged run or swim. Only Warm-up/Normal are offered.
+
+### Added
+- `WorkoutSet.distanceMeters`, exposed on both the web app's workout
+  routes and the `/v1` API (optional, backward compatible).
+
 ## [0.60.0] - 2026-11-21
 
 ### Added
