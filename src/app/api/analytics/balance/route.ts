@@ -20,7 +20,7 @@ export async function GET() {
         durationSec: true,
         setType: true,
         session: { select: { date: true } },
-        exercise: { select: { focus: true, isBodyweight: true } },
+        exercise: { select: { focus: true, isBodyweight: true, isCardio: true } },
       },
     }),
     prisma.balanceGoal.findMany({ where: { userId } }),
@@ -32,6 +32,7 @@ export async function GET() {
       ...s,
       focus: s.exercise.focus,
       isBodyweight: s.exercise.isBodyweight,
+      isCardio: s.exercise.isCardio,
       bodyWeightKg: s.exercise.isBodyweight ? resolveBodyWeight(s.session.date) : null,
     }))
   );

@@ -148,6 +148,15 @@ export const DEFAULT_EXERCISE_MUSCLES: Record<string, [M[], M[]]> = {
   "Farmer's Carry": [["FOREARMS"], ["UPPER_BACK", "ABS"]],
   "Plate Pinch": [["FOREARMS"], []],
   "Wrist Curls": [["FOREARMS"], []],
+
+  "Running": [["QUADS", "HAMSTRINGS"], ["CALVES", "GLUTES"]],
+  "Cycling": [["QUADS"], ["HAMSTRINGS", "CALVES", "GLUTES"]],
+  "Jump Rope": [["CALVES", "QUADS"], ["SHOULDERS", "ABS"]],
+  "Rowing (Machine)": [["LATS", "QUADS"], ["UPPER_BACK", "HAMSTRINGS", "BICEPS", "GLUTES"]],
+  "Swimming (Freestyle)": [["LATS", "SHOULDERS"], ["TRICEPS", "ABS", "QUADS"]],
+  "Swimming (Backstroke)": [["LATS", "SHOULDERS"], ["TRICEPS", "ABS", "QUADS"]],
+  "Swimming (Breaststroke)": [["QUADS", "CHEST"], ["HAMSTRINGS", "GLUTES", "TRICEPS", "SHOULDERS"]],
+  "Swimming (Butterfly)": [["ABS", "LATS"], ["SHOULDERS", "CHEST", "QUADS"]],
 };
 
 export function defaultMuscleRows(name: string): ExerciseMuscleRow[] | null {

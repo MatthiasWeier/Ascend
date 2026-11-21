@@ -163,6 +163,12 @@ model Exercise {
   // user's logged bodyweight folded into load/1RM/power calculations -
   // getting heavier makes the same reps objectively more work.
   isBodyweight Boolean     @default(false)
+  // Duration-logged (running, swimming, cycling, ...) - trains the body,
+  // but excluded from the Push/Pull/Legs/Core/Grip Workout Brain balance:
+  // its "load" is wall-clock seconds, which would swamp strength sets'
+  // reps*weight numbers and make the Brain think e.g. a 30-minute run was
+  // an extreme leg day.
+  isCardio     Boolean     @default(false)
   isDefault    Boolean     @default(true)
 
   // null = global default. Set when a user or group creates a custom one.

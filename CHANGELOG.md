@@ -5,6 +5,23 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.60.0] - 2026-11-21
+
+### Added
+- **Cardio exercises**: Running, Cycling, Jump Rope, Rowing (Machine), and
+  all four competitive swimming strokes (Freestyle, Backstroke,
+  Breaststroke, Butterfly), logged by duration like a HOLD exercise. The
+  swimming strokes are mapped to genuinely different muscles and training
+  focuses - breaststroke's propulsion is whip-kick dominant (legs) with a
+  chest/triceps press for the arm phase, while freestyle and backstroke
+  are arm-pull dominant (lats/shoulders); butterfly's dolphin kick makes
+  it the most core-driven of the four.
+- `Exercise.isCardio`: new exercises are excluded from the Push/Pull/Legs/
+  Core/Grip Workout Brain balance and its example-exercise suggestions, so
+  a run's duration (counted in seconds) doesn't swamp strength sets' reps
+  x weight numbers and skew the balance toward "you've way overtrained
+  legs."
+
 ## [0.59.0] - 2026-11-18
 
 ### Changed

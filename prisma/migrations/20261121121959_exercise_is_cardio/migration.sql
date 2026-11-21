@@ -1,0 +1,1 @@
+ALTER TABLE "Exercise" ADD COLUMN "isCardio" BOOLEAN NOT NULL DEFAULT false;

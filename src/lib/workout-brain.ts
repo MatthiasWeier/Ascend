@@ -68,7 +68,7 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
         session: {
           select: { date: true, focusFatigue: { select: { focus: true, rating: true } } },
         },
-        exercise: { select: { focus: true, isBodyweight: true } },
+        exercise: { select: { focus: true, isBodyweight: true, isCardio: true } },
       },
       orderBy: { session: { date: "desc" } },
     }),
@@ -82,6 +82,7 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
   const lastTrainedByFocus = new Map<MuscleFocus, Date>();
   const lastFatigueByFocus = new Map<MuscleFocus, number>();
   for (const set of sets) {
+    if (set.exercise.isCardio) continue;
     const focus = set.exercise.focus;
     if (!lastTrainedByFocus.has(focus)) {
       lastTrainedByFocus.set(focus, set.session.date);
@@ -96,6 +97,7 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
       ...s,
       focus: s.exercise.focus,
       isBodyweight: s.exercise.isBodyweight,
+      isCardio: s.exercise.isCardio,
       bodyWeightKg: s.exercise.isBodyweight ? resolveBodyWeight(s.session.date) : null,
     }))
   );
@@ -107,7 +109,7 @@ export async function getBrainSuggestion(userId: string, t: TFunction): Promise<
   const [injuries, catalogue] = await Promise.all([
     getActiveInjuries(userId),
     prisma.exercise.findMany({
-      where: { OR: [{ isDefault: true }, { createdById: userId }] },
+      where: { OR: [{ isDefault: true }, { createdById: userId }], isCardio: false },
       select: { id: true, name: true, focus: true, muscles: { select: { muscle: true, role: true } } },
     }),
   ]);

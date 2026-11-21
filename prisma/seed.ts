@@ -11,6 +11,7 @@ type ExerciseSeed = {
   type: ExerciseType;
   focus: MuscleFocus;
   isBodyweight?: boolean;
+  isCardio?: boolean;
   description?: string;
 };
 
@@ -77,6 +78,25 @@ const exercises: ExerciseSeed[] = [
   { name: "Farmer's Carry", type: "REPS", focus: "GRIP" },
   { name: "Plate Pinch", type: "HOLD", focus: "GRIP" },
   { name: "Wrist Curls", type: "REPS", focus: "GRIP" },
+
+  // --- CARDIO --- (duration-logged via the HOLD mechanism; excluded from
+  // the Push/Pull/Legs/Core/Grip balance - see Exercise.isCardio)
+  { name: "Running", type: "HOLD", focus: "LEGS", isCardio: true },
+  { name: "Cycling", type: "HOLD", focus: "LEGS", isCardio: true },
+  { name: "Jump Rope", type: "HOLD", focus: "LEGS", isCardio: true },
+  { name: "Rowing (Machine)", type: "HOLD", focus: "PULL", isCardio: true },
+  // Freestyle/backstroke: arm pull (lats/shoulders) is the dominant
+  // propulsion, flutter kick is secondary - same focus as each other.
+  { name: "Swimming (Freestyle)", type: "HOLD", focus: "PULL", isCardio: true },
+  { name: "Swimming (Backstroke)", type: "HOLD", focus: "PULL", isCardio: true },
+  // Breaststroke: propulsion is whip-kick dominant (legs), the arm phase
+  // is a chest/triceps press rather than a lat pull - genuinely different
+  // muscles from freestyle, not just a different focus label for the sake
+  // of it.
+  { name: "Swimming (Breaststroke)", type: "HOLD", focus: "LEGS", isCardio: true },
+  // Butterfly: simultaneous double-arm pull plus a core-driven dolphin
+  // kick - the most core/full-body-demanding stroke.
+  { name: "Swimming (Butterfly)", type: "HOLD", focus: "CORE", isCardio: true },
 ];
 
 // Daily-challenge themes the leader can activate for the group - each tied

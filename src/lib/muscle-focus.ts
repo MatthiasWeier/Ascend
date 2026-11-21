@@ -33,11 +33,12 @@ export function computeLoadPercents(
     setType: SetType;
     isBodyweight: boolean;
     bodyWeightKg: number | null;
+    isCardio: boolean;
   }[]
 ): Record<MuscleFocus, number> {
   const loadByFocus = new Map<MuscleFocus, number>();
   for (const s of sets) {
-    if (s.setType === "WARMUP") continue;
+    if (s.setType === "WARMUP" || s.isCardio) continue;
     const loadKg = effectiveLoadKg(s.isBodyweight, s.bodyWeightKg, s.weightKg);
     const load =
       s.durationSec != null
