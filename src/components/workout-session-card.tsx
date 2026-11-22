@@ -24,6 +24,8 @@ import { BoldNumbers } from "@/components/bold-numbers";
 import { useWeightUnit } from "@/components/weight-unit-context";
 import { useLocale } from "@/components/locale-provider";
 import { ImageLightbox } from "@/components/image-lightbox";
+import { formatDurationSec } from "@/lib/duration-format";
+import { distanceUnitLabel, formatDistance } from "@/lib/distance-units";
 import type { MuscleFocus, SetType } from "@prisma/client";
 
 type SetWithExercise = {
@@ -31,6 +33,7 @@ type SetWithExercise = {
   reps: number | null;
   weightKg: number | null;
   durationSec: number | null;
+  distanceMeters: number | null;
   setType?: SetType;
   notes?: string | null;
   exercise: { name: string; focus: MuscleFocus };
@@ -76,7 +79,8 @@ export function WorkoutSessionCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const router = useRouter();
-  const { format, unitLabel } = useWeightUnit();
+  const { format, unitLabel, unit: weightUnit } = useWeightUnit();
+  const distUnit = weightUnit === "LBS" ? "MI" : "KM";
   const { t, dateLocale } = useLocale();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -194,9 +198,11 @@ export function WorkoutSessionCard({
                   </span>
                   <span className="font-mono text-muted-foreground">
                     {set.durationSec != null
-                      ? set.weightKg
-                        ? `${set.durationSec}s @ ${format(set.weightKg)}${unitLabel}`
-                        : `${set.durationSec}s`
+                      ? set.distanceMeters != null
+                        ? `${formatDurationSec(set.durationSec)}, ${formatDistance(set.distanceMeters, distUnit)}${distanceUnitLabel(distUnit)}`
+                        : set.weightKg
+                          ? `${formatDurationSec(set.durationSec)} @ ${format(set.weightKg)}${unitLabel}`
+                          : formatDurationSec(set.durationSec)
                       : `${set.reps ?? "-"} × ${format(set.weightKg ?? 0)}${unitLabel}`}
                   </span>
                 </div>

@@ -26,6 +26,7 @@ type DaySession = {
     reps: number | null;
     weightKg: number | null;
     durationSec: number | null;
+    distanceMeters: number | null;
     exercise: { name: string; focus: "PUSH" | "PULL" | "LEGS" | "CORE" | "GRIP" };
   }[];
 };

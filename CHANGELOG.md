@@ -5,6 +5,17 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.63.0] - 2026-11-22
+
+### Fixed
+- **Cardio sets in the feed never picked up the distance/duration work from
+  0.61.0/0.62.0.** A 60-minute swim showed up as "Swimming 3600s" with no
+  distance at all - the feed card, the activity calendar's day popover, and
+  the text summaries used for shared group posts / calendar exports were
+  still on the old duration-in-raw-seconds, weight-only formatting. All three
+  now show duration as minutes above a minute (e.g. "60min") and, for cardio
+  exercises, the distance alongside it (e.g. "60min, 1.3km").
+
 ## [0.62.0] - 2026-11-21
 
 ### Added

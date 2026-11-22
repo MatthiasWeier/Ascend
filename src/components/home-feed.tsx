@@ -30,6 +30,7 @@ export type OwnWorkout = {
     reps: number | null;
     weightKg: number | null;
     durationSec: number | null;
+    distanceMeters: number | null;
     setType?: SetType;
     notes?: string | null;
     exercise: { name: string; focus: MuscleFocus };
