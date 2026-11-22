@@ -5,6 +5,14 @@ All notable changes to this project are documented here. Format follows
 [SemVer](https://semver.org/) - `0.x.y` means the app is still moving and
 nothing is guaranteed stable yet.
 
+## [0.64.0] - 2026-11-22
+
+### Added
+- **Screenshots in the README.** Six dark-mode screenshots (feed, logging a
+  cardio workout, the balance radar, the climbing pyramid, the body
+  heatmap, a group feed) under `docs/screenshots/`, replacing the
+  text-only README.
+
 ## [0.63.0] - 2026-11-22
 
 ### Fixed

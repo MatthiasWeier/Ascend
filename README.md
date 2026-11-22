@@ -17,6 +17,14 @@ source of truth, also shown in the app footer and in Settings) ·
 [SemVer](https://semver.org/); `0.x` means still moving, no stability
 guarantees yet.
 
+## Screenshots
+
+|  |  |
+|---|---|
+| ![Feed](docs/screenshots/dashboard.png) **Feed** - Workout Brain suggestion, activity streak, group posts and your own sessions, all in one place. | ![Logging a workout](docs/screenshots/workout-new.png) **Logging a workout** - last session's numbers pre-filled; cardio exercises take distance + a seconds/minutes toggle instead of weight. |
+| ![Balance radar](docs/screenshots/analytics-balance.png) **Balance radar** - how your training actually splits across Push/Pull/Legs/Core/Grip, against the target you set. | ![Climbing pyramid](docs/screenshots/analytics-climbing.png) **Climbing pyramid** - sends per grade, boulder or route, plus the day-by-day calendar. |
+| ![Body heatmap](docs/screenshots/body.png) **Body heatmap** - which muscles got trained (and how hard) over the last 7/14/30 days, front or back. | ![Group feed](docs/screenshots/group.png) **Groups** - shared workouts, text posts, reactions and comments with your training partners. |
+
 ## Stack
 
 - Next.js 16 (App Router) + TypeScript + Tailwind CSS 4
